@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/blockchain-test.iml" filepath="$PROJECT_DIR$/blockchain-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/crudder/crudder.iml" filepath="$PROJECT_DIR$/crudder/crudder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/insurancecompany/insurancecompany.iml" filepath="$PROJECT_DIR$/insurancecompany/insurancecompany.iml" />
       <module fileurl="file://$PROJECT_DIR$/mlibrary/mlibrary.iml" filepath="$PROJECT_DIR$/mlibrary/mlibrary.iml" />
     </modules>
   </component>
