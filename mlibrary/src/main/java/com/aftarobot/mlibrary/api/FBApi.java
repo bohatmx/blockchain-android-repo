@@ -40,7 +40,7 @@ public class FBApi {
     public void addUser(final UserDTO user, final FBListener listener) {
         DatabaseReference ref = db.getReference(USERS);
 
-        ref.setValue(user, new DatabaseReference.CompletionListener() {
+        ref.push().setValue(user, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {

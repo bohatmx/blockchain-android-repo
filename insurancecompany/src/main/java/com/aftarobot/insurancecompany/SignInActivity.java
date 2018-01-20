@@ -12,7 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.firebase.ui.auth.AuthUI;
@@ -34,7 +36,7 @@ public class SignInActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private static final int RC_SIGN_IN = 123;
     private FBApi fbApi;
-
+private FBListApi fbListApi;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +51,7 @@ public class SignInActivity extends AppCompatActivity {
             return;
         }
         fbApi = new FBApi();
+        fbListApi = new FBListApi();
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,16 +112,15 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
-
+            Log.w(TAG, "onActivityResult: IdpResponse: ".concat(GSON.toJson(response)) );
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 Log.i(TAG, "onActivityResult: Firebase sign in OK: ".concat(GSON.toJson(user)));
                 Snackbar.make(toolbar, "Sign in A-OK", Snackbar.LENGTH_SHORT).show();
-                startMain();
+                addUserToFirebase(user);
             } else {
                 showSnackError("Error signing in, please check");
                 Log.e(TAG, "onActivityResult: Sign in failed, check response for error code");
@@ -131,18 +133,38 @@ public class SignInActivity extends AppCompatActivity {
         startActivity(m);
     }
 
-    private void addUserToFirebase(FirebaseUser u) {
-        UserDTO user = new UserDTO();
+    private void addUserToFirebase(final FirebaseUser u) {
+       final UserDTO user = new UserDTO();
         user.setCompanyId("COMPANY_001");
         user.setDateRegistered(new Date().getTime());
         user.setEmail(u.getEmail());
         user.setUid(u.getUid());
+        user.setDisplayName(u.getDisplayName());
+        user.setStringDateRegistered(new Date().getTime());
+        user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
         user.setUserType(UserDTO.COMPANY_USER);
 
-        fbApi.addUser(user, new FBApi.FBListener() {
+        fbListApi.getUserByEmail(u.getEmail(), new FBListApi.UserListener() {
             @Override
-            public void onResponse(Data data) {
-                Log.i(TAG, "onResponse: user added OK");
+            public void onResponse(List<UserDTO> users) {
+                if (users.isEmpty()) {
+                    Log.d(TAG, "onResponse: adding user to firebase: ".concat(u.getEmail()));
+                    fbApi.addUser(user, new FBApi.FBListener() {
+                        @Override
+                        public void onResponse(Data data) {
+                            Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
+                            startMain();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            showSnackError(message);
+                        }
+                    });
+                } else {
+                    Log.w(TAG, "onResponse: user found, no need to add to firebase" );
+                    startMain();
+                }
             }
 
             @Override
@@ -150,6 +172,7 @@ public class SignInActivity extends AppCompatActivity {
                 showSnackError(message);
             }
         });
+
     }
     private Snackbar snackbar;
 

@@ -42,6 +42,7 @@
         <item name="colorPrimary">@color/purple_300</item>
         <item name="colorPrimaryDark">@color/purple_500</item>
         <item name="colorAccent">@color/green_500</item>
+        <item name="android:itemTextAppearance">@style/TextAppearance</item>
     </style>
 
     <style name="MarshalTheme" parent="AftaRobotTheme">
