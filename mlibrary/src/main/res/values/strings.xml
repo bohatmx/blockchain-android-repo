@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">MLibrary</string>
+    <string name="fp_add_failed">Failed to register funeral parlour</string>
+    <string name="hosp_add_failed">Failed to register hospital</string>
+    <string name="client_add_failed">Failed to register client</string>
+    <string name="benefic_add_failed">Failed to register beneficiary</string>
+    <string name="policy_add_failed">Failed to register policy</string>
+    <string name="regulator_add_failed">Failed to register regulator</string>
+    <string name="claim_add_failed">Failed to register claim</string>
+    <string name="burial_add_failed">Failed to register burial</string>
+    <string name="dc_add_failed">Failed to register certificate</string>
+    <string name="doc_add_failed">Failed to register doctor</string>
+    <string name="company_add_failled">Failed to register insurance company</string>
+
+    <string name="facebook_application_id" translatable="false">186810158570804</string>
+    <!-- Facebook Application ID, prefixed by 'fb'. Enables Chrome Custom tabs. -->
+    <string name="facebook_login_protocol_scheme" translatable="false">fb186810158570804</string>
+
+    <string name="twitter_consumer_key" translatable="false">LlrYXmoDRteW4f6tPBI82uhNJ</string>
+    <string name="twitter_consumer_secret" translatable="false">hvnbMFtRt3zPX5NFTZzE27yA3LxCiN6L5Ij2l0nD4ROQOAsUnK</string>
+</resources>
