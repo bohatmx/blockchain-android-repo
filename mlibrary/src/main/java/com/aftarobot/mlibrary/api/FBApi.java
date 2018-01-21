@@ -125,4 +125,19 @@ public class FBApi {
             }
         });
     }
+
+    public void deleteUser(final UserDTO user) {
+        DatabaseReference w = db.getReference(FBApi.USERS)
+                .child(user.getUserID());
+        w.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.e(TAG, "onComplete: user deleted: ".concat(user.getEmail()) );
+                } else {
+                    Log.e(TAG, "onComplete: ".concat(databaseError.getMessage()) );
+                }
+            }
+        });
+    }
 }

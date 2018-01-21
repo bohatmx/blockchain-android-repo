@@ -29,7 +29,7 @@ public class FBListApi {
     }
     public void getUserByEmail(String email, final UserListener listener) {
         DatabaseReference ref = db.getReference(FBApi.USERS);
-        Query query = ref.child("email").equalTo(email).limitToFirst(1);
+        Query query = ref.orderByChild("email").equalTo(email).limitToFirst(1);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -38,6 +38,7 @@ public class FBListApi {
                 List<UserDTO> users = new ArrayList<>();
                 for (DataSnapshot shot: dataSnapshot.getChildren()) {
                     UserDTO u = shot.getValue(UserDTO.class);
+                    u.setUserID(shot.getKey());
                     users.add(u);
                 }
 
@@ -50,5 +51,6 @@ public class FBListApi {
             }
         });
     }
+
     public static final String TAG = FBListApi.class.getSimpleName();
 }

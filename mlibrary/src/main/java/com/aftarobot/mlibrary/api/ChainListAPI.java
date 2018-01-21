@@ -88,7 +88,7 @@ public class ChainListAPI {
             public void onResponse(Call<List<Beneficiary>> call, Response<List<Beneficiary>> response) {
                 if (response.isSuccessful()) {
                     List<Beneficiary> list = response.body();
-                    Log.i(TAG, "getClients returns: ".concat(GSON.toJson(list)));
+                    Log.i(TAG, "getBeneficiaries returns: ".concat(GSON.toJson(list)));
                     listener.onResponse(response.body());
 
                 } else {
@@ -119,7 +119,7 @@ public class ChainListAPI {
             public void onResponse(Call<List<Hospital>> call, Response<List<Hospital>> response) {
                 if (response.isSuccessful()) {
                     List<Hospital> list = response.body();
-                    Log.i(TAG, "getInsuranceCompanies returns: ".concat(GSON.toJson(list)));
+                    Log.i(TAG, "getHospitals returns: ".concat(GSON.toJson(list)));
                     listener.onResponse(response.body());
 
                 } else {
@@ -149,7 +149,7 @@ public class ChainListAPI {
             public void onResponse(Call<List<Doctor>> call, Response<List<Doctor>> response) {
                 if (response.isSuccessful()) {
                     List<Doctor> list = response.body();
-                    Log.i(TAG, "getInsuranceCompanies returns: ".concat(GSON.toJson(list)));
+                    Log.i(TAG, "getDoctors returns: ".concat(GSON.toJson(list)));
                     listener.onResponse(response.body());
 
                 } else {

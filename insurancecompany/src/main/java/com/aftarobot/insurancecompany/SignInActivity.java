@@ -11,11 +11,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
 
 import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Data;
+import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -26,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -52,6 +59,10 @@ private FBListApi fbListApi;
         }
         fbApi = new FBApi();
         fbListApi = new FBListApi();
+        chainListAPI = new ChainListAPI(this);
+
+        setFields();
+        getCompanies();
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,12 +75,59 @@ private FBListApi fbListApi;
 
     }
 
+    private Spinner spinner;
+    private Button btn;
+    private InsuranceCompany company;
+
+    private void setFields() {
+        spinner = findViewById(R.id.spinner);
+        btn = findViewById(R.id.btnStart);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (company == null) {
+                    showError("Please select company");
+                } else {
+                    startSignUp();
+                }
+            }
+        });
+        btn.setEnabled(false);
+    }
+    private void setSpinner() {
+        List<String> list = new ArrayList<>();
+        for (InsuranceCompany company: companies) {
+            list.add(company.getName());
+        }
+        list.add(0, "Select Insurance Company");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, list);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    company = null;
+                    btn.setEnabled(false);
+                    return;
+                }
+                btn.setEnabled(true);
+                company = companies.get(position - 1);
+                SharedPrefUtil.saveCompany(company,getApplicationContext());
+                startSignUp();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
     private void checkGooglePlay() {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         switch (status) {
             case ConnectionResult.SUCCESS:
                 Log.i(TAG, "checkGooglePlay: ConnectionResult.SUCCESS:");
-                startSignUp();
                 break;
             case ConnectionResult.SERVICE_MISSING:
                 Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING " );
@@ -80,12 +138,14 @@ private FBListApi fbListApi;
                 break;
             case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
                 Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED" );
+                GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
             case ConnectionResult.SERVICE_DISABLED:
                 Log.e(TAG, "checkGooglePlay:ConnectionResult.SERVICE_DISABLED" );
                 break;
             case ConnectionResult.SERVICE_INVALID:
                 Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_INVALID " );
+                GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
 
         }
@@ -129,13 +189,35 @@ private FBListApi fbListApi;
     }
 
     private void startMain() {
-        Intent m = new Intent(this, MainActivity.class);
+        Intent m = new Intent(this, NavActivity.class);
         startActivity(m);
+        finish();
     }
+    private List<InsuranceCompany> companies;
+    private ChainListAPI chainListAPI;
 
+    private void getCompanies() {
+        chainListAPI.getInsuranceCompanies(new ChainListAPI.CompanyListener() {
+            @Override
+            public void onResponse(List<InsuranceCompany> list) {
+                companies = list;
+                Log.w(TAG, "onResponse: companies found on blockchain: " + list.size());
+                setSpinner();
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+
+    }
+    private void showError(String message) {
+
+    }
     private void addUserToFirebase(final FirebaseUser u) {
        final UserDTO user = new UserDTO();
-        user.setCompanyId("COMPANY_001");
+        user.setCompanyId(company.getInsuranceCompanyID());
         user.setDateRegistered(new Date().getTime());
         user.setEmail(u.getEmail());
         user.setUid(u.getUid());
@@ -149,21 +231,13 @@ private FBListApi fbListApi;
             public void onResponse(List<UserDTO> users) {
                 if (users.isEmpty()) {
                     Log.d(TAG, "onResponse: adding user to firebase: ".concat(u.getEmail()));
-                    fbApi.addUser(user, new FBApi.FBListener() {
-                        @Override
-                        public void onResponse(Data data) {
-                            Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
-                            startMain();
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            showSnackError(message);
-                        }
-                    });
+                    writeUser(user, u);
                 } else {
                     Log.w(TAG, "onResponse: user found, no need to add to firebase" );
-                    startMain();
+                    for (UserDTO ux: users) {
+                        fbApi.deleteUser(ux);
+                    }
+                    writeUser(user,u);
                 }
             }
 
@@ -174,6 +248,22 @@ private FBListApi fbListApi;
         });
 
     }
+
+    private void writeUser(UserDTO user, final FirebaseUser u) {
+        fbApi.addUser(user, new FBApi.FBListener() {
+            @Override
+            public void onResponse(Data data) {
+                Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
+                startMain();
+            }
+
+            @Override
+            public void onError(String message) {
+                showSnackError(message);
+            }
+        });
+    }
+
     private Snackbar snackbar;
 
     private void showSnackError(String message) {

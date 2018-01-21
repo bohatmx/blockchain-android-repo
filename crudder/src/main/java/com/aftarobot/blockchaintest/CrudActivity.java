@@ -746,4 +746,7 @@ public class CrudActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private List<String> firstNames = new ArrayList<>();
+    private List<String> lastNames = new ArrayList<>();
+
 }

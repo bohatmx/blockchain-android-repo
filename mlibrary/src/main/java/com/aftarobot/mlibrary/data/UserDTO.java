@@ -9,7 +9,7 @@ import java.util.Date;
  */
 
 public class UserDTO implements Data, Serializable {
-    private String uid, email, displayName;
+    private String uid, email, displayName, userID;
     private String companyId, fcmToken;
     private String userType, stringDateRegistered;
     private long dateRegistered;
@@ -23,6 +23,14 @@ public class UserDTO implements Data, Serializable {
             HOME_AFFAIRS = "home-affairs",
             HOSPITAL_USER = "hospital-user",
             DOCTOR = "doctor";
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
 
     public String getStringDateRegistered() {
         return stringDateRegistered;

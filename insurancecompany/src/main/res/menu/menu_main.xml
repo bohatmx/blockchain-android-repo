@@ -5,11 +5,13 @@
     <item
         android:id="@+id/action_add_client"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_create_white"
         android:title="Add Client"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_add_beneficiary"
+        android:icon="@drawable/ic_add_white"
         android:orderInCategory="100"
         android:title="Add Beneficiary"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 </menu>

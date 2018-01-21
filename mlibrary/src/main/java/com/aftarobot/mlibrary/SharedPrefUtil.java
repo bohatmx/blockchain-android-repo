@@ -5,6 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.InsuranceCompany;
+import com.aftarobot.mlibrary.data.UserDTO;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * Created by aubreymalabie on 1/20/18.
  */
@@ -28,4 +33,43 @@ public class SharedPrefUtil {
         }
         return token;
     }
+
+    public static void saveUser(UserDTO user, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("user", GSON.toJson(user));
+        ed.commit();
+        Log.i(TAG, "saveUser: " + user.getEmail());
+    }
+
+    public static UserDTO getUser(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("user", null);
+        UserDTO u = GSON.fromJson(json,UserDTO.class);
+        if (u != null) {
+            Log.w(TAG, "getUser: " + u.getEmail());
+        }
+        return u;
+    }
+    public static void saveCompany(InsuranceCompany company, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("company", GSON.toJson(company));
+        ed.commit();
+        Log.i(TAG, "saveCompany: " + company.getName());
+    }
+
+    public static InsuranceCompany getCompany(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("company", null);
+        InsuranceCompany u = GSON.fromJson(json,InsuranceCompany.class);
+        if (u != null) {
+            Log.w(TAG, "getCompany: " + u.getName());
+        }
+        return u;
+    }
+
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }
