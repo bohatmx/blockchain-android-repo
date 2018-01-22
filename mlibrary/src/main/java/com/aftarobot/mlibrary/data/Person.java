@@ -17,6 +17,9 @@ public abstract class Person {
     private String cellPhone;
     public String getClassz() { return this.$class; }
 
+    public String getFullName() {
+        return firstName.concat(" ").concat(lastName);
+    }
     public void setClass(String $class) { this.$class = $class; }
 
     public String getEmail() { return this.email; }

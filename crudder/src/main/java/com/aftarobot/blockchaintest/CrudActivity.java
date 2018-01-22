@@ -56,10 +56,10 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //addDoctors();
-                doCrud();
+                //doCrud();
                 //addClients();
                 //startPolicyLookups();
-                //startDCLookups();
+                startDCLookups();
             }
         });
         getInsuranceCompanies();
@@ -622,7 +622,7 @@ public class CrudActivity extends AppCompatActivity {
      */
     void addCertViaTransaction() {
         showSnackbar("Adding Cert via Transaction", "OK", "cyan");
-        Client client = clients.get(2);
+        Client client = clients.get(13);
         Hospital hospital = hospitals.get(0);
         Doctor doctor = doctors.get(0);
 

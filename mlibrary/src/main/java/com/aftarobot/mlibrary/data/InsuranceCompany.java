@@ -1,12 +1,14 @@
 package com.aftarobot.mlibrary.data;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
 
 /**
  * Created by aubreymalabie on 1/12/18.
  */
 
-public class InsuranceCompany implements Data, Serializable {
+public class InsuranceCompany implements Data, Serializable, Comparable<InsuranceCompany> {
     private String $class;
     private String email;
     private String insuranceCompanyID;
@@ -32,4 +34,11 @@ public class InsuranceCompany implements Data, Serializable {
     public String getAddress() { return this.address; }
 
     public void setAddress(String address) { this.address = address; }
+
+    @Override
+    public int compareTo(@NonNull InsuranceCompany o) {
+
+        return this.name.compareTo(o.name);
+
+    }
 }

@@ -1,4 +1,4 @@
-package com.aftarobot.insurancecompany;
+package com.aftarobot.insurancecompany.activities;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.aftarobot.insurancecompany.R;
 import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -32,8 +33,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -50,6 +53,7 @@ private FBListApi fbListApi;
         setContentView(R.layout.activity_sign_in);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null) {
@@ -113,7 +117,8 @@ private FBListApi fbListApi;
                 btn.setEnabled(true);
                 company = companies.get(position - 1);
                 SharedPrefUtil.saveCompany(company,getApplicationContext());
-                startSignUp();
+                getSupportActionBar().setTitle(company.getName());
+                getSupportActionBar().setSubtitle("Connecting to Blockchain");
             }
 
             @Override
@@ -201,6 +206,7 @@ private FBListApi fbListApi;
             @Override
             public void onResponse(List<InsuranceCompany> list) {
                 companies = list;
+                Collections.sort(companies);
                 Log.w(TAG, "onResponse: companies found on blockchain: " + list.size());
                 setSpinner();
             }
@@ -215,6 +221,7 @@ private FBListApi fbListApi;
     private void showError(String message) {
 
     }
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
     private void addUserToFirebase(final FirebaseUser u) {
        final UserDTO user = new UserDTO();
         user.setCompanyId(company.getInsuranceCompanyID());
@@ -222,7 +229,7 @@ private FBListApi fbListApi;
         user.setEmail(u.getEmail());
         user.setUid(u.getUid());
         user.setDisplayName(u.getDisplayName());
-        user.setStringDateRegistered(new Date().getTime());
+        user.setStringDateRegistered(sdf.format(new Date()));
         user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
         user.setUserType(UserDTO.COMPANY_USER);
 

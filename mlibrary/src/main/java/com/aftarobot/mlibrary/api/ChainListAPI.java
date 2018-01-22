@@ -8,6 +8,7 @@ import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
+import com.aftarobot.mlibrary.data.Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -48,6 +49,10 @@ public class ChainListAPI {
     }
     public interface DoctorListener {
         void onResponse(List<Doctor> beneficiaries);
+        void onError(String message);
+    }
+    public interface PolicyListener {
+        void onResponse(List<Policy> policies);
         void onError(String message);
     }
     public void getClients(final ClientListener listener) {
@@ -171,6 +176,36 @@ public class ChainListAPI {
             }
         });
     }
+    public void getCompanyPolicies(String insuranceCompanyId, double limitParam, double skipParam, final PolicyListener listener) {
+        Call<List<Policy>> call = apiService.getCompanyPolicies(insuranceCompanyId, limitParam, skipParam);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Policy>>() {
+            @Override
+            public void onResponse(Call<List<Policy>> call, Response<List<Policy>> response) {
+                if (response.isSuccessful()) {
+                    List<Policy> list = response.body();
+                    Log.i(TAG, "getPolicies returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Policy>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
     public void getInsuranceCompanies(final CompanyListener listener) {
         Call<List<InsuranceCompany>> call = apiService.getInsuranceCompanies();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
@@ -196,6 +231,36 @@ public class ChainListAPI {
 
             @Override
             public void onFailure(Call<List<InsuranceCompany>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
+    public void getPolicies(final PolicyListener listener) {
+        Call<List<Policy>> call = apiService.getPolicies();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Policy>>() {
+            @Override
+            public void onResponse(Call<List<Policy>> call, Response<List<Policy>> response) {
+                if (response.isSuccessful()) {
+                    List<Policy> list = response.body();
+                    Log.i(TAG, "getPolicies returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Policy>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(t.getMessage());
             }

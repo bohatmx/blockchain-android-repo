@@ -1,19 +1,16 @@
 package com.aftarobot.mlibrary.data;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by aubreymalabie on 1/20/18.
  */
 
 public class UserDTO implements Data, Serializable {
-    private String uid, email, displayName, userID;
+    private String uid, email, displayName, userID, hospitalId, funeralParlourId;
     private String companyId, fcmToken;
     private String userType, stringDateRegistered;
     private long dateRegistered;
-    public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm");
 
     public static final String
             COMPANY_USER = "company-user",
@@ -23,6 +20,22 @@ public class UserDTO implements Data, Serializable {
             HOME_AFFAIRS = "home-affairs",
             HOSPITAL_USER = "hospital-user",
             DOCTOR = "doctor";
+
+    public String getHospitalId() {
+        return hospitalId;
+    }
+
+    public void setHospitalId(String hospitalId) {
+        this.hospitalId = hospitalId;
+    }
+
+    public String getFuneralParlourId() {
+        return funeralParlourId;
+    }
+
+    public void setFuneralParlourId(String funeralParlourId) {
+        this.funeralParlourId = funeralParlourId;
+    }
 
     public String getUserID() {
         return userID;
@@ -36,8 +49,8 @@ public class UserDTO implements Data, Serializable {
         return stringDateRegistered;
     }
 
-    public void setStringDateRegistered(long date) {
-        this.stringDateRegistered = sdf.format(new Date(date));
+    public void setStringDateRegistered(String date) {
+        this.stringDateRegistered = date;
     }
 
     public String getFcmToken() {

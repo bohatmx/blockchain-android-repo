@@ -30,7 +30,7 @@
 
         <!-- ACTIVITIES -->
         <activity
-            android:name=".SignInActivity"
+            android:name=".activities.SignInActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -41,17 +41,29 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".NavActivity"
+            android:name=".activities.NavActivity"
             android:label="@string/title_activity_nav"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".PeopleActivity"
+            android:name=".activities.PeopleActivity"
             android:label="@string/title_activity_people"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.PolicyActivity"
+            android:label="@string/title_activity_policy"
+            android:parentActivityName=".activities.NavActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.ClaimsActivity"
+            android:label="@string/title_activity_claims"
+            android:parentActivityName=".activities.NavActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.ClientsActivity"
+            android:label="@string/title_activity_clients"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".activities.NavActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

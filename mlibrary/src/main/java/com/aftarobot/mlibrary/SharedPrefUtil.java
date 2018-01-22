@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.FuneralParlour;
+import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.gson.Gson;
@@ -67,6 +69,42 @@ public class SharedPrefUtil {
         InsuranceCompany u = GSON.fromJson(json,InsuranceCompany.class);
         if (u != null) {
             Log.w(TAG, "getCompany: " + u.getName());
+        }
+        return u;
+    }
+    public static void saveHospital(Hospital hospital, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("hospital", GSON.toJson(hospital));
+        ed.commit();
+        Log.i(TAG, "saveHospital: " + hospital.getName());
+    }
+
+    public static Hospital getHospital(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("hospital", null);
+        Hospital u = GSON.fromJson(json,Hospital.class);
+        if (u != null) {
+            Log.w(TAG, "getHospital: " + u.getName());
+        }
+        return u;
+    }
+    public static void saveParlour(FuneralParlour parlour, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("parlour", GSON.toJson(parlour));
+        ed.commit();
+        Log.i(TAG, "saveParlour: " + parlour.getName());
+    }
+
+    public static FuneralParlour getParlour(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("parlour", null);
+        FuneralParlour u = GSON.fromJson(json,FuneralParlour.class);
+        if (u != null) {
+            Log.w(TAG, "getParlour: " + u.getName());
         }
         return u;
     }

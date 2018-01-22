@@ -52,9 +52,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:394333124247:android:5cfb7542f09b634e",
+        "mobilesdk_app_id": "1:394333124247:android:13b3dae8b2f47ce8",
         "android_client_info": {
-          "package_name": "com.aftarobot.hospital"
+          "package_name": "com.aftarobot.mlibrary"
         }
       },
       "oauth_client": [
@@ -83,9 +83,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:394333124247:android:13b3dae8b2f47ce8",
+        "mobilesdk_app_id": "1:394333124247:android:124183112a06dbc0",
         "android_client_info": {
-          "package_name": "com.aftarobot.mlibrary"
+          "package_name": "com.aftarobot.hospitalapp"
         }
       },
       "oauth_client": [

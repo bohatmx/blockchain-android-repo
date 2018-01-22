@@ -68,6 +68,9 @@ public interface ApiInterface {
     @POST("Policy")
     Call<Policy> registerPolicy(@Body Policy policy);
 
+    @GET("queries/GetinsuranceCompanyPolicies")
+    Call<List<Policy>> getCompanyPolicies(String insuranceCompanyId, double limitParam, double skipParam);
+
     @GET("Policy")
     Call<List<Policy>> getPolicies();
 
