@@ -17,6 +17,8 @@ import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.Regulator;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 
@@ -88,7 +90,7 @@ public class ChainDataAPI {
             @Override
             public void onResponse(Call<DeathCertificate> call, Response<DeathCertificate> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "DeathCertificate registered: ".concat(certificate.getIdNumber()));
+                    Log.i(TAG, "DeathCertificate registered on blockchain: ".concat(certificate.getIdNumber()));
                     listener.onResponse(response.body());
                 } else {
                     try {
@@ -109,6 +111,35 @@ public class ChainDataAPI {
             }
         });
     }
+    public void registerBurial(final Burial burial, final Listener listener) {
+        Call<Burial> call = apiService.registerBurial(burial);
+        call.enqueue(new Callback<Burial>() {
+            @Override
+            public void onResponse(Call<Burial> call, Response<Burial> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "Burial registered: ".concat(burial.getIdNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        listener.onError(context.getString(R.string.dc_add_failed));
+                        Log.e(TAG, "registerBurial error: \n".concat(response.errorBody().string()) );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Burial> call, Throwable t) {
+                Log.e(TAG, "onFailure: ",t );
+                listener.onError(context.getString(R.string.burial_failed));
+
+            }
+        });
+    }
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
     public void addDeathCertificate(final DeathCertificate certificate, final Listener listener) {
         Call<DeathCertificate> call = apiService.addDeathCertificate(certificate);
         call.enqueue(new Callback<DeathCertificate>() {
@@ -131,12 +162,12 @@ public class ChainDataAPI {
         });
     }
     public void addBurial(final Burial burial, final Listener listener) {
-        Call<Burial> call = apiService.registerBurial(burial);
+        Call<Burial> call = apiService.addBurial(burial);
         call.enqueue(new Callback<Burial>() {
             @Override
             public void onResponse(Call<Burial> call, Response<Burial> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Burial added: ".concat(burial.getIdNumber()));
+                    Log.i(TAG, "Burial added: ".concat(GSON.toJson(burial)));
                     listener.onResponse(response.body());
                 } else {
                     listener.onError(context.getString(R.string.burial_add_failed));

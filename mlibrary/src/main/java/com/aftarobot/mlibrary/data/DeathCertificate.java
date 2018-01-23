@@ -1,7 +1,6 @@
 package com.aftarobot.mlibrary.data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Created by aubreymalabie on 1/13/18.
@@ -10,7 +9,7 @@ import java.util.Date;
 public class DeathCertificate implements Data, Serializable {
     private String $class;
     private String idNumber;
-    private Date dateTime;
+    private String dateTime;
     private String causeOfDeath;
     private String hospital;
     private String doctor;
@@ -28,9 +27,9 @@ public class DeathCertificate implements Data, Serializable {
     public void setIdNumber(String idNumber) { this.idNumber = idNumber; }
 
 
-    public Date getDateTime() { return this.dateTime; }
+    public String getDateTime() { return this.dateTime; }
 
-    public void setDateTime(Date dateTime) { this.dateTime = dateTime; }
+    public void setDateTime(String dateTime) { this.dateTime = dateTime; }
 
 
     public String getCauseOfDeath() { return this.causeOfDeath; }

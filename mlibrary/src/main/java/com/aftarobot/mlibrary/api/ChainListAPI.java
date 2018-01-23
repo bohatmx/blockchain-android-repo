@@ -5,7 +5,9 @@ import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Client;
+import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Doctor;
+import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
@@ -53,6 +55,14 @@ public class ChainListAPI {
     }
     public interface PolicyListener {
         void onResponse(List<Policy> policies);
+        void onError(String message);
+    }
+    public interface ParlourListener {
+        void onResponse(List<FuneralParlour> parlours);
+        void onError(String message);
+    }
+    public interface DeathCertListener {
+        void onResponse(List<DeathCertificate> certificates);
         void onError(String message);
     }
     public void getClients(final ClientListener listener) {
@@ -116,6 +126,36 @@ public class ChainListAPI {
         });
     }
 
+    public void getFuneralParlours(final ParlourListener listener) {
+        Call<List<FuneralParlour>> call = apiService.getFuneralParlours();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<FuneralParlour>>() {
+            @Override
+            public void onResponse(Call<List<FuneralParlour>> call, Response<List<FuneralParlour>> response) {
+                if (response.isSuccessful()) {
+                    List<FuneralParlour> list = response.body();
+                    Log.i(TAG, "getFuneralParlours returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<FuneralParlour>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
     public void getHospitals(final HospitalListener listener) {
         Call<List<Hospital>> call = apiService.getHospital();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
@@ -261,6 +301,36 @@ public class ChainListAPI {
 
             @Override
             public void onFailure(Call<List<Policy>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
+    public void getDeathCertificates(final DeathCertListener listener) {
+        Call<List<DeathCertificate>> call = apiService.getDeathCertificates();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<DeathCertificate>>() {
+            @Override
+            public void onResponse(Call<List<DeathCertificate>> call, Response<List<DeathCertificate>> response) {
+                if (response.isSuccessful()) {
+                    List<DeathCertificate> list = response.body();
+                    Log.i(TAG, "getDeathCertificates returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<DeathCertificate>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(t.getMessage());
             }

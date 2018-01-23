@@ -26,13 +26,13 @@ import android.widget.TextView;
 import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Hospital;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +43,7 @@ public class NavigActivity extends AppCompatActivity
 
     private ChainDataAPI chainDataAPI;
     private ChainListAPI chainListAPI;
+    private FBApi fbApi;
     private List<Client> clients;
     private Hospital hospital;
     private AutoCompleteTextView auto;
@@ -61,6 +62,7 @@ public class NavigActivity extends AppCompatActivity
         hospital = SharedPrefUtil.getHospital(this);
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
+        fbApi = new FBApi();
         getClients();
 
         setup(toolbar);
@@ -107,34 +109,31 @@ public class NavigActivity extends AppCompatActivity
         spinner.setVisibility(View.GONE);
     }
 
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private void addCertificate() {
         if (cause == null) {
             showError("Please select cause of death");
             return;
         }
         Snackbar.make(toolbar, "Registering Certificate ...", Snackbar.LENGTH_LONG).show();
-        DeathCertificate dc = new DeathCertificate();
+        final DeathCertificate dc = new DeathCertificate();
         dc.setCauseOfDeath(cause);
         dc.setHospital("resource:com.oneconnect.insurenet.Hospital#".concat(hospital.getHospitalId()));
         dc.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
-        dc.setDateTime(new Date());
+        dc.setDateTime(sdf.format(new Date()));
         dc.setIdNumber(client.getIdNumber());
 
         chainDataAPI.registerDeathCertificate(dc, new ChainDataAPI.Listener() {
             @Override
-            public void onResponse(Data data) {
-                DeathCertificate dc = (DeathCertificate) data;
-                Log.w(TAG, "onResponse: ".concat(GSON.toJson(dc)) );
+            public void onResponse(final Data data) {
                 showSnack("Death Certificate registered","OK","green");
-                btn.setAlpha(0.4f);
-                btn.setEnabled(false);
-                spinner.setSelection(0,true);
-                txtId.setText("");
-                txtName.setText("");
-                spinner.setVisibility(View.GONE);
-                clients.remove(client);
-                client = null;
-                setAuto();
+                reset();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        writetoFirebase((DeathCertificate)data);
+                    }
+                });
 
             }
 
@@ -144,6 +143,33 @@ public class NavigActivity extends AppCompatActivity
             }
         });
     }
+
+    private void writetoFirebase(DeathCertificate dc) {
+        fbApi.addDeathCert(dc, new FBApi.FBListener() {
+            @Override
+            public void onResponse(Data data) {
+                //showSnack("Death Certificate added to Firebase","OK","yellow");
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+
+    private void reset() {
+        btn.setAlpha(0.4f);
+        btn.setEnabled(false);
+        spinner.setSelection(0,true);
+        txtId.setText("");
+        txtName.setText("");
+        spinner.setVisibility(View.GONE);
+        clients.remove(client);
+        client = null;
+        setAuto();
+    }
+
     private void getClients() {
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
@@ -214,7 +240,6 @@ public class NavigActivity extends AppCompatActivity
         for (Client c: clients) {
             if (idNumber.trim().equalsIgnoreCase(c.getIdNumber())) {
                 client = c;
-                Log.d(TAG, "setClient: selected:".concat(GSON.toJson(client)));
                 txtName.setText(client.getFullName());
                 txtId.setText(client.getIdNumber());
                 btn.setAlpha(1f);
@@ -312,5 +337,4 @@ public class NavigActivity extends AppCompatActivity
         imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
     }
     public static final String TAG = NavigActivity.class.getSimpleName();
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

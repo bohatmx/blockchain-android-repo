@@ -4,9 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/logo2"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/logo2"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
@@ -45,10 +45,6 @@
             android:label="@string/title_activity_nav"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.PeopleActivity"
-            android:label="@string/title_activity_people"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".activities.PolicyActivity"
             android:label="@string/title_activity_policy"
             android:parentActivityName=".activities.NavActivity"
@@ -61,9 +57,13 @@
         <activity
             android:name=".activities.ClientsActivity"
             android:label="@string/title_activity_clients"
-            android:screenOrientation="portrait"
             android:parentActivityName=".activities.NavActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.NotifActivity"
+            android:label="@string/title_activity_notif"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

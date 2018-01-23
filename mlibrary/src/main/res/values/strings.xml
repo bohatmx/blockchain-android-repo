@@ -18,4 +18,5 @@
 
     <string name="twitter_consumer_key" translatable="false">LlrYXmoDRteW4f6tPBI82uhNJ</string>
     <string name="twitter_consumer_secret" translatable="false">hvnbMFtRt3zPX5NFTZzE27yA3LxCiN6L5Ij2l0nD4ROQOAsUnK</string>
+    <string name="burial_failed">Burial registration failed</string>
 </resources>

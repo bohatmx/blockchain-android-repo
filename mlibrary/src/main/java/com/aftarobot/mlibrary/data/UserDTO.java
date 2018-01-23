@@ -19,7 +19,8 @@ public class UserDTO implements Data, Serializable {
             REGULATOR = "regulator",
             HOME_AFFAIRS = "home-affairs",
             HOSPITAL_USER = "hospital-user",
-            DOCTOR = "doctor";
+            DOCTOR = "doctor",
+            FUNERAL_PARLOUR_USER = "funeral-parlour";
 
     public String getHospitalId() {
         return hospitalId;

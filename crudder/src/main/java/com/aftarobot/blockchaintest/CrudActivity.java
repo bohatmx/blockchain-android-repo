@@ -56,10 +56,10 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //addDoctors();
-                //doCrud();
+                doCrud();
                 //addClients();
                 //startPolicyLookups();
-                startDCLookups();
+               // startDCLookups();
             }
         });
         getInsuranceCompanies();

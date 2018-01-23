@@ -1,12 +1,14 @@
 package com.aftarobot.mlibrary.data;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
 
 /**
  * Created by aubreymalabie on 1/13/18.
  */
 
-public class FuneralParlour implements Data, Serializable {
+public class FuneralParlour implements Data, Serializable, Comparable<FuneralParlour> {
     private String $class;
     private String funeralParlourId;
     private String email;
@@ -48,4 +50,9 @@ public class FuneralParlour implements Data, Serializable {
     public double getLongitude() { return this.longitude; }
 
     public void setLongitude(double longitude) { this.longitude = longitude; }
+
+    @Override
+    public int compareTo(@NonNull FuneralParlour o) {
+        return this.name.compareTo(o.name);
+    }
 }

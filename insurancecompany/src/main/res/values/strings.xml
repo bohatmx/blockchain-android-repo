@@ -15,4 +15,5 @@
     <string name="title_activity_policy">PolicyActivity</string>
     <string name="title_activity_claims">ClaimsActivity</string>
     <string name="title_activity_clients">ClientsActivity</string>
+    <string name="title_activity_notif">NotifActivity</string>
 </resources>

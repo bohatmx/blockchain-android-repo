@@ -29,6 +29,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -260,6 +261,8 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
+                FirebaseMessaging.getInstance().subscribeToTopic("certificates");
+                Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 startMain();
             }
 

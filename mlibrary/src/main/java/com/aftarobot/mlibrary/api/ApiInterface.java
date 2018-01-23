@@ -100,7 +100,7 @@ public interface ApiInterface {
     Call<List<DeathCertificate>> getDeathCertificates();
 
     @POST("Burial")
-    Call<Burial> registerBurial(@Body Burial burial);
+    Call<Burial> addBurial(@Body Burial burial);
 
     @GET("Burial")
     Call<List<Burial>> getBurials();
@@ -108,4 +108,6 @@ public interface ApiInterface {
 
     @POST("RegisterDeathCertificate")
     Call<DeathCertificate> registerDeathCertificate(@Body DeathCertificate certificate);
+    @POST("RegisterBurial")
+    Call<Burial> registerBurial(@Body Burial burial);
 }

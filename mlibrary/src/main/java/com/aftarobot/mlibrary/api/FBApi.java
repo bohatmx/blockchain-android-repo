@@ -26,7 +26,7 @@ public class FBApi {
 
     public static final String
             USERS = "users",
-            DEATH_CERTS = "deathCerts",
+            DEATH_CERTS = "certificates",
             CLAIMS = "claims",
             POLICIES = "policies",
             BURIALS = "burials";
@@ -58,7 +58,7 @@ public class FBApi {
     public void addPolicy(final Policy policy, final FBListener listener) {
         DatabaseReference ref = db.getReference(POLICIES);
 
-        ref.setValue(policy, new DatabaseReference.CompletionListener() {
+        ref.push().setValue(policy, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
@@ -76,7 +76,7 @@ public class FBApi {
     public void addDeathCert(final DeathCertificate certificate, final FBListener listener) {
         DatabaseReference ref = db.getReference(DEATH_CERTS);
 
-        ref.setValue(certificate, new DatabaseReference.CompletionListener() {
+        ref.push().setValue(certificate, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
@@ -94,7 +94,7 @@ public class FBApi {
     public void addBurial(final Burial burial, final FBListener listener) {
         DatabaseReference ref = db.getReference(BURIALS);
 
-        ref.setValue(burial, new DatabaseReference.CompletionListener() {
+        ref.push().setValue(burial, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
@@ -111,7 +111,7 @@ public class FBApi {
     public void addClaim(final Claim claim, final FBListener listener) {
         DatabaseReference ref = db.getReference(CLAIMS);
 
-        ref.setValue(claim, new DatabaseReference.CompletionListener() {
+        ref.push().setValue(claim, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
