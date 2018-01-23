@@ -104,6 +104,7 @@ public class NavigActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         setSpinner();
+        spinner.setVisibility(View.GONE);
     }
 
     private void addCertificate() {
@@ -124,7 +125,17 @@ public class NavigActivity extends AppCompatActivity
             public void onResponse(Data data) {
                 DeathCertificate dc = (DeathCertificate) data;
                 Log.w(TAG, "onResponse: ".concat(GSON.toJson(dc)) );
-                showSnack("Death Cert added","OK","green");
+                showSnack("Death Certificate registered","OK","green");
+                btn.setAlpha(0.4f);
+                btn.setEnabled(false);
+                spinner.setSelection(0,true);
+                txtId.setText("");
+                txtName.setText("");
+                spinner.setVisibility(View.GONE);
+                clients.remove(client);
+                client = null;
+                setAuto();
+
             }
 
             @Override
@@ -158,7 +169,7 @@ public class NavigActivity extends AppCompatActivity
         Collections.sort(list);
         list.add(0,"Select Cause of Death");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,R.layout.simple_list,list);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -209,6 +220,7 @@ public class NavigActivity extends AppCompatActivity
                 btn.setAlpha(1f);
                 btn.setEnabled(true);
                 auto.setText("");
+                spinner.setVisibility(View.VISIBLE);
                 break;
             }
         }
