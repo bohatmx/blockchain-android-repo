@@ -17,7 +17,7 @@ import com.google.gson.GsonBuilder;
 
 public class NotifActivity extends AppCompatActivity {
 
-    private String messageType;
+    private String title;
     private String json;
 
     @Override
@@ -36,20 +36,20 @@ public class NotifActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        messageType = getIntent().getStringExtra("messageType");
+        title = getIntent().getStringExtra("title");
         json = getIntent().getStringExtra("json");
 
-        if (messageType.contains("USER")) {
+        if (title.contains("Welcome")) {
             Log.i(TAG, "onCreate: welcome message. cloud messaging works");
             showWelcome(GSON.fromJson(json,UserDTO.class));
 
         }
-        if (messageType.contains("CERT")) {
+        if (title.contains("Death")) {
             Log.w(TAG, "onCreate: death certificate message received" );
             showCertificate(GSON.fromJson(json,DeathCertificate.class));
 
         }
-        if (messageType.contains("BURIAL")) {
+        if (title.contains("Burial")) {
             Log.w(TAG, "onCreate: burial message received" );
             showBurial(GSON.fromJson(json,Burial.class));
         }

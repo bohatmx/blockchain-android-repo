@@ -30,8 +30,6 @@ public class FCMMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.i(TAG, "onMessageReceived: ".concat(GSON.toJson(remoteMessage)));
-
         if (remoteMessage.getData() != null) {
             Map<String, String> map = remoteMessage.getData();
             for (String s : map.keySet()) {

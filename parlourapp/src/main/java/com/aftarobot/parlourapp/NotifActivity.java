@@ -20,7 +20,7 @@ public class NotifActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notif);
 
-        messageType = getIntent().getStringExtra("messageType");
+        messageType = getIntent().getStringExtra("title");
         json = getIntent().getStringExtra("json");
 
         if (messageType.contains("USER")) {

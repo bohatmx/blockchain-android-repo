@@ -47,6 +47,9 @@ public class PolicyAdapter extends RecyclerView.Adapter<PolicyAdapter.PolicyView
         holder.policyNumber.setText(p.getPolicyNumber());
         holder.type.setText(p.getDescription());
         holder.amount.setText(df.format(p.getAmount()));
+        int x = p.getClient().indexOf("#");
+
+        holder.client.setText(p.getClient().substring(x+1));
 
         holder.policyNumber.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,12 +107,13 @@ public class PolicyAdapter extends RecyclerView.Adapter<PolicyAdapter.PolicyView
     }
 
     public class PolicyViewHolder extends RecyclerView.ViewHolder {
-        protected TextView policyNumber, type, amount;
+        protected TextView policyNumber, type, amount, client;
 
 
         public PolicyViewHolder(View itemView) {
             super(itemView);
             policyNumber = itemView.findViewById(R.id.policyNumber);
+            client = itemView.findViewById(R.id.client0);
             type = itemView.findViewById(R.id.type);
             amount = itemView.findViewById(R.id.amount);
         }
