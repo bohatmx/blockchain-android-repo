@@ -27,6 +27,7 @@ import com.aftarobot.mlibrary.data.Regulator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -630,7 +631,7 @@ public class CrudActivity extends AppCompatActivity {
         dc.setClass("com.oneconnect.insurenet.RegisterDeathCertificate");
         dc.setIdNumber(client.getIdNumber());
         dc.setCauseOfDeath("Natural Causes");
-        dc.setDateTime(new Date());
+        dc.setDateTime(sdf.format(new Date()));
         dc.setClient("resource:".concat(client.getClassz().concat("#")
         .concat(client.getIdNumber())));
         dc.setHospital("resource:".concat(hospital.getClassz().concat("#")
@@ -748,5 +749,6 @@ public class CrudActivity extends AppCompatActivity {
 
     private List<String> firstNames = new ArrayList<>();
     private List<String> lastNames = new ArrayList<>();
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
 }
