@@ -21,6 +21,7 @@ import com.aftarobot.insurancecompany.R;
 import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
@@ -41,6 +42,7 @@ public class NavActivity extends AppCompatActivity
     private List<Client> clients;
     private List<Beneficiary> beneficiaries;
     private List<Policy> policies;
+    private List<Claim> claims;
     private InsuranceCompany company;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm");
     public static final String TAG = NavActivity.class.getSimpleName();
@@ -56,6 +58,8 @@ public class NavActivity extends AppCompatActivity
 
         setup();
         getClients();
+        getClaims();
+        getPolicies();
     }
 
     @Override
@@ -68,9 +72,12 @@ public class NavActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                showSnack("Refreshing Dashboard ...","ok","yellow");
                 getClients();
-                Snackbar.make(view, "Refreshing Dashboard ...", Snackbar.LENGTH_LONG)
-                        .setAction("Wait", null).show();
+                getClaims();
+                getPolicies();
+
             }
         });
 
@@ -79,7 +86,7 @@ public class NavActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-//        drawer.openDrawer(GravityCompat.START);
+        drawer.openDrawer(GravityCompat.START);
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -125,6 +132,23 @@ public class NavActivity extends AppCompatActivity
         txtClaims.setText("0");
     }
 
+    private void getClaims() {
+        chainListAPI.getClaims(new ChainListAPI.ClaimsListener() {
+            @Override
+            public void onResponse(List<Claim> list) {
+                claims = list;
+                Log.w(TAG, "onResponse: claims found on blockchain: " + list.size());
+                txtClaims.setText(df.format(claims.size()));
+                txtDate.setText(sdf.format(new Date()));
+
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
 
 
     private void getClients() {
@@ -134,7 +158,7 @@ public class NavActivity extends AppCompatActivity
                 clients = list;
                 Log.w(TAG, "onResponse: clients found on blockchain: " + list.size());
                 txtClients.setText(df.format(clients.size()));
-                getBeneficiaries();
+
                 txtDate.setText(sdf.format(new Date()));
 
             }
@@ -152,7 +176,7 @@ public class NavActivity extends AppCompatActivity
             public void onResponse(List<Beneficiary> list) {
                 beneficiaries = list;
                 Log.w(TAG, "onResponse: beneficiaries found on blockchain: " + list.size());
-                getPolicies();
+
             }
 
             @Override

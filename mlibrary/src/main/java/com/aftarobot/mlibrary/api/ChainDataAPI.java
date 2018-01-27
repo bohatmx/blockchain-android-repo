@@ -170,6 +170,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Burial added: ".concat(GSON.toJson(burial)));
                     listener.onResponse(response.body());
                 } else {
+                    Log.e(TAG, "addBurial ERROR: ".concat(GSON.toJson(response)) );
                     listener.onError(context.getString(R.string.burial_add_failed));
                 }
             }
@@ -183,6 +184,7 @@ public class ChainDataAPI {
         });
     }
     public void addClaim(final Claim claim, final Listener listener) {
+        Log.w(TAG, "########### addClaim: ".concat(GSON.toJson(claim)) );
         Call<Claim> call = apiService.registerClaim(claim);
         call.enqueue(new Callback<Claim>() {
             @Override
@@ -191,6 +193,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance claim added: ".concat(claim.getClaimId()));
                     listener.onResponse(response.body());
                 } else {
+                    Log.e(TAG, "addClaim error: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.claim_add_failed));
                 }
             }

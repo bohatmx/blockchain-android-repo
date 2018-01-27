@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.aftarobot.mlibrary.ListUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
@@ -80,50 +81,51 @@ public class CrudActivity extends AppCompatActivity {
 
     private void addClients() {
         Snackbar.make(toolbar, "Adding client demo data", Snackbar.LENGTH_LONG).show();
-        Client c1 = new Client();
-        c1.setIdNumber("CLIENT_001");
-        c1.setFirstName("John");
-        c1.setLastName("Mathebula");
-        c1.setEmail("john.m@gmail.com");
-        c1.setAccountBalance(0.00);
-        c1.setAddress("34 Kruger Road, Springs");
-
-        writeClient(c1);
-        Client c2 = new Client();
-        c2.setIdNumber("CLIENT_002");
-        c2.setFirstName("Sarah");
-        c2.setLastName("Sithole");
-        c2.setEmail("sarah.sit.m@gmail.com");
-        c2.setAddress("364 Kruger Road, Springs");
-        c2.setAccountBalance(0.00);
-        writeClient(c2);
-
-        Client c3 = new Client();
-        c3.setIdNumber("CLIENT_003");
-        c3.setFirstName("Kevin");
-        c3.setLastName("Browne");
-        c3.setEmail("kevinb.m@gmail.com");
-        c3.setAddress("34 Maude Road, Sandton");
-        c3.setAccountBalance(0.00);
-        writeClient(c3);
-
-        Client c4 = new Client();
-        c4.setIdNumber("CLIENT_004");
-        c4.setFirstName("Samuel L");
-        c4.setLastName("Jackson");
-        c4.setEmail("samljack.m@gmail.com");
-        c4.setAddress("34 Coronation Road, Johannesburg");
-        c4.setAccountBalance(0.00);
-        writeClient(c4);
-
-        Client c5 = new Client();
-        c5.setIdNumber("CLIENT_005");
-        c5.setFirstName("John");
-        c5.setLastName("Billman");
-        c5.setEmail("johnbill.m@gmail.com");
-        c5.setAddress("887 Paris Boulevard, Durban");
-        c5.setAccountBalance(0.00);
-        writeClient(c5);
+//        Client c1 = new Client();
+//        c1.setIdNumber("CLIENT_001");
+//        c1.setFirstName("John");
+//        c1.setLastName("Mathebula");
+//        c1.setEmail("john.m@gmail.com");
+//        c1.setAccountBalance(0.00);
+//        c1.setAddress("34 Kruger Road, Springs");
+//
+//        writeClient(c1);
+//        Client c2 = new Client();
+//        c2.setIdNumber("CLIENT_002");
+//        c2.setFirstName("Sarah");
+//        c2.setLastName("Sithole");
+//        c2.setEmail("sarah.sit.m@gmail.com");
+//        c2.setAddress("364 Kruger Road, Springs");
+//        c2.setAccountBalance(0.00);
+//        writeClient(c2);
+//
+//        Client c3 = new Client();
+//        c3.setIdNumber("CLIENT_003");
+//        c3.setFirstName("Kevin");
+//        c3.setLastName("Browne");
+//        c3.setEmail("kevinb.m@gmail.com");
+//        c3.setAddress("34 Maude Road, Sandton");
+//        c3.setAccountBalance(0.00);
+//        writeClient(c3);
+//
+//        Client c4 = new Client();
+//        c4.setIdNumber("CLIENT_004");
+//        c4.setFirstName("Samuel L");
+//        c4.setLastName("Jackson");
+//        c4.setEmail("samljack.m@gmail.com");
+//        c4.setAddress("34 Coronation Road, Johannesburg");
+//        c4.setAccountBalance(0.00);
+//        writeClient(c4);
+//
+//        Client c5 = new Client();
+//        c5.setIdNumber("CLIENT_005");
+//        c5.setFirstName("John");
+//        c5.setLastName("Billman");
+//        c5.setEmail("johnbill.m@gmail.com");
+//        c5.setAddress("887 Paris Boulevard, Durban");
+//        c5.setAccountBalance(0.00);
+//        writeClient(c5);
+        controlClients();
     }
 
     private void updateText(String data) {
@@ -423,7 +425,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     List<InsuranceCompany> insuranceCompanies;
-    List<Client> clients;
+    List<Client> clients = new ArrayList<>();
     List<Beneficiary> beneficiaries;
     List<Hospital> hospitals;
     List<Doctor> doctors;
@@ -609,18 +611,6 @@ public class CrudActivity extends AppCompatActivity {
             }
         });
     }
-
-    /*
-    {
-  "$class": "com.oneconnect.insurenet.RegisterDeathCertificate",
-  "idNumber": "CLIENT_002",
-  "dateTime": "2018-01-17T04:05:00.672Z",
-  "causeOfDeath": "Gunshot Wounds",
-  "hospital": "resource:com.oneconnect.insurenet.Hospital#HOSPITAL_001",
-  "client": "resource:com.oneconnect.insurenet.Client#CLIENT_002",
-  "doctor": "resource:com.oneconnect.insurenet.Doctor#DOCTOR_001"
-}
-     */
     void addCertViaTransaction() {
         showSnackbar("Adding Cert via Transaction", "OK", "cyan");
         Client client = clients.get(13);
@@ -745,6 +735,83 @@ public class CrudActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private int count;
+    public static final int MAX_BENNIES = 120, MAX_CLIENTS = 60;
+    private void controlBennies() {
+        if (count < MAX_BENNIES) {
+            addRandomBenny();
+        } else {
+            showSnackbar("Clients and Beneficiaries generated", "OK", "green");
+        }
+
+    }
+
+    private void addRandomBenny() {
+
+        Beneficiary beneficiary = ListUtil.getRandomBeneficiary();
+        chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                Beneficiary v = (Beneficiary) data;
+                count++;
+                Log.i(TAG, "onResponse: bennie added to blockchain".concat(GSON.toJson(v)));
+                Log.e(TAG, "onResponse: total beneficiaries:".concat(String.valueOf(count)) );
+
+                controlBennies();
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+
+    }
+    private void controlClients() {
+        if (count < MAX_CLIENTS) {
+            addRandomClient();
+        } else {
+            count = 0;
+            controlBennies();
+        }
+
+    }
+
+
+    private void addRandomClient() {
+        Client client = ListUtil.getRandomClient();
+        chainDataAPI.addClient(client, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                Client randomClient = (Client) data;
+                Log.w(TAG, "onResponse: random client added: "
+                        .concat(GSON.toJson(randomClient)));
+                clients.add(0, randomClient);
+                Log.e(TAG, "onResponse: total clients:".concat(String.valueOf(clients.size())) );
+                count++;
+                controlClients();
+
+            }
+
+            @Override
+            public void onError(String message) {
+                Log.e(TAG, "onError: ".concat(message));
+                showError(message);
+            }
+        });
+    }
+    private void showError(String message) {
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor("red"));
+        snackbar.setAction("Error", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
     }
 
     private List<String> firstNames = new ArrayList<>();

@@ -257,7 +257,7 @@ private FBListApi fbListApi;
 
     }
 
-    private void writeUser(UserDTO user, final FirebaseUser u) {
+    private void writeUser(final UserDTO user, final FirebaseUser u) {
         fbApi.addUser(user, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
@@ -266,6 +266,8 @@ private FBListApi fbListApi;
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
+                FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(user.getCompanyId()));
+                Log.e(TAG, "onResponse: user subscribed to topic: claims" + user.getCompanyId() );
                 startMain();
             }
 

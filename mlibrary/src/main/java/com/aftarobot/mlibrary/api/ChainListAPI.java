@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Doctor;
@@ -57,6 +58,10 @@ public class ChainListAPI {
         void onResponse(List<Policy> policies);
         void onError(String message);
     }
+    public interface ClaimsListener {
+        void onResponse(List<Claim> claims);
+        void onError(String message);
+    }
     public interface ParlourListener {
         void onResponse(List<FuneralParlour> parlours);
         void onError(String message);
@@ -64,6 +69,36 @@ public class ChainListAPI {
     public interface DeathCertListener {
         void onResponse(List<DeathCertificate> certificates);
         void onError(String message);
+    }
+    public void getClaims(final ClaimsListener listener) {
+        Call<List<Claim>> call = apiService.getClaims();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Claim>>() {
+            @Override
+            public void onResponse(Call<List<Claim>> call, Response<List<Claim>> response) {
+                if (response.isSuccessful()) {
+                    List<Claim> list = response.body();
+                    Log.i(TAG, "getClaim returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Claim>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
     }
     public void getClients(final ClientListener listener) {
         Call<List<Client>> call = apiService.getClients();

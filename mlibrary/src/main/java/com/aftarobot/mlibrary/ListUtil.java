@@ -1,4 +1,4 @@
-package com.aftarobot.insurancecompany.adapters;
+package com.aftarobot.mlibrary;
 
 import android.util.Log;
 
@@ -109,15 +109,17 @@ public class ListUtil {
         return types[i];
     }
     private static final String[] types = {"Death Benefit", "Disability Benefit"};
-    private static final String[] fNames = {"Thabo", "Jonathan", "Roger", "Andre", "Harold", "John",
-            "Samuel", "Anthony", "Johan", "Peter", "Mpho", "Phumzile", "Veronica",
-            "Lesego","Kenneth","Catherine","Nomonde","Nozipho","Wendy","Lindiwe",
+    private static final String[] fNames = {"Thabo", "Jonathan", "Roger", "Andre", "Harold", "John", "Thabiso", "Spikiri", "Stina",
+            "Samuel", "Anthony", "Johan", "Peter", "Mpho", "Phumzile", "Veronica", "Maria", "Mary", "Meisie", "Jabulani", "Zorro",
+            "Nelson", "Bathabile", "Bhuti", "Boetie", "Davis", "David", "Kwanele",
+            "Lesego","Kenneth","Catherine","Nomonde","Nozipho","Wendy","Lindiwe", "Oupa", "Jimmy", "Benjamin", "Jimbo", "Bafana", "Joyce",
             "Billy", "Petrus", "Johannes", "Mmaphefo","Michael", "Jordan", "Nokuhle", "Marianne", "Franklin", "Jones",
             "Xavier", "Hunter", "Nancy", "Vincent", "Malenga", "Dlamani", "Msapa", "Geraldine",
             "Jennifer", "Susan", "Mmaphefo", "Ntini"};
-    private static final String[] lNames = {"Moroka", "Khoza", "van der Merwe", "Pieterse", "Maluleke",
-            "Nkosi", "Malenga", "Mathibe", "Venter", "Jonathan", "Kelly", "Thebe", "Nhlapho", "Nkruma",
-            "Bethuel", "Johnson", "Smith", "Patterson", "Moloi", "Singh", "Gupta", "Booysens", "Thomas", "Renken",
+    private static final String[] lNames = {"Adams","Abrams","Macheke","Matime","Ngwenya","Moriri","Moroka", "Khoza", "van der Merwe", "Pieterse", "Maluleke",
+            "Nkosi", "Malenga", "Mathibe", "Mthembu", "Shiluvane", "Shibambu",
+            "Venter", "Jonathan", "Kelly", "Thebe", "Nhlapho", "Nkruma",
+            "Bethuel", "Johnson", "Smith", "Thulare","Maseko","Patterson", "Moloi", "Singh", "Gupta", "Booysens", "Thomas", "Renken",
             "Davids", "Davidson","Jeremiah", "Kuthile", "Nemavhandou", "Marule", "Baloyi", "Chauke", "Maringa", "Gondwe",
-            "Booi", "Samuelson", "Gates", "Johansen", "Molefe", "Sibanyoni", "Mathebula", "Jones", "de Klerk", "Botha", "Bodibe"};
+            "Booi", "Samuelson", "Gates", "Johansen", "Molefe","Masekwameng","Mthembu","Ngidi","Ngalalume", "Sibanyoni", "Mathebula", "Jones", "de Klerk", "Botha", "Bodibe"};
 }

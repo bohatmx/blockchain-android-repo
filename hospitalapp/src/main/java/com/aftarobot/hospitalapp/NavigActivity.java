@@ -27,16 +27,21 @@ import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Hospital;
+import com.aftarobot.mlibrary.data.Policy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class NavigActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -52,6 +57,7 @@ public class NavigActivity extends AppCompatActivity
     private Button btn;
     private String cause;
     private Spinner spinner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,6 +116,7 @@ public class NavigActivity extends AppCompatActivity
     }
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
     private void addCertificate() {
         if (cause == null) {
             showError("Please select cause of death");
@@ -126,12 +133,12 @@ public class NavigActivity extends AppCompatActivity
         chainDataAPI.registerDeathCertificate(dc, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(final Data data) {
-                showSnack("Death Certificate registered","OK","green");
+                showSnack("Death Certificate registered", "OK", "green");
                 reset();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        writetoFirebase((DeathCertificate)data);
+                        writetoFirebase((DeathCertificate) data);
                     }
                 });
 
@@ -148,7 +155,9 @@ public class NavigActivity extends AppCompatActivity
         fbApi.addDeathCert(dc, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                //showSnack("Death Certificate added to Firebase","OK","yellow");
+                //find this clients policy, for now, get all policies and do a match
+                findPolicy();
+
             }
 
             @Override
@@ -158,15 +167,97 @@ public class NavigActivity extends AppCompatActivity
         });
     }
 
+    private Policy policy;
+
+    private void findPolicy() {
+        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
+            @Override
+            public void onResponse(List<Policy> policies) {
+                Log.i(TAG, "onResponse: policies found: ".concat(String.valueOf(policies.size())));
+                policy = null;
+                for (Policy p : policies) {
+                    int i = p.getClient().indexOf("#");
+                    if (i > -1) {
+                        String policyIdNumber = p.getClient().substring(i + 1);
+                        if (policyIdNumber.equalsIgnoreCase(client.getIdNumber())) {
+                            policy = p;
+                            writeClaim();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+
+    private void writeClaim() {
+        Claim claim = new Claim();
+        String[] strings = policy.getInsuranceCompany().split("#");
+        claim.setCompanyId(strings[1]);
+        claim.setDateTime(sdf.format(new Date()));
+        claim.setClaimId(getRandomClaimId());
+        claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        claim.setHospital("resource:com.oneconnect.insurenet.Hospital#".concat(hospital.getHospitalId()));
+        chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                final Claim x = (Claim) data;
+                fbApi.addClaim(x, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.e(TAG, "onResponse: claim added to FB".concat(GSON.toJson(x)));
+                        showSnack("Claims process started","ok","green");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+    public static String getRandomClaimId() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("C");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+    private static Random random = new Random(System.currentTimeMillis());
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
     private void reset() {
         btn.setAlpha(0.4f);
         btn.setEnabled(false);
-        spinner.setSelection(0,true);
+        spinner.setSelection(0, true);
         txtId.setText("");
         txtName.setText("");
         spinner.setVisibility(View.GONE);
         clients.remove(client);
-        client = null;
+
         setAuto();
     }
 
@@ -184,6 +275,7 @@ public class NavigActivity extends AppCompatActivity
             }
         });
     }
+
     private void setSpinner() {
         final List<String> list = new ArrayList<>();
         list.add("Natural Causes");
@@ -193,9 +285,9 @@ public class NavigActivity extends AppCompatActivity
         list.add("Pnuemonia");
         list.add("Accident Trauma");
         Collections.sort(list);
-        list.add(0,"Select Cause of Death");
+        list.add(0, "Select Cause of Death");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,R.layout.simple_list,list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.simple_list, list);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -213,31 +305,33 @@ public class NavigActivity extends AppCompatActivity
             }
         });
     }
+
     private Client client;
 
     private void setAuto() {
         final List<String> list = new ArrayList<>();
-        for (Client c: clients) {
+        for (Client c : clients) {
             list.add(c.getIdNumber().concat(" - ".concat(c.getFullName())));
         }
-        list.add(0,"Select Patient");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list);
+        list.add(0, "Select Patient");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
         auto.setAdapter(adapter);
         auto.setThreshold(1);
         auto.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.e(TAG, "onItemClick: position: " + position );
+                Log.e(TAG, "onItemClick: position: " + position);
                 setClient(auto.getText().toString());
                 hideKeyboard();
             }
         });
 
     }
+
     private void setClient(String item) {
         String[] strings = item.split("-");
         String idNumber = strings[0];
-        for (Client c: clients) {
+        for (Client c : clients) {
             if (idNumber.trim().equalsIgnoreCase(c.getIdNumber())) {
                 client = c;
                 txtName.setText(client.getFullName());
@@ -250,9 +344,11 @@ public class NavigActivity extends AppCompatActivity
             }
         }
     }
+
     private Snackbar snackbar;
+
     private void showError(String message) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor("red"));
         snackbar.setAction("Error", new View.OnClickListener() {
             @Override
@@ -262,8 +358,9 @@ public class NavigActivity extends AppCompatActivity
         });
         snackbar.show();
     }
+
     private void showSnack(String message, String action, String color) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor(color));
         snackbar.setAction(action, new View.OnClickListener() {
             @Override
@@ -336,5 +433,6 @@ public class NavigActivity extends AppCompatActivity
                 getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
     }
+
     public static final String TAG = NavigActivity.class.getSimpleName();
 }

@@ -263,6 +263,8 @@ public class SignInActivity extends AppCompatActivity {
                 Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
                 FirebaseMessaging.getInstance().subscribeToTopic("certificates");
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
+                FirebaseMessaging.getInstance().subscribeToTopic("burials");
+                Log.e(TAG, "onResponse: user subscribed to topic: burials" );
                 startMain();
             }
 

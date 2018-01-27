@@ -1,9 +1,11 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,18 +17,24 @@ import android.widget.TextView;
 
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.adapters.ClientAdapter;
-import com.aftarobot.insurancecompany.adapters.ListUtil;
+import com.aftarobot.mlibrary.ListUtil;
 import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
+import com.aftarobot.mlibrary.data.Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class ClientsActivity extends AppCompatActivity {
@@ -39,6 +47,8 @@ public class ClientsActivity extends AppCompatActivity {
     private ClientAdapter clientAdapter;
     private Toolbar toolbar;
     private ChainDataAPI chainDataAPI;
+    private InsuranceCompany company;
+    private List<Beneficiary> beneficiaries, policyBeneficiaries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +58,14 @@ public class ClientsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Client Management");
-        InsuranceCompany company = SharedPrefUtil.getCompany(this);
+        company = SharedPrefUtil.getCompany(this);
         if (company != null) {
             getSupportActionBar().setSubtitle(company.getName());
         }
         chainListAPI = new ChainListAPI(this);
         chainDataAPI = new ChainDataAPI(this);
         getClients();
+        getBennies();
 
         setup();
     }
@@ -81,7 +92,8 @@ public class ClientsActivity extends AppCompatActivity {
         imgAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar.make(toolbar, "Generating random clients ...", Snackbar.LENGTH_SHORT).show();
+                showSnack("Generating random clients ...","ok","yellow");
+                count = 0;
                 control();
             }
         });
@@ -89,23 +101,43 @@ public class ClientsActivity extends AppCompatActivity {
 
     private Client randomClient;
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final int MAX_CLIENTS = 50, MAX_BENNIES = 100;
     private int count;
+
+    private void getBennies() {
+        chainListAPI.getBeneficiaries(new ChainListAPI.BeneficiaryListener() {
+            @Override
+            public void onResponse(List<Beneficiary> list) {
+                beneficiaries = list;
+            }
+
+            @Override
+            public void onError(String message) {
+
+            }
+        });
+    }
     private void control() {
-        if (count < 10) {
+        if (count < MAX_CLIENTS) {
             addRandomClient();
         } else {
-            addRandomBennies();
+
+            count = 0;
+            controlBennies();
         }
 
     }
+
     private void addRandomClient() {
         Client client = ListUtil.getRandomClient();
         chainDataAPI.addClient(client, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 randomClient = (Client) data;
-                Log.w(TAG, "onResponse: random client added: ".concat(GSON.toJson(randomClient)) );
-                clients.add(0,randomClient);
+                Log.w(TAG, "onResponse: random client added: "
+                        .concat(GSON.toJson(randomClient)));
+                clients.add(0, randomClient);
+                Log.e(TAG, "onResponse: total clients:".concat(String.valueOf(clients.size())) );
                 setList();
                 recyclerView.smoothScrollToPosition(0);
                 count++;
@@ -115,36 +147,45 @@ public class ClientsActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
-                Log.e(TAG, "onError: ".concat(message) );
+                Log.e(TAG, "onError: ".concat(message));
+                showError(message);
+            }
+        });
+    }
+
+    private void controlBennies() {
+        if (count < MAX_BENNIES) {
+            addRandomBenny();
+        } else {
+            showSnack("Clients and Beneficiaries generated", "OK", "green");
+        }
+
+    }
+
+    private void addRandomBenny() {
+
+        Beneficiary beneficiary = ListUtil.getRandomBeneficiary();
+        chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                Beneficiary v = (Beneficiary) data;
+                count++;
+                Log.i(TAG, "onResponse: bennie added to blockchain".concat(GSON.toJson(v)));
+                Log.e(TAG, "onResponse: total beneficiaries:".concat(String.valueOf(count)) );
+
+                controlBennies();
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
             }
         });
 
-
     }
-    private Random random = new Random(System.currentTimeMillis());
-    private void addRandomBennies() {
-        int count = random.nextInt(20);
-        if (count < 10) {
-            count = 10;
-        }
-        showSnack("Generating random beneficiaries: " + count,"ok","yellow");
-        for (int i = 0; i < count; i++) {
-            Beneficiary beneficiary = ListUtil.getRandomBeneficiary();
-            chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
-                @Override
-                public void onResponse(Data data) {
-                    Beneficiary v = (Beneficiary)data;
-                    Log.i(TAG, "onResponse: bennie added to blockchain".concat(GSON.toJson(v)));
-                }
 
-                @Override
-                public void onError(String message) {
-                    showError(message);
-                }
-            });
-        }
-    }
     private void setList() {
+        Collections.sort(clients);
         txtCount.setText(String.valueOf(clients.size()));
         if (clientAdapter == null) {
             clientAdapter = new ClientAdapter(clients, new ClientAdapter.ClientListener() {
@@ -165,10 +206,84 @@ public class ClientsActivity extends AppCompatActivity {
 
     }
 
-    private void processClient(Client client) {
-        Snackbar.make(toolbar, "Client: ".concat(client.getFirstName()), Snackbar.LENGTH_LONG).show();
+    private void processClient(final Client client) {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Policy Sale")
+                .setMessage("Do you want to buy a Policy?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        addPolicy(client);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
     }
 
+    private Random random = new Random(System.currentTimeMillis());
+    private void addPolicy(Client client) {
+        showSnack("Adding policy to blockchain...","ok","yellow");
+        Policy policy = new Policy();
+        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(company.getInsuranceCompanyID()));
+        policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
+        policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
+        policy.setDescription(ListUtil.getRandomDescription());
+        policy.setAmount(ListUtil.getRandomPolicyAmount());
+
+        policyBeneficiaries = new ArrayList<>();
+        HashMap<String, Beneficiary> map = new HashMap<>();
+        int benCount = random.nextInt(4);
+        if (benCount == 0) {
+            benCount = 1;
+        }
+        for (int i = 0; i < benCount; i++) {
+            int index = random.nextInt(beneficiaries.size() - 1);
+            Beneficiary beneficiary = beneficiaries.get(index);
+            map.put(beneficiary.getIdNumber(), beneficiary);
+        }
+
+        for (Map.Entry<String, Beneficiary> b : map.entrySet()) {
+            policyBeneficiaries.add(b.getValue());
+        }
+
+        List<String> list = new ArrayList<>();
+        for (Beneficiary b : policyBeneficiaries) {
+            list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
+        }
+        policy.setBeneficiaries(list);
+
+        chainDataAPI.addPolicy(policy, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                Policy p = (Policy) data;
+                Log.w(TAG, "onResponse: we seem to have sold a fucking policy: ".concat(GSON.toJson(p)));
+
+                showSnack("Policy added to blockchain: ".concat(p.getPolicyNumber()), "ok", "green");
+                FBApi api = new FBApi();
+                api.addPolicy(p, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.i(TAG, "onResponse: policy added to FB");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
     private void processEmail(Client client) {
         Snackbar.make(toolbar, "Client: ".concat(client.getEmail()), Snackbar.LENGTH_LONG).show();
     }
@@ -181,6 +296,11 @@ public class ClientsActivity extends AppCompatActivity {
                 Log.d(TAG, "onResponse: clients found on blockchain" + list.size());
                 clients = list;
                 setList();
+                if (clients.isEmpty()) {
+                    showSnack("Generating client list", "ok", "cyan");
+                    count = 0;
+                    control();
+                }
             }
 
             @Override
@@ -189,9 +309,11 @@ public class ClientsActivity extends AppCompatActivity {
             }
         });
     }
+
     private Snackbar snackbar;
+
     private void showError(String message) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor("red"));
         snackbar.setAction("Error", new View.OnClickListener() {
             @Override
@@ -201,8 +323,9 @@ public class ClientsActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
+
     private void showSnack(String message, String action, String color) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor(color));
         snackbar.setAction(action, new View.OnClickListener() {
             @Override

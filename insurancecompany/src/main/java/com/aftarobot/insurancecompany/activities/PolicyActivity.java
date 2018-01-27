@@ -1,25 +1,36 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aftarobot.insurancecompany.R;
-import com.aftarobot.insurancecompany.adapters.ListUtil;
+import com.aftarobot.mlibrary.ListUtil;
 import com.aftarobot.insurancecompany.adapters.PolicyAdapter;
 import com.aftarobot.mlibrary.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
@@ -28,7 +39,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +60,9 @@ public class PolicyActivity extends AppCompatActivity {
     private InsuranceCompany company;
     private List<Client> clients;
     private List<Beneficiary> beneficiaries;
-
+    private AutoCompleteTextView auto;
+    private Button btnPolicy;
+    private Client client;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,13 +93,28 @@ public class PolicyActivity extends AppCompatActivity {
             }
         });
         txtTitle = findViewById(R.id.txtTitle);
+        auto = findViewById(R.id.auto);
+        auto.setThreshold(1);
+        btnPolicy = findViewById(R.id.btnPolicy);
         txtCount = findViewById(R.id.txtCount);
         txtTitle.setText("Policies");
         txtCount.setText("0");
         imgAdd = findViewById(R.id.icon);
+        imgAdd.setEnabled(false);
         recyclerView = findViewById(R.id.recycler);
         LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(lm);
+
+        btnPolicy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (client == null) {
+                    Toast.makeText(getApplicationContext(),"Find client first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                addSinglePolicy(client);
+            }
+        });
 
         imgAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,23 +125,58 @@ public class PolicyActivity extends AppCompatActivity {
             }
         });
     }
+
     int count;
     List<Beneficiary> policyBeneficiaries;
+
+    private void setAuto() {
+        List<String> list = new ArrayList<>();
+        for (Client c: clients) {
+            list.add(c.getFullName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,android.R.layout.simple_list_item_1,list);
+        auto.setAdapter(adapter);
+        auto.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                setClient(auto.getText().toString());
+            }
+        });
+
+    }
+    private void setClient(String s) {
+        for (Client c: clients) {
+            if (c.getFullName().equalsIgnoreCase(s)) {
+                client = c;
+                hideKeyboard();
+                break;
+            }
+        }
+    }
     private void addRandomPolicy() {
         if (count > 100) {
             showError("Seems all clients have policies");
             return;
         }
-        Snackbar.make(toolbar,"Generating policy ...",Snackbar.LENGTH_LONG).show();
+        Snackbar.make(toolbar, "Generating policy ...", Snackbar.LENGTH_LONG).show();
         int clientIndex = random.nextInt(clients.size() - 1);
         Client client = clients.get(clientIndex);
-        for (Policy p: policies) {
+        for (Policy p : policies) {
             if (p.getClient().contains(client.getIdNumber())) {
                 count++;
                 addRandomPolicy();
             }
         }
-        int benCount = random.nextInt(5);
+        addSinglePolicy(client);
+
+
+    }
+
+    private void addSinglePolicy(Client client) {
+        showSnack("Registering policy ...","ok","yellow");
+        int benCount = random.nextInt(3);
         if (benCount == 0) {
             benCount = 2;
         }
@@ -120,10 +185,10 @@ public class PolicyActivity extends AppCompatActivity {
         for (int i = 0; i < benCount; i++) {
             int index = random.nextInt(beneficiaries.size() - 1);
             Beneficiary beneficiary = beneficiaries.get(index);
-            map.put(beneficiary.getIdNumber(),beneficiary);
+            map.put(beneficiary.getIdNumber(), beneficiary);
         }
 
-        for (Map.Entry<String,Beneficiary> b: map.entrySet()) {
+        for (Map.Entry<String, Beneficiary> b : map.entrySet()) {
             policyBeneficiaries.add(b.getValue());
         }
 
@@ -135,7 +200,7 @@ public class PolicyActivity extends AppCompatActivity {
         policy.setAmount(ListUtil.getRandomPolicyAmount());
 
         List<String> list = new ArrayList<>();
-        for (Beneficiary b: policyBeneficiaries) {
+        for (Beneficiary b : policyBeneficiaries) {
             list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
         }
         policy.setBeneficiaries(list);
@@ -143,12 +208,24 @@ public class PolicyActivity extends AppCompatActivity {
         chainDataAPI.addPolicy(policy, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
-                Policy p = (Policy)data;
-                Log.w(TAG, "onResponse: we seem to have a fucking policy: ".concat(GSON.toJson(p)) );
-                policies.add(0,p);
+                Policy p = (Policy) data;
+                Log.w(TAG, "onResponse: we seem to have a fucking policy: ".concat(GSON.toJson(p)));
+                policies.add(0, p);
                 setList();
                 recyclerView.smoothScrollToPosition(0);
-                showSnack("Policy added to blockchain","ok","green");
+                showSnack("Policy added to blockchain: ".concat(p.getPolicyNumber()), "ok", "green");
+                FBApi api = new FBApi();
+                api.addPolicy(p, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.i(TAG, "onResponse: policy added to FB");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
             }
 
             @Override
@@ -156,9 +233,8 @@ public class PolicyActivity extends AppCompatActivity {
                 showError(message);
             }
         });
-
-
     }
+
     private void setList() {
         txtCount.setText(String.valueOf(policies.size()));
         if (policyAdapter == null) {
@@ -177,16 +253,85 @@ public class PolicyActivity extends AppCompatActivity {
 
     }
 
-    private void processPolicy(Policy client) {
-        Snackbar.make(toolbar, "Policy: ".concat(client.getPolicyNumber()), Snackbar.LENGTH_LONG).show();
+    private void processPolicy(final Policy policy) {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Claims Processing")
+                .setMessage("Do you want to register a claim on this policy?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        registerClaim(policy);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+
     }
 
+    private FBApi fbApi = new FBApi();
+    private void registerClaim(Policy policy) {
+        Claim claim = new Claim();
+        String[] strings = policy.getInsuranceCompany().split("#");
+        claim.setCompanyId(strings[1]);
+        claim.setDateTime(sdf.format(new Date()));
+        claim.setClaimId(getRandomClaimId());
+        claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                final Claim x = (Claim) data;
+                fbApi.addClaim(x, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.e(TAG, "onResponse: claim added to FB".concat(GSON.toJson(x)));
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+    public static String getRandomClaimId() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("C");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+    private static Random random = new Random(System.currentTimeMillis());
     private void getClients() {
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
                 Log.w(TAG, "onResponse: clients found on blockchain: " + list.size());
+                setAuto();
                 getBeneficiaries();
 
             }
@@ -222,7 +367,7 @@ public class PolicyActivity extends AppCompatActivity {
                 Log.d(TAG, "onResponse: policies found on blockchain" + list.size());
 
                 policies = new ArrayList<>();
-                for (Policy p: list) {
+                for (Policy p : list) {
                     if (p.getInsuranceCompany().contains(company.getInsuranceCompanyID())) {
                         policies.add(p);
                     }
@@ -239,8 +384,9 @@ public class PolicyActivity extends AppCompatActivity {
     }
 
     private Snackbar snackbar;
+
     private void showError(String message) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor("red"));
         snackbar.setAction("Error", new View.OnClickListener() {
             @Override
@@ -250,8 +396,9 @@ public class PolicyActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
+
     private void showSnack(String message, String action, String color) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor(color));
         snackbar.setAction(action, new View.OnClickListener() {
             @Override
@@ -261,11 +408,16 @@ public class PolicyActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
+    void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager)
+                getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
+    }
 
     public static final String TAG = PolicyActivity.class.getSimpleName();
     public static final DecimalFormat df = new DecimalFormat("###,###,###,###");
-    private Random random = new Random(System.currentTimeMillis());
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
 
 }
