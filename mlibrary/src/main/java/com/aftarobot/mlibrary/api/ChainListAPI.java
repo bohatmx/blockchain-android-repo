@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -69,6 +70,31 @@ public class ChainListAPI {
     public interface DeathCertListener {
         void onResponse(List<DeathCertificate> certificates);
         void onError(String message);
+    }
+
+    public void getClient(String id, final ClientListener listener) {
+        Call<Client> call = apiService.getClient(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(Call<Client> call, Response<Client> response) {
+                if (response.isSuccessful()) {
+                    Client client = response.body();
+                    List<Client> list = new ArrayList<>(1);
+                    list.add(client);
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: client not found ");
+                    listener.onResponse(new ArrayList<Client>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
     }
     public void getClaims(final ClaimsListener listener) {
         Call<List<Claim>> call = apiService.getClaims();

@@ -50,6 +50,9 @@ public interface ApiInterface {
     @POST("Client")
     Call<Client> registerClient(@Body Client client);
 
+    @GET("Client/{id}")
+    Call<Client> getClient(@Path("id") String id);
+
     @GET("Client")
     Call<List<Client>> getClients();
 

@@ -11,7 +11,7 @@
     <TextView
         android:id="@+id/txtTitle"
         android:text="Burial"
-        android:textSize="36dp"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:layout_marginTop="@dimen/fab_margin"
         android:layout_centerHorizontal="true"
@@ -81,10 +81,19 @@
 
             </RelativeLayout>
 
+            <TextView
+                android:id="@+id/txtName"
+                android:text="Name of Client"
+                android:layout_below="@id/layout0"
+                style="@style/TextAppearance.AppCompat.Large"
+                android:layout_marginTop="@dimen/fab_margin"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/btnBurial"
                 android:text="Register Burial"
-                android:layout_below="@id/layout0"
+                android:layout_below="@id/txtName"
                 android:layout_marginTop="50dp"
                 android:layout_marginBottom="40dp"
                 android:textColor="@color/white"

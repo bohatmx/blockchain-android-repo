@@ -26,6 +26,7 @@ import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Burial;
+import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.FuneralParlour;
@@ -36,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class NavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -97,14 +99,18 @@ public class NavActivity extends AppCompatActivity
         burial.setDeathCertificate("resource:com.oneconnect.insurenet.DeathCertificate#".concat(certificate.getIdNumber()));
         burial.setDateTime(sdf.format(new Date()));
 
-        Log.d(TAG, "adding Burial: ".concat(GSON.toJson(burial)));
+        Log.d(TAG, "registering Burial: ".concat(GSON.toJson(burial)));
 
         Snackbar.make(toolbar,"Registering burial", Snackbar.LENGTH_LONG).show();
 
         chainDataAPI.addBurial(burial, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
-                showSnack("Burial registered","close","yellow");
+                showSnack("Burial registered: ".concat(certificate.getIdNumber()),"close","yellow");
+                txtIdNumber.setText("");
+                txtName.setText("");
+                certificates.remove(certificate);
+                setAuto();
                 Burial x = (Burial) data;
                 fbApi.addBurial(x, new FBApi.FBListener() {
                     @Override
@@ -145,23 +151,47 @@ public class NavActivity extends AppCompatActivity
             }
         });
     }
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private static final Locale loc = Locale.getDefault();
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", loc);
     private void setCertificate(String id) {
         for (DeathCertificate dc: certificates) {
             if (dc.getIdNumber().equalsIgnoreCase(id)) {
                 certificate = dc;
                 txtIdNumber.setText(certificate.getIdNumber());
-                btn.setAlpha(1.0f);
-                btn.setEnabled(true);
+
                 auto.setText("");
                 hideKeyboard();
+                findClient();
 
             }
         }
     }
+    private void findClient() {
+        showSnack("Finding client ...","wait","yellow");
+        chainListAPI.getClient(certificate.getIdNumber(), new ChainListAPI.ClientListener() {
+            @Override
+            public void onResponse(List<Client> clients) {
+                if (clients.isEmpty()) {
+                    showError("Client cannot be found");
+                    return;
+                }
+                Client client = clients.get(0);
+                txtName.setText(client.getFullName());
+                btn.setAlpha(1.0f);
+                btn.setEnabled(true);
+                snackbar.dismiss();
+            }
+
+            @Override
+            public void onError(String message) {
+
+            }
+        });
+    }
     private void setup() {
         auto = findViewById(R.id.auto);
         btn = findViewById(R.id.btnBurial);
+        txtName = findViewById(R.id.txtName);
         txtIdNumber = findViewById(R.id.txtIdnumber);
         txtIdNumber.setText("");
         btn.setAlpha(0.3f);
