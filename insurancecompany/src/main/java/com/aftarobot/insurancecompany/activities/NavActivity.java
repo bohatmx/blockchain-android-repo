@@ -1,11 +1,13 @@
 package com.aftarobot.insurancecompany.activities;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,13 +20,17 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.aftarobot.insurancecompany.R;
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.insurancecompany.services.FCMMessagingService;
+import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -57,6 +63,7 @@ public class NavActivity extends AppCompatActivity
 
 
         setup();
+        listen();
         getClients();
         getClaims();
         getPolicies();
@@ -68,7 +75,7 @@ public class NavActivity extends AppCompatActivity
         getClients();
     }
     private void setup() {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab =  findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -81,14 +88,14 @@ public class NavActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         //drawer.openDrawer(GravityCompat.START);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView =  findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         chainListAPI = new ChainListAPI(this);
         company = SharedPrefUtil.getCompany(this);
@@ -289,4 +296,20 @@ public class NavActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    private void listen() {
+        IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
+        IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
+        IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+        IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
+
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(receiver,filterCert);
+        broadcastManager.registerReceiver(receiver,filterClaim);
+        broadcastManager.registerReceiver(receiver,filterPolicy);
+        broadcastManager.registerReceiver(receiver,filterBurial);
+
+    }
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

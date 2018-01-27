@@ -17,7 +17,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.aftarobot.insurancecompany.R;
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
@@ -239,13 +239,13 @@ private FBListApi fbListApi;
             public void onResponse(List<UserDTO> users) {
                 if (users.isEmpty()) {
                     Log.d(TAG, "onResponse: adding user to firebase: ".concat(u.getEmail()));
-                    writeUser(user, u);
+                    writeUser(user);
                 } else {
                     Log.w(TAG, "onResponse: user found, no need to add to firebase" );
                     for (UserDTO ux: users) {
                         fbApi.deleteUser(ux);
                     }
-                    writeUser(user,u);
+                    writeUser(user);
                 }
             }
 
@@ -257,17 +257,21 @@ private FBListApi fbListApi;
 
     }
 
-    private void writeUser(final UserDTO user, final FirebaseUser u) {
+    private void writeUser(final UserDTO user) {
         fbApi.addUser(user, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
+                Log.i(TAG, "onResponse: user added OK: ".concat(user.getEmail()));
                 FirebaseMessaging.getInstance().subscribeToTopic("certificates");
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
-                FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(user.getCompanyId()));
-                Log.e(TAG, "onResponse: user subscribed to topic: claims" + user.getCompanyId() );
+                if (user.getCompanyId() != null) {
+                    FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(user.getCompanyId()));
+                    Log.e(TAG, "onResponse: user subscribed to topic: claims" + user.getCompanyId());
+                } else {
+                    throw new RuntimeException("Things are fucked up! No companyID ...");
+                }
                 startMain();
             }
 

@@ -50,42 +50,44 @@ public class FCMMessagingService extends FirebaseMessagingService {
             for (String s : map.keySet()) {
                 Log.d(TAG, "onMessageReceived: name: " + s + " value: " + map.get(s));
             }
+            String type = map.get("messageType");
             if (isRunningInForeground(getApplicationContext())) {
-                if (map.get("messageType").equalsIgnoreCase("USER")) {
+
+                if (type.equalsIgnoreCase("USER")) {
                     UserDTO user = GSON.fromJson(map.get("json"), UserDTO.class);
                     broadcast(BROADCAST_USER, user);
                 }
-                if (map.get("messageType").equalsIgnoreCase("CLAIM")) {
+                if (type.equalsIgnoreCase("CLAIM")) {
                     Claim claim = GSON.fromJson(map.get("json"), Claim.class);
                     broadcast(BROADCAST_CLAIM, claim);
                 }
-                if (map.get("messageType").equalsIgnoreCase("CERT")) {
+                if (type.equalsIgnoreCase("CERT")) {
                     DeathCertificate dc = GSON.fromJson(map.get("json"), DeathCertificate.class);
                     broadcast(BROADCAST_CERT, dc);
                 }
-                if (map.get("messageType").equalsIgnoreCase("BURIAL")) {
+                if (type.equalsIgnoreCase("BURIAL")) {
                     Burial burial = GSON.fromJson(map.get("json"), Burial.class);
                     broadcast(BROADCAST_BURIAL, burial);
                 }
-                if (map.get("messageType").equalsIgnoreCase("POLICY")) {
+                if (type.equalsIgnoreCase("POLICY")) {
                     Policy pol = GSON.fromJson(map.get("json"), Policy.class);
                     broadcast(BROADCAST_USER, pol);
                 }
             } else {
-                if (map.get("messageType").equalsIgnoreCase("USER")) {
-                    sendNotification("Welcome to Blockchain", map.get("json"));
+                if (type.equalsIgnoreCase("USER")) {
+                    sendNotification(type,"Welcome to Blockchain", map.get("json"));
                 }
-                if (map.get("messageType").equalsIgnoreCase("CERT")) {
-                    sendNotification("Death Certificate Issued", map.get("json"));
+                if (type.equalsIgnoreCase("CERT")) {
+                    sendNotification(type,"Death Certificate Issued", map.get("json"));
                 }
-                if (map.get("messageType").equalsIgnoreCase("CLAIM")) {
-                    sendNotification("Burial Registered", map.get("json"));
+                if (type.equalsIgnoreCase("CLAIM")) {
+                    sendNotification(type,"Claim Registered", map.get("json"));
                 }
-                if (map.get("messageType").equalsIgnoreCase("BURIAL")) {
-                    sendNotification("Burial Registered", map.get("json"));
+                if (type.equalsIgnoreCase("BURIAL")) {
+                    sendNotification(type,"Burial Registered", map.get("json"));
                 }
-                if (map.get("messageType").equalsIgnoreCase("POLICY")) {
-                    sendNotification("Policy Registered", map.get("json"));
+                if (type.equalsIgnoreCase("POLICY")) {
+                    sendNotification(type,"Policy Registered", map.get("json"));
                 }
             }
         }
@@ -109,11 +111,12 @@ public class FCMMessagingService extends FirebaseMessagingService {
         lm.sendBroadcast(m);
 
     }
-    private void sendNotification(String title, String json) {
+    private void sendNotification(String messageType,String title, String json) {
 
         Intent resultIntent = new Intent(getApplicationContext(), NotifActivity.class);
         resultIntent.putExtra("title", title);
         resultIntent.putExtra("json", json);
+        resultIntent.putExtra("messageType", messageType);
 
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(

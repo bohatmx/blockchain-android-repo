@@ -16,7 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
@@ -256,7 +256,7 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
-    private void writeUser(UserDTO user, final FirebaseUser u) {
+    private void writeUser(final UserDTO user, final FirebaseUser u) {
         fbApi.addUser(user, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
@@ -265,6 +265,7 @@ public class SignInActivity extends AppCompatActivity {
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
+
                 startMain();
             }
 

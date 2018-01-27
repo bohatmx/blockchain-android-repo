@@ -2,7 +2,7 @@ package com.aftarobot.parlourapp.services;
 
 import android.util.Log;
 
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 

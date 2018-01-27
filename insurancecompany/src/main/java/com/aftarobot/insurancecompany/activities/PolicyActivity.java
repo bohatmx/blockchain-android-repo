@@ -2,10 +2,12 @@ package com.aftarobot.insurancecompany.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,9 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aftarobot.insurancecompany.R;
-import com.aftarobot.mlibrary.ListUtil;
 import com.aftarobot.insurancecompany.adapters.PolicyAdapter;
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.insurancecompany.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -35,6 +36,9 @@ import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.util.ListUtil;
+import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -78,7 +82,7 @@ public class PolicyActivity extends AppCompatActivity {
         chainListAPI = new ChainListAPI(this);
         chainDataAPI = new ChainDataAPI(this);
         getClients();
-
+        listen();
         setup();
     }
 
@@ -419,5 +423,19 @@ public class PolicyActivity extends AppCompatActivity {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
+    private void listen() {
+        IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
+        IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
+        IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+        IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
+
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(receiver,filterCert);
+        broadcastManager.registerReceiver(receiver,filterClaim);
+        broadcastManager.registerReceiver(receiver,filterPolicy);
+        broadcastManager.registerReceiver(receiver,filterBurial);
+
+    }
 
 }

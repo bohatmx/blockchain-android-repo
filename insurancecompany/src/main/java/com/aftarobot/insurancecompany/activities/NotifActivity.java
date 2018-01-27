@@ -46,6 +46,7 @@ public class NotifActivity extends AppCompatActivity {
     private void setup() {
         title = getIntent().getStringExtra("title");
         json = getIntent().getStringExtra("json");
+
         String messageType = getIntent().getStringExtra("messageType");
         getSupportActionBar().setTitle("Messages");
         getSupportActionBar().setSubtitle(title);
@@ -85,30 +86,60 @@ public class NotifActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showCertificate(DeathCertificate dc) {
+    private void showCertificate(final DeathCertificate dc) {
         Log.w(TAG, "showCertificate: ".concat(GSON.toJson(dc)));
-        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-        m.putExtra("cert", dc);
-        startActivity(m);
-        finish();
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Death Certificate Registered")
+                .setMessage("Fresh from the blockchain ...\n\n".concat(GSON.toJson(dc)))
+                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                        m.putExtra("cert", dc);
+                        startActivity(m);
+                        finish();
+                    }
+                })
+                .show();
+
     }
 
-    private void showBurial(Burial burial) {
+    private void showBurial(final Burial burial) {
         Log.d(TAG, "showBurial: ################ ".concat(GSON.toJson(burial)));
-        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-        m.putExtra("burial", burial);
-        startActivity(m);
-        finish();
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Burial Registered")
+                .setMessage("Fresh from the blockchain ...\n\n".concat(GSON.toJson(burial)))
+                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                        m.putExtra("burial", burial);
+                        startActivity(m);
+                        finish();
+                    }
+                })
+                .show();
+
 
     }
 
-    private void showClaim(Claim claim) {
+    private void showClaim(final Claim claim) {
         Log.d(TAG, "showClaim: ################ ".concat(GSON.toJson(claim)));
-        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-        m.putExtra("claim", claim);
-        startActivity(m);
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Claim Registered")
+                .setMessage("Fresh from the blockchain ...\n\n".concat(GSON.toJson(claim)))
+                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                        m.putExtra("claim", claim);
+                        startActivity(m);
 
-        finish();
+                        finish();
+                    }
+                })
+                .show();
+
     }
 
 

@@ -1,11 +1,13 @@
 package com.aftarobot.hospitalapp;
 
 import android.content.Context;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -23,7 +25,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.aftarobot.mlibrary.SharedPrefUtil;
+import com.aftarobot.hospitalapp.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -33,6 +35,8 @@ import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -69,6 +73,7 @@ public class NavigActivity extends AppCompatActivity
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
         fbApi = new FBApi();
+        listen();
         getClients();
 
         setup(toolbar);
@@ -432,6 +437,16 @@ public class NavigActivity extends AppCompatActivity
         InputMethodManager imm = (InputMethodManager)
                 getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
+    }
+    private void listen() {
+        IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
+        IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(receiver,filterClaim);
+        broadcastManager.registerReceiver(receiver,filterBurial);
+
     }
 
     public static final String TAG = NavigActivity.class.getSimpleName();
