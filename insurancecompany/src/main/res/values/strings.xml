@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InsuranceCompany</string>
+    <string name="app_name">Insurance</string>
     <string name="title_policies">Policies</string>
     <string name="title_claims">Claims</string>
     <string name="title_burials">Burials</string>

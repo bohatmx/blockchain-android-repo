@@ -1,9 +1,11 @@
 package com.aftarobot.blockchaintest;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -57,74 +59,61 @@ public class CrudActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //addDoctors();
-                doCrud();
-                //addClients();
-                //startPolicyLookups();
-               // startDCLookups();
+                confirm();
             }
         });
         getInsuranceCompanies();
     }
 
+    private void confirm() {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Confirm")
+                .setMessage("Do you really, really want to do this?\n\nThis generates all the base demo data needed on the blockchain. It will fuck up if this data has been generated before.")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        doCrud();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
+    private void confirmClients() {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Confirm")
+                .setMessage("Do you really, really want to do this?\n\nThis generates  about 50 clients and 100 beneficiaries demo data needed on the blockchain.\n\nIt will take a few minutes to complete .....")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        addClients();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
     private void doCrud() {
-        Snackbar.make(toolbar, "Starting CRUD for demo data", Snackbar.LENGTH_LONG).show();
+        showSnackbar("Starting CRUD for demo data","ok","yellow");
         addCompanies();
         addHospitals();
         addParlours();
-        addClients();
-        addBeneficiaries();
         addDoctors();
         addRegulator();
-        //getInsuranceCompanies();
+        addClients();
     }
 
     private void addClients() {
-        Snackbar.make(toolbar, "Adding client demo data", Snackbar.LENGTH_LONG).show();
-//        Client c1 = new Client();
-//        c1.setIdNumber("CLIENT_001");
-//        c1.setFirstName("John");
-//        c1.setLastName("Mathebula");
-//        c1.setEmail("john.m@gmail.com");
-//        c1.setAccountBalance(0.00);
-//        c1.setAddress("34 Kruger Road, Springs");
-//
-//        writeClient(c1);
-//        Client c2 = new Client();
-//        c2.setIdNumber("CLIENT_002");
-//        c2.setFirstName("Sarah");
-//        c2.setLastName("Sithole");
-//        c2.setEmail("sarah.sit.m@gmail.com");
-//        c2.setAddress("364 Kruger Road, Springs");
-//        c2.setAccountBalance(0.00);
-//        writeClient(c2);
-//
-//        Client c3 = new Client();
-//        c3.setIdNumber("CLIENT_003");
-//        c3.setFirstName("Kevin");
-//        c3.setLastName("Browne");
-//        c3.setEmail("kevinb.m@gmail.com");
-//        c3.setAddress("34 Maude Road, Sandton");
-//        c3.setAccountBalance(0.00);
-//        writeClient(c3);
-//
-//        Client c4 = new Client();
-//        c4.setIdNumber("CLIENT_004");
-//        c4.setFirstName("Samuel L");
-//        c4.setLastName("Jackson");
-//        c4.setEmail("samljack.m@gmail.com");
-//        c4.setAddress("34 Coronation Road, Johannesburg");
-//        c4.setAccountBalance(0.00);
-//        writeClient(c4);
-//
-//        Client c5 = new Client();
-//        c5.setIdNumber("CLIENT_005");
-//        c5.setFirstName("John");
-//        c5.setLastName("Billman");
-//        c5.setEmail("johnbill.m@gmail.com");
-//        c5.setAddress("887 Paris Boulevard, Durban");
-//        c5.setAccountBalance(0.00);
-//        writeClient(c5);
+        showSnackbar("generating client demo data","ok","yellow");
+        count = 0;
         controlClients();
     }
 
@@ -133,94 +122,8 @@ public class CrudActivity extends AppCompatActivity {
         txt.setText(sb.toString());
     }
 
-    private void writeClient(Client client) {
-        chainDataAPI.addClient(client, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Client added", "OK", "green");
-                updateText(GSON.toJson(data));
-            }
-
-            @Override
-            public void onError(String message) {
-                showFailureSnackbar(message);
-            }
-        });
-    }
-
-    private void addBeneficiaries() {
-        Snackbar.make(toolbar, "Adding beneficiary demo data", Snackbar.LENGTH_LONG).show();
-
-        Beneficiary c1 = new Beneficiary();
-        c1.setIdNumber("BENEFICIARY_001");
-        c1.setFirstName("Suzan Anne");
-        c1.setLastName("Mathebula");
-        c1.setEmail("sarah.m@gmail.com");
-        c1.setAddress("34 Kruger Road, Springs");
-        c1.setAccountBalance(0.00);
-        writeBeneficiary(c1);
-
-        Beneficiary c2 = new Beneficiary();
-        c2.setIdNumber("BENEFICIARY_002");
-        c2.setFirstName("Benjamin");
-        c2.setLastName("Sithole");
-        c2.setEmail("ben.sit.m@gmail.com");
-        c2.setAddress("364 Kruger Road, Springs");
-        c2.setAccountBalance(0.00);
-
-        writeBeneficiary(c2);
-
-        Beneficiary c3 = new Beneficiary();
-        c3.setIdNumber("BENEFICIARY_003");
-        c3.setFirstName("Sammy");
-        c3.setLastName("Browne");
-        c3.setEmail("sammyb.m@gmail.com");
-        c3.setAddress("34 Maude Road, Sandton");
-        c3.setAccountBalance(0.00);
-
-        writeBeneficiary(c3);
-
-        Beneficiary c4 = new Beneficiary();
-        c4.setIdNumber("BENEFICIARY_004");
-        c4.setFirstName("Joe");
-        c4.setLastName("Jackson");
-        c4.setEmail("joljack.m@gmail.com");
-        c4.setAddress("34 Coronation Road, Johannesburg");
-        c4.setAccountBalance(0.00);
-
-        writeBeneficiary(c4);
-
-        Beneficiary c5 = new Beneficiary();
-        c5.setIdNumber("BENEFICIARY_005");
-        c5.setFirstName("Daniella");
-        c5.setLastName("Billman");
-        c5.setEmail("danbill.m@gmail.com");
-        c5.setAddress("887 Paris Boulevard, Durban");
-        c5.setAccountBalance(0.00);
-
-        writeBeneficiary(c5);
-    }
-
-    private void writeBeneficiary(Beneficiary beneficiary) {
-        chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Beneficiary added", "OK", "green");
-                updateText(GSON.toJson(data));
-            }
-
-            @Override
-            public void onError(String message) {
-                showFailureSnackbar(message);
-            }
-        });
-    }
-
     private void addDoctors() {
-        Snackbar.make(toolbar, "Adding doctor  demo data", Snackbar.LENGTH_LONG).show();
-
+        showSnackbar("Adding doctor demo data","ok","yellow");
         Doctor d1 = new Doctor();
         d1.setIdNumber("DOCTOR_001");
         d1.setFirstName("Rirhandzu");
@@ -259,7 +162,8 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Doctor added", "OK", "green");
+                Doctor x = (Doctor)data;
+                showSnackbar("Doctor: ".concat(x.getFullName()),"ok","green");
                 updateText(GSON.toJson(data));
             }
 
@@ -271,8 +175,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     private void addRegulator() {
-        Snackbar.make(toolbar, "Adding regulator demo data", Snackbar.LENGTH_LONG).show();
-
+        showSnackbar("Adding regulator demo data","ok","yellow");
         Regulator d1 = new Regulator();
         d1.setIdNumber("1991010167880083");
         d1.setFirstName("Rethabile");
@@ -287,7 +190,8 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Regulator added", "OK", "green");
+                Regulator x = (Regulator)data;
+                showSnackbar("Regulator added: ".concat(x.getFullName()), "OK", "green");
                 updateText(GSON.toJson(data));
             }
 
@@ -299,8 +203,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     private void addParlours() {
-        Snackbar.make(toolbar, "Adding funeral parlour demo data", Snackbar.LENGTH_LONG).show();
-
+        showSnackbar("Adding parlour demo data","ok","yellow");
         FuneralParlour fp1 = new FuneralParlour();
         fp1.setFuneralParlourId("FUNERAL_PARLOUR_001");
         fp1.setName("Soweto Funeral Services");
@@ -325,7 +228,8 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Funeral Parlour added", "OK", "green");
+                FuneralParlour x = (FuneralParlour)data;
+                showSnackbar("Parlour added: ".concat(x.getName()), "OK", "green");
                 updateText(GSON.toJson(data));
             }
 
@@ -337,8 +241,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     private void addHospitals() {
-        Snackbar.make(toolbar, "Adding hospital demo data", Snackbar.LENGTH_LONG).show();
-
+        showSnackbar("Adding Hospital demo data","ok","yellow");
         Hospital h1 = new Hospital();
         h1.setHospitalId("HOSPITAL_001");
         h1.setName("Durban Hospital");
@@ -371,7 +274,8 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.d(TAG, "onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Hospital added ok", "OK", "green");
+                Hospital x = (Hospital)data;
+                showSnackbar("Hospital added: ".concat(x.getName()), "OK", "green");
                 updateText(GSON.toJson(data));
             }
 
@@ -383,8 +287,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     private void addCompanies() {
-        Snackbar.make(toolbar, "Adding company demo data", Snackbar.LENGTH_LONG).show();
-
+        showSnackbar("Adding company demo data","ok","yellow");
         InsuranceCompany co = new InsuranceCompany();
         co.setInsuranceCompanyID("COMPANY_001");
         co.setName("Regent Insurance LLC");
@@ -412,7 +315,8 @@ public class CrudActivity extends AppCompatActivity {
         chainDataAPI.addInsuranceCompany(co, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
-                showSnackbar("Company added", "OK", "green");
+                InsuranceCompany x = (InsuranceCompany)data;
+                showSnackbar("Company added: ".concat(x.getName()),"ok","green");
                 updateText(GSON.toJson(data));
             }
 
@@ -731,7 +635,7 @@ public class CrudActivity extends AppCompatActivity {
                 getInsuranceCompanies();
                 break;
             case R.id.nav_cert:
-                startDCLookups();
+               confirmClients();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -758,7 +662,7 @@ public class CrudActivity extends AppCompatActivity {
                 count++;
                 Log.i(TAG, "onResponse: bennie added to blockchain".concat(GSON.toJson(v)));
                 Log.e(TAG, "onResponse: total beneficiaries:".concat(String.valueOf(count)) );
-
+                showSnackbar("Generated beneficiary: ".concat(v.getFullName()),String.valueOf(count),"green");
                 controlBennies();
             }
 
@@ -791,6 +695,7 @@ public class CrudActivity extends AppCompatActivity {
                 clients.add(0, randomClient);
                 Log.e(TAG, "onResponse: total clients:".concat(String.valueOf(clients.size())) );
                 count++;
+                showSnackbar("Generated ".concat(randomClient.getFullName()),String.valueOf(count),"green");
                 controlClients();
 
             }

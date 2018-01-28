@@ -5,7 +5,7 @@
     <item
         android:id="@+id/nav_cert"
         app:showAsAction="ifRoom"
-        android:title="Register DC" />
+        android:title="Add Clients" />
     <item
         android:id="@+id/nav_hospital"
         app:showAsAction="never"

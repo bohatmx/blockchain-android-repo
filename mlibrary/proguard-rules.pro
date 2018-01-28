@@ -29,3 +29,45 @@
 -keepattributes Signature
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
+# Add project specific ProGuard rules here.
+-keepattributes *Annotation*
+
+# This rule will properly ProGuard all the model classes in
+# the package com.aftarobot.library.data.
+-keepclassmembers class com.aftarobot.library.data.** {
+  *;
+}
+
+# Retrofit 2.X
+## https://square.github.io/retrofit/ ##
+
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+###-keepresourcexmlelements manifest/application/meta-data@value=GlideModule
+#### -- Picasso --
+ -dontwarn com.squareup.picasso.**
+
+ #### -- OkHttp --
+
+ -dontwarn com.squareup.okhttp.internal.**
+
+ #### -- Apache Commons --
+
+ -dontwarn org.apache.commons.logging.**
+
+ -ignorewarnings
+ -keep class * {
+     public private *;
+     }
+
+  -keep class com.crashlytics.** { *; }
+  -dontwarn com.crashlytics.**
+
