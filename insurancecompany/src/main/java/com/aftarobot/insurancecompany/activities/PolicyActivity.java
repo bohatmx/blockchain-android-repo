@@ -1,5 +1,6 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
@@ -38,6 +39,7 @@ import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
 import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -67,6 +69,8 @@ public class PolicyActivity extends AppCompatActivity {
     private AutoCompleteTextView auto;
     private Button btnPolicy;
     private Client client;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +85,9 @@ public class PolicyActivity extends AppCompatActivity {
         }
         chainListAPI = new ChainListAPI(this);
         chainDataAPI = new ChainDataAPI(this);
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
+
         getClients();
         listen();
         setup();
@@ -429,7 +436,7 @@ public class PolicyActivity extends AppCompatActivity {
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
         IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(receiver,filterCert);
         broadcastManager.registerReceiver(receiver,filterClaim);
@@ -437,5 +444,6 @@ public class PolicyActivity extends AppCompatActivity {
         broadcastManager.registerReceiver(receiver,filterBurial);
 
     }
+
 
 }

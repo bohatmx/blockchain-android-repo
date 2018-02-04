@@ -231,27 +231,7 @@ public class SignInActivity extends AppCompatActivity {
         user.setStringDateRegistered(sdf.format(new Date()));
         user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
         user.setUserType(UserDTO.FUNERAL_PARLOUR_USER);
-
-        fbListApi.getUserByEmail(u.getEmail(), new FBListApi.UserListener() {
-            @Override
-            public void onResponse(List<UserDTO> users) {
-                if (users.isEmpty()) {
-                    Log.d(TAG, "onResponse: adding user to firebase: ".concat(u.getEmail()));
-                    writeUser(user, u);
-                } else {
-                    Log.w(TAG, "onResponse: user found, no need to add to firebase" );
-                    for (UserDTO ux: users) {
-                        fbApi.deleteUser(ux);
-                    }
-                    writeUser(user,u);
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                showSnackError(message);
-            }
-        });
+        writeUser(user,u);
 
     }
 

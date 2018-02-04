@@ -1,6 +1,7 @@
 package com.aftarobot.parlourapp;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -19,18 +21,24 @@ public class NotifActivity extends Activity {
     private String messageType;
     private String title;
     private String json;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notif);
 
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
+
         setup();
     }
+
     private void setup() {
         title = getIntent().getStringExtra("title");
         json = getIntent().getStringExtra("json");
-        String messageType = getIntent().getStringExtra("messageType");
+        messageType = getIntent().getStringExtra("messageType");
         setTitle("Messages");
 
         if (messageType.contains("USER")) {
@@ -70,49 +78,46 @@ public class NotifActivity extends Activity {
 
     private void showCertificate(final DeathCertificate dc) {
         Log.w(TAG, "showCertificate: ".concat(GSON.toJson(dc)));
-        AlertDialog.Builder x = new AlertDialog.Builder(this);
-        x.setTitle("Death Certificate Registered")
-                .setMessage("Fresh from the blockchain ...\n\n".concat(GSON.toJson(dc)))
-                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-                        m.putExtra("cert", dc);
-                        startActivity(m);
-                        finish();
-                    }
-                })
-                .show();
-
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                m.putExtra("cert", dc);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "CertFragment");
     }
 
     private void showBurial(final Burial burial) {
         Log.d(TAG, "showBurial: ################ ".concat(GSON.toJson(burial)));
-        AlertDialog.Builder x = new AlertDialog.Builder(this);
-        x.setTitle("Death Certificate Registered")
-                .setMessage("Fresh from the blockchain ...\n\n".concat(GSON.toJson(burial)))
-                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-                        m.putExtra("burial", burial);
-                        startActivity(m);
-                        finish();
-
-                    }
-                })
-                .show();
-
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                m.putExtra("burial", burial);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "BurialFragment");
     }
 
-    private void showClaim(Claim claim) {
+    private void showClaim(final Claim claim) {
         Log.d(TAG, "showClaim: ################ ".concat(GSON.toJson(claim)));
-        Intent m = new Intent(getApplicationContext(), NavActivity.class);
-        m.putExtra("claim", claim);
-        startActivity(m);
-
-        finish();
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                m.putExtra("claim", claim);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "ClaimFragment");
     }
+
 
     public static final String TAG = NotifActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

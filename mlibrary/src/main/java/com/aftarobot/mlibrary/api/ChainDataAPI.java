@@ -1,6 +1,7 @@
 package com.aftarobot.mlibrary.api;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.R;
@@ -10,6 +11,7 @@ import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.HomeAffairs;
@@ -19,6 +21,8 @@ import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.Regulator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,12 +38,15 @@ public class ChainDataAPI {
 
     public ChainDataAPI(Context ctx) {
         context = ctx;
-        apiService = APIClient.getClient().create(ApiInterface.class);
+        apiService = APIClient.getClient(ctx).create(ApiInterface.class);
     }
+
     public interface Listener {
         void onResponse(Data data);
+
         void onError(String message);
     }
+
     public void addHomeAffairs(final HomeAffairs homeAffairs, final Listener listener) {
         Call<HomeAffairs> call = apiService.registerHomeAffairs(homeAffairs);
         call.enqueue(new Callback<HomeAffairs>() {
@@ -49,7 +56,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "HomeAffairs added: ".concat(homeAffairs.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.doc_add_failed));
                 }
             }
@@ -62,6 +69,7 @@ public class ChainDataAPI {
             }
         });
     }
+
     public void addDoctor(final Doctor doctor, final Listener listener) {
         Call<Doctor> call = apiService.registerDoctor(doctor);
         call.enqueue(new Callback<Doctor>() {
@@ -71,7 +79,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Doctor added: ".concat(doctor.getIdNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.doc_add_failed));
                 }
             }
@@ -84,6 +92,7 @@ public class ChainDataAPI {
             }
         });
     }
+
     public void registerDeathCertificate(final DeathCertificate certificate, final Listener listener) {
         Call<DeathCertificate> call = apiService.registerDeathCertificate(certificate);
         call.enqueue(new Callback<DeathCertificate>() {
@@ -95,7 +104,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError(context.getString(R.string.dc_add_failed));
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())) );
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -105,12 +114,69 @@ public class ChainDataAPI {
 
             @Override
             public void onFailure(Call<DeathCertificate> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.dc_add_failed));
 
             }
         });
     }
+
+    public void addDeathCertificateRequestByTranx(final DeathCertificateRequest request, final Listener listener) {
+        Call<DeathCertificateRequest> call = apiService.addDeathCertificateRequestViaTranx(request);
+        call.enqueue(new Callback<DeathCertificateRequest>() {
+            @Override
+            public void onResponse(Call<DeathCertificateRequest> call, Response<DeathCertificateRequest> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "DeathCertificateRequest added on blockchain: ".concat(request.getIdNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        listener.onError(context.getString(R.string.dc_add_failed));
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    } catch (Exception e) {
+                        Log.e(TAG, "onResponse: ERROR ", e);
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DeathCertificateRequest> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.dc_add_failed));
+
+            }
+        });
+    }
+
+    public void postDeathCertificateRequest(final DeathCertificateRequest request, final Listener listener) {
+        Call<DeathCertificateRequest> call = apiService.postDeathCertificateRequest(request);
+        call.enqueue(new Callback<DeathCertificateRequest>() {
+            @Override
+            public void onResponse(Call<DeathCertificateRequest> call, Response<DeathCertificateRequest> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "DeathCertificateRequest posted on blockchain: ".concat(request.getIdNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        listener.onError(context.getString(R.string.dc_add_failed));
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    } catch (Exception e) {
+                        Log.e(TAG, "onResponse: ERROR ", e);
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DeathCertificateRequest> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.dc_add_failed));
+
+            }
+        });
+    }
+
     public void registerBurial(final Burial burial, final Listener listener) {
         Call<Burial> call = apiService.registerBurial(burial);
         call.enqueue(new Callback<Burial>() {
@@ -122,7 +188,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError("Failed to register burial");
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -132,13 +198,42 @@ public class ChainDataAPI {
 
             @Override
             public void onFailure(Call<Burial> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.burial_failed));
 
             }
         });
     }
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    public void updateClientPolicies(final Client client, final Listener listener) {
+        //Log.e(TAG, "updateClientPolicies: ".concat(GSON.toJson(client)) );
+        String id = client.getIdNumber();
+        client.setIdNumber(null);
+        Call<Client> call = apiService.updateClient(id, client);
+        call.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(@NonNull Call<Client> call, @NonNull Response<Client> response) {
+                if (response.isSuccessful()) {
+                    Client m = response.body();
+                    Log.i(TAG, "onResponse: client policies updated"
+                            .concat(GSON.toJson(m)));
+                    listener.onResponse(m);
+
+                } else {
+                    Log.e(TAG, "onResponse: ERROR: ".concat(response.message()));
+                    listener.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
 
     public void addDeathCertificate(final DeathCertificate certificate, final Listener listener) {
         Call<DeathCertificate> call = apiService.addDeathCertificate(certificate);
@@ -149,19 +244,20 @@ public class ChainDataAPI {
                     Log.i(TAG, "DeathCertificate added: ".concat(certificate.getIdNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.dc_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<DeathCertificate> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.dc_add_failed));
 
             }
         });
     }
+
     public void addBurial(final Burial burial, final Listener listener) {
         Call<Burial> call = apiService.addBurial(burial);
         call.enqueue(new Callback<Burial>() {
@@ -172,21 +268,22 @@ public class ChainDataAPI {
                     listener.onResponse(response.body());
                 } else {
 
-                    Log.e(TAG, "addBurial ERROR: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "addBurial ERROR: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.burial_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Burial> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.burial_add_failed));
 
             }
         });
     }
+
     public void addClaim(final Claim claim, final Listener listener) {
-        Log.w(TAG, "########### addClaim: ".concat(GSON.toJson(claim)) );
+        Log.w(TAG, "########### addClaim: ".concat(GSON.toJson(claim)));
         Call<Claim> call = apiService.registerClaim(claim);
         call.enqueue(new Callback<Claim>() {
             @Override
@@ -202,14 +299,39 @@ public class ChainDataAPI {
 
             @Override
             public void onFailure(Call<Claim> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.claim_add_failed));
+
+            }
+        });
+    }
+
+    public void registerPolicyViaTx(final Policy policy, final Listener listener) {
+        Call<Policy> call = apiService.registerPolicyViaTx(policy);
+        Log.d(TAG, "registerPolicyViaTx: ".concat(call.request().url().toString()));
+        call.enqueue(new Callback<Policy>() {
+            @Override
+            public void onResponse(Call<Policy> call, Response<Policy> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "Insurance policy registered via tx: ".concat(policy.getPolicyNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    listener.onError(context.getString(R.string.policy_add_failed));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Policy> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.policy_add_failed));
 
             }
         });
     }
     public void addPolicy(final Policy policy, final Listener listener) {
         Call<Policy> call = apiService.registerPolicy(policy);
+        Log.d(TAG, "addPolicy: ".concat(call.request().url().toString()));
         call.enqueue(new Callback<Policy>() {
             @Override
             public void onResponse(Call<Policy> call, Response<Policy> response) {
@@ -217,14 +339,14 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance policy added: ".concat(policy.getPolicyNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.policy_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Policy> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.policy_add_failed));
 
             }
@@ -239,19 +361,20 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance regulator added: ".concat(regulator.getFirstName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.regulator_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Regulator> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.regulator_add_failed));
 
             }
         });
     }
+
     public void addClient(final Client client, final Listener listener) {
         Call<Client> call = apiService.registerClient(client);
         call.enqueue(new Callback<Client>() {
@@ -261,19 +384,24 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance client added: ".concat(client.getFirstName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    try {
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody().string())));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     listener.onError(context.getString(R.string.client_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Client> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.client_add_failed));
 
             }
         });
     }
+
     public void addBeneficiary(final Beneficiary beneficiary, final Listener listener) {
         Call<Beneficiary> call = apiService.registerBeneficiary(beneficiary);
         call.enqueue(new Callback<Beneficiary>() {
@@ -283,19 +411,20 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance beneficiary added: ".concat(beneficiary.getFirstName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.benefic_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Beneficiary> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.benefic_add_failed));
 
             }
         });
     }
+
     public void addInsuranceCompany(final InsuranceCompany company, final Listener listener) {
         Call<InsuranceCompany> call = apiService.registerInsuranceCompany(company);
         Log.d(TAG, "addInsuranceCompany: ".concat(call.request().url().url().toString()));
@@ -306,19 +435,20 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance company added: ".concat(company.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.company_add_failled));
                 }
             }
 
             @Override
             public void onFailure(Call<InsuranceCompany> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.company_add_failled));
 
             }
         });
     }
+
     public void addHospital(final Hospital hospital, final Listener listener) {
         Call<Hospital> call = apiService.registerHospital(hospital);
         Log.d(TAG, "addHospital: ".concat(call.request().url().url().toString()));
@@ -329,19 +459,20 @@ public class ChainDataAPI {
                     Log.i(TAG, "Hospital  added: ".concat(hospital.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.hosp_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<Hospital> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.hosp_add_failed));
 
             }
         });
     }
+
     public void addFuneralParlour(final FuneralParlour funeralParlour, final Listener listener) {
         Call<FuneralParlour> call = apiService.registerFuneralParlour(funeralParlour);
         call.enqueue(new Callback<FuneralParlour>() {
@@ -351,18 +482,19 @@ public class ChainDataAPI {
                     Log.i(TAG, "FuneralParlour  added: ".concat(funeralParlour.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)) );
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.fp_add_failed));
                 }
             }
 
             @Override
             public void onFailure(Call<FuneralParlour> call, Throwable t) {
-                Log.e(TAG, "onFailure: ",t );
+                Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.fp_add_failed));
 
             }
         });
     }
+
     public static final String TAG = ChainDataAPI.class.getSimpleName();
 }

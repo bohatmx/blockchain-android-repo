@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class Claim implements Data, Serializable{
     private String $class;
     private String claimId, dateTime, companyId;
-    private String policy, client, hospital, beneficiary;
+    private String policy, client, hospital;
 
     public String getClassz() { return this.$class; }
 
@@ -45,14 +45,6 @@ public class Claim implements Data, Serializable{
 
     public void setHospital(String hospital) {
         this.hospital = hospital;
-    }
-
-    public String getBeneficiary() {
-        return beneficiary;
-    }
-
-    public void setBeneficiary(String beneficiary) {
-        this.beneficiary = beneficiary;
     }
 
     public String getClaimId() { return this.claimId; }

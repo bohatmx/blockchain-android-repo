@@ -1,5 +1,6 @@
 package com.aftarobot.hospitalapp;
 
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,12 +15,15 @@ import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class NotifActivity extends AppCompatActivity {
     private String title;
     private String json;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,8 @@ public class NotifActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notif);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
 
         setup();
         
@@ -60,7 +66,7 @@ public class NotifActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent m = new Intent(getApplicationContext(), NavigActivity.class);
+                Intent m = new Intent(getApplicationContext(), HospitalNavActivity.class);
                 startActivity(m);
                 finish();
             }
@@ -75,7 +81,7 @@ public class NotifActivity extends AppCompatActivity {
                 .setPositiveButton("Yes, thank you!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent m = new Intent(getApplicationContext(), NavigActivity.class);
+                        Intent m = new Intent(getApplicationContext(), HospitalNavActivity.class);
                         startActivity(m);
                         finish();
                     }
@@ -83,31 +89,51 @@ public class NotifActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showCertificate(DeathCertificate dc) {
+    private void showCertificate(final DeathCertificate dc) {
         Log.w(TAG, "showCertificate: ".concat(GSON.toJson(dc)));
-        Intent m = new Intent(getApplicationContext(), NavigActivity.class);
-        m.putExtra("cert", dc);
-        startActivity(m);
-        finish();
+        dialogFragment.setData(dc);
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), HospitalNavActivity.class);
+                m.putExtra("cert", dc);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "CertFragment");
     }
 
-    private void showBurial(Burial burial) {
+    private void showBurial(final Burial burial) {
         Log.d(TAG, "showBurial: ################ ".concat(GSON.toJson(burial)));
-        Intent m = new Intent(getApplicationContext(), NavigActivity.class);
-        m.putExtra("burial", burial);
-        startActivity(m);
-        finish();
-
+        dialogFragment.setData(burial);
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), HospitalNavActivity.class);
+                m.putExtra("burial", burial);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "BurialFragment");
     }
 
-    private void showClaim(Claim claim) {
+    private void showClaim(final Claim claim) {
         Log.d(TAG, "showClaim: ################ ".concat(GSON.toJson(claim)));
-        Intent m = new Intent(getApplicationContext(), NavigActivity.class);
-        m.putExtra("claim", claim);
-        startActivity(m);
-
-        finish();
+        dialogFragment.setData(claim);
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                Intent m = new Intent(getApplicationContext(), HospitalNavActivity.class);
+                m.putExtra("claim", claim);
+                startActivity(m);
+                finish();
+            }
+        });
+        dialogFragment.show(fm, "ClaimFragment");
     }
+
 
     public static final String TAG = NotifActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

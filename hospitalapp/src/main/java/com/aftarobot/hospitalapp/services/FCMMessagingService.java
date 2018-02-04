@@ -1,6 +1,5 @@
 package com.aftarobot.hospitalapp.services;
 
-import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -23,7 +22,6 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,44 +49,31 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 Log.d(TAG, "onMessageReceived: name: " + s + " value: " + map.get(s));
             }
             String type = map.get("messageType");
-            if (isRunningInForeground(getApplicationContext())) {
+            if (type.equalsIgnoreCase("USER")) {
+                UserDTO user = GSON.fromJson(map.get("json"), UserDTO.class);
+                broadcast(BROADCAST_USER, user);
+                sendNotification(type, "Welcome to Blockchain", map.get("json"));
+            }
+            if (type.equalsIgnoreCase("CLAIM")) {
+                Claim claim = GSON.fromJson(map.get("json"), Claim.class);
+                broadcast(BROADCAST_CLAIM, claim);
+                sendNotification(type, "Claim Registered", map.get("json"));
 
-                if (type.equalsIgnoreCase("USER")) {
-                    UserDTO user = GSON.fromJson(map.get("json"), UserDTO.class);
-                    broadcast(BROADCAST_USER, user);
-                }
-                if (type.equalsIgnoreCase("CLAIM")) {
-                    Claim claim = GSON.fromJson(map.get("json"), Claim.class);
-                    broadcast(BROADCAST_CLAIM, claim);
-                }
-                if (type.equalsIgnoreCase("CERT")) {
-                    DeathCertificate dc = GSON.fromJson(map.get("json"), DeathCertificate.class);
-                    broadcast(BROADCAST_CERT, dc);
-                }
-                if (type.equalsIgnoreCase("BURIAL")) {
-                    Burial burial = GSON.fromJson(map.get("json"), Burial.class);
-                    broadcast(BROADCAST_BURIAL, burial);
-                }
-                if (type.equalsIgnoreCase("POLICY")) {
-                    Policy pol = GSON.fromJson(map.get("json"), Policy.class);
-                    broadcast(BROADCAST_USER, pol);
-                }
-            } else {
-                if (type.equalsIgnoreCase("USER")) {
-                    sendNotification(type,"Welcome to Blockchain", map.get("json"));
-                }
-                if (type.equalsIgnoreCase("CERT")) {
-                    sendNotification(type,"Death Certificate Issued", map.get("json"));
-                }
-                if (type.equalsIgnoreCase("CLAIM")) {
-                    sendNotification(type,"Claim Registered", map.get("json"));
-                }
-                if (type.equalsIgnoreCase("BURIAL")) {
-                    sendNotification(type,"Burial Registered", map.get("json"));
-                }
-                if (type.equalsIgnoreCase("POLICY")) {
-                    sendNotification(type,"Policy Registered", map.get("json"));
-                }
+            }
+            if (type.equalsIgnoreCase("CERT")) {
+                DeathCertificate dc = GSON.fromJson(map.get("json"), DeathCertificate.class);
+                broadcast(BROADCAST_CERT, dc);
+                sendNotification(type, "Death Certificate Issued", map.get("json"));
+            }
+            if (type.equalsIgnoreCase("BURIAL")) {
+                Burial burial = GSON.fromJson(map.get("json"), Burial.class);
+                broadcast(BROADCAST_BURIAL, burial);
+                sendNotification(type, "Burial Registered", map.get("json"));
+            }
+            if (type.equalsIgnoreCase("POLICY")) {
+                Policy pol = GSON.fromJson(map.get("json"), Policy.class);
+                broadcast(BROADCAST_USER, pol);
+                sendNotification(type, "Policy Registered", map.get("json"));
             }
         }
     }
@@ -141,36 +126,6 @@ public class FCMMessagingService extends FirebaseMessagingService {
 
 
     }
-
-    public static boolean isRunningInForeground(Context context) {
-        try {
-            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> runningProcesses = null;
-            if (am != null) {
-                runningProcesses = am.getRunningAppProcesses();
-                for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
-                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                        for (String activeProcess : processInfo.pkgList) {
-                            if (activeProcess.equals(context.getPackageName())) {
-                                Log.w(TAG, "isRunningInForeground: TRUE");
-                                return true;
-                            }
-                        }
-                    }
-                }
-            } else {
-                return false;
-            }
-
-
-            Log.w(TAG, "isRunningInForeground: FALSE");
-        } catch (Exception e) {
-            Log.e(TAG, "isRunningInForeground: ", e);
-        }
-
-        return false;
-    }
-
 
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

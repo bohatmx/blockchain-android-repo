@@ -1,5 +1,6 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -30,6 +31,7 @@ import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
 import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -53,12 +55,14 @@ public class ClientsActivity extends AppCompatActivity {
     private ChainDataAPI chainDataAPI;
     private InsuranceCompany company;
     private List<Beneficiary> beneficiaries, policyBeneficiaries;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_clients);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar =  findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Client Management");
@@ -68,6 +72,9 @@ public class ClientsActivity extends AppCompatActivity {
         }
         chainListAPI = new ChainListAPI(this);
         chainDataAPI = new ChainDataAPI(this);
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
+
         getClients();
         getBennies();
         listen();
@@ -105,7 +112,7 @@ public class ClientsActivity extends AppCompatActivity {
 
     private Client randomClient;
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    public static final int MAX_CLIENTS = 50, MAX_BENNIES = 100;
+    public static final int MAX_CLIENTS = 5, MAX_BENNIES = 10;
     private int count;
 
     private void getBennies() {
@@ -347,7 +354,7 @@ public class ClientsActivity extends AppCompatActivity {
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
         IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(receiver,filterCert);
         broadcastManager.registerReceiver(receiver,filterClaim);

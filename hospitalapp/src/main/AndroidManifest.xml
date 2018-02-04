@@ -39,7 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NavigActivity"
+            android:name=".HospitalNavActivity"
             android:label="@string/title_activity_navig"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

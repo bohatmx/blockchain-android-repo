@@ -3,6 +3,7 @@ package com.aftarobot.mlibrary.data;
 import android.support.annotation.NonNull;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by aubreymalabie on 1/12/18.
@@ -11,6 +12,24 @@ import java.io.Serializable;
 public class Client extends Person implements Data, Serializable, Comparable<Client>{
     private Double accountBalance;
     private boolean isDeceased;
+    private String insuranceCompany;
+    private List<String> policies;
+
+    public List<String> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(List<String> policies) {
+        this.policies = policies;
+    }
+
+    public String getInsuranceCompany() {
+        return insuranceCompany;
+    }
+
+    public void setInsuranceCompany(String insuranceCompany) {
+        this.insuranceCompany = insuranceCompany;
+    }
 
     public boolean isDeceased() {
         return isDeceased;

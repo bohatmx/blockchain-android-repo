@@ -2,6 +2,7 @@ package com.aftarobot.mlibrary.api;
 
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,6 +28,11 @@ public class FBListApi {
         void onResponse(List<UserDTO> users);
         void onError(String message);
     }
+    public interface BeneficiaryListener {
+        void onResponse(List<Beneficiary> beneficiaries);
+        void onError(String message);
+    }
+
     public void getUserByEmail(String email, final UserListener listener) {
         DatabaseReference ref = db.getReference(FBApi.USERS);
         Query query = ref.orderByChild("email").equalTo(email).limitToFirst(1);
@@ -51,6 +57,31 @@ public class FBListApi {
             }
         });
     }
+    public void getUserByIDnumber(String idNumber, final UserListener listener) {
+        DatabaseReference ref = db.getReference(FBApi.USERS);
+        Query query = ref.orderByChild("idNumber").equalTo(idNumber).limitToFirst(1);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "onDataChange: dataSnapshot:\n" + dataSnapshot);
+                List<UserDTO> users = new ArrayList<>();
+                for (DataSnapshot shot: dataSnapshot.getChildren()) {
+                    UserDTO u = shot.getValue(UserDTO.class);
+                    u.setUserID(shot.getKey());
+                    users.add(u);
+                }
+
+                listener.onResponse(users);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(databaseError.getMessage());
+            }
+        });
+    }
+
 
     public static final String TAG = FBListApi.class.getSimpleName();
 }

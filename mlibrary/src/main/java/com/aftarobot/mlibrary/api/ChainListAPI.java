@@ -7,6 +7,7 @@ import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
@@ -33,7 +34,7 @@ public class ChainListAPI {
 
     public ChainListAPI(Context ctx) {
         context = ctx;
-        apiService = APIClient.getClient().create(ApiInterface.class);
+        apiService = APIClient.getClient(ctx).create(ApiInterface.class);
     }
     public interface CompanyListener {
         void onResponse(List<InsuranceCompany> companies);
@@ -71,6 +72,10 @@ public class ChainListAPI {
         void onResponse(List<DeathCertificate> certificates);
         void onError(String message);
     }
+    public interface DeathCertRequestListener {
+        void onResponse(List<DeathCertificateRequest> requests);
+        void onError(String message);
+    }
 
     public void getClient(String id, final ClientListener listener) {
         Call<Client> call = apiService.getClient(id);
@@ -91,6 +96,30 @@ public class ChainListAPI {
 
             @Override
             public void onFailure(Call<Client> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
+    public void getPolicy(String id, final PolicyListener listener) {
+        Call<Policy> call = apiService.getPolicy(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<Policy>() {
+            @Override
+            public void onResponse(Call<Policy> call, Response<Policy> response) {
+                if (response.isSuccessful()) {
+                    Policy client = response.body();
+                    List<Policy> list = new ArrayList<>(1);
+                    list.add(client);
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: client not found ");
+                    listener.onResponse(new ArrayList<Policy>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Policy> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(t.getMessage());
             }
@@ -397,6 +426,38 @@ public class ChainListAPI {
             }
         });
     }
+
+    public void getDeathCertificateRequests(final DeathCertRequestListener listener) {
+        Call<List<DeathCertificateRequest>> call = apiService.getDeathCertificateRequests();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<DeathCertificateRequest>>() {
+            @Override
+            public void onResponse(Call<List<DeathCertificateRequest>> call, Response<List<DeathCertificateRequest>> response) {
+                if (response.isSuccessful()) {
+                    List<DeathCertificateRequest> list = response.body();
+                    Log.i(TAG, "getDeathCertificateRequests returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.e(TAG, "onResponse: ",e );
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<DeathCertificateRequest>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
+
     public static final String TAG = ChainListAPI.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

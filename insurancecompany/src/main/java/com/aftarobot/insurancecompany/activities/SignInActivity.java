@@ -233,27 +233,7 @@ private FBListApi fbListApi;
         user.setStringDateRegistered(sdf.format(new Date()));
         user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
         user.setUserType(UserDTO.COMPANY_USER);
-
-        fbListApi.getUserByEmail(u.getEmail(), new FBListApi.UserListener() {
-            @Override
-            public void onResponse(List<UserDTO> users) {
-                if (users.isEmpty()) {
-                    Log.d(TAG, "onResponse: adding user to firebase: ".concat(u.getEmail()));
-                    writeUser(user);
-                } else {
-                    Log.w(TAG, "onResponse: user found, no need to add to firebase" );
-                    for (UserDTO ux: users) {
-                        fbApi.deleteUser(ux);
-                    }
-                    writeUser(user);
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                showSnackError(message);
-            }
-        });
+        writeUser(user);
 
     }
 
@@ -266,9 +246,9 @@ private FBListApi fbListApi;
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
-                if (user.getCompanyId() != null) {
-                    FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(user.getCompanyId()));
-                    Log.e(TAG, "onResponse: user subscribed to topic: claims" + user.getCompanyId());
+                if (company != null) {
+                    FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(company.getInsuranceCompanyID()));
+                    Log.e(TAG, "onResponse: user subscribed to topic: claims" + company.getInsuranceCompanyID());
                 } else {
                     throw new RuntimeException("Things are fucked up! No companyID ...");
                 }

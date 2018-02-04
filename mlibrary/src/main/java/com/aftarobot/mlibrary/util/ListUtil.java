@@ -80,7 +80,22 @@ public class ListUtil {
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
         Log.d("ListUtil", "getRandomIdNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+    public static String getRandomCompanyId() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSCO-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+
+        Log.d("ListUtil", "getRandomCompanyId: ".concat(sb.toString()));
 
         return sb.toString();
     }
@@ -115,10 +130,17 @@ public class ListUtil {
             "Lesego","Kenneth","Catherine","Nomonde","Nozipho","Wendy","Lindiwe", "Oupa", "Jimmy", "Benjamin", "Jimbo", "Bafana", "Joyce",
             "Billy", "Petrus", "Johannes", "Mmaphefo","Michael", "Jordan", "Nokuhle", "Marianne", "Franklin", "Jones",
             "Xavier", "Hunter", "Nancy", "Vincent", "Malenga", "Dlamani", "Msapa", "Geraldine",
-            "Jennifer", "Susan", "Mmaphefo", "Ntini"};
+            "Khanyisa","Thompson","Derrick","Joseph", "Nkululeko","Kate", "Thomas","Daniel", "Lunga", "Donald",
+            "Robert","Samuel","Patrick","John","Tracy","Ainsley","Ashley","Ashleigh","Lee","Tony","Barrick",
+            "Barack","Trent","Brady","Antonio","Bryce","Boyce","Boysie",
+            "Jennifer", "Susan", "Mmaphefo", "Ntini", "Mmapaseka","Paseka","Lesedi","Thapelo","Clive","Mpho"};
     private static final String[] lNames = {"Adams","Abrams","Macheke","Matime","Ngwenya","Moriri","Moroka", "Khoza", "van der Merwe", "Pieterse", "Maluleke",
             "Nkosi", "Malenga", "Mathibe", "Mthembu", "Shiluvane", "Shibambu",
-            "Venter", "Jonathan", "Kelly", "Thebe", "Nhlapho", "Nkruma",
+            "Venter", "Jonathan", "Kelly", "Thebe", "Nhlapho", "Nkruma", "Sibiya", "Sibanyoni",
+            "Motlhana", "Nthlese", "Petrus", "Henk", "Khulumani", "Jameson", "Walker", "Welker",
+            "Brady", "Brown", "Wentz", "Foles","Peterson", "Agholor", "Nelson", "Frederick", "Franks",
+             "Chomane", "Ngwenya", "Grootboom","Jackson", "Samuels", "Daniels", "Samuelson",
+            "Bongomuffin", "Johnsen", "Patrick", "Els", "Venter", "Oscar", "Pretorius", "Dumisa",
             "Bethuel", "Johnson", "Smith", "Thulare","Maseko","Patterson", "Moloi", "Singh", "Gupta", "Booysens", "Thomas", "Renken",
             "Davids", "Davidson","Jeremiah", "Kuthile", "Nemavhandou", "Marule", "Baloyi", "Chauke", "Maringa", "Gondwe",
             "Booi", "Samuelson", "Gates", "Johansen", "Molefe","Masekwameng","Mthembu","Ngidi","Ngalalume", "Sibanyoni", "Mathebula", "Jones", "de Klerk", "Botha", "Bodibe"};

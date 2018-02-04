@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".NavigActivity"
+    tools:context=".HospitalNavActivity"
     tools:showIn="@layout/app_bar_navig">
 
     <TextView
         android:id="@+id/txtTitle"
-        android:text="Death Certificate"
+        android:text="Certificate Request"
         android:layout_marginTop="@dimen/fab_margin"
         android:textSize="28sp"
         android:textStyle="bold"
@@ -32,7 +32,7 @@
 
             <AutoCompleteTextView
                 android:id="@+id/auto"
-                android:hint="Search for Patient By Id"
+                android:hint="Search for Patient By Id or Name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/btnCreate"
-                android:text="Create Certificate"
+                android:text="Request Home Affairs Certificate"
                 android:textColor="@color/white"
                 android:background="@color/blue_700"
                 android:layout_below="@id/spinner"

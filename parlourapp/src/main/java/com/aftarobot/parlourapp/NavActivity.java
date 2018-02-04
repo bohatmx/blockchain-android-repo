@@ -1,6 +1,11 @@
 package com.aftarobot.parlourapp;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -27,11 +32,12 @@ import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Burial;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.FuneralParlour;
-import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.parlourapp.services.FCMMessagingService;
 import com.google.gson.Gson;
@@ -56,7 +62,10 @@ public class NavActivity extends AppCompatActivity
     private ChainDataAPI chainDataAPI;
     private ChainListAPI chainListAPI;
     private FBApi fbApi;
-
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
+    private Burial burial;
+    private Claim claim;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,12 +79,46 @@ public class NavActivity extends AppCompatActivity
         getSupportActionBar().setTitle("Burial Services");
         getSupportActionBar().setSubtitle(parlour.getName());
 
+        certificate= (DeathCertificate) getIntent().getSerializableExtra("cert");
+        burial= (Burial) getIntent().getSerializableExtra("burial");
+        claim= (Claim) getIntent().getSerializableExtra("claim");
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
         listen();
         setup();
         getDeathCerts();
+        checkMessage();
+    }
+    private void checkMessage() {
+        fm = getFragmentManager();
+        int count = 0;
+        dialogFragment = new MyDialogFragment();
+        if (certificate != null) {
+            count++;
+            dialogFragment.setData(certificate);
+        }
+        if (burial != null) {
+            count++;
+
+            dialogFragment.setData(burial);
+        }
+        if (claim != null) {
+            count++;
+            dialogFragment.setData(claim);
+        }
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                dialogFragment.dismiss();
+            }
+        });
+        if (count > 0) {
+            dialogFragment.show(fm,"mydiagfragment");
+        }
     }
 
     private void getDeathCerts() {
+
         chainListAPI.getDeathCertificates(new ChainListAPI.DeathCertListener() {
             @Override
             public void onResponse(List<DeathCertificate> list) {
@@ -181,6 +224,7 @@ public class NavActivity extends AppCompatActivity
                     return;
                 }
                 Client client = clients.get(0);
+
                 txtName.setText(client.getFullName());
                 btn.setAlpha(1.0f);
                 btn.setEnabled(true);
@@ -245,6 +289,7 @@ public class NavActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            getDeathCerts();
             return true;
         }
 
@@ -310,10 +355,51 @@ public class NavActivity extends AppCompatActivity
     private void listen() {
         IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver,filterCert);
+        broadcastManager.registerReceiver(new CertReceiver(),filterCert);
 
 
+    }
+    private DeathCertificate sentDC;
+
+    private class CertReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentDC = (DeathCertificate) m.getSerializableExtra("data");
+            if (sentDC != null) {
+                snackbar = Snackbar.make(toolbar, "Certificate Registered: "
+                        .concat(sentDC.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showCert(sentDC);
+                    }
+                });
+                snackbar.show();
+            }
+            getDeathCerts();
+        }
+
+    }
+
+    private void showCert(DeathCertificate dc) {
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("CERT_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "CERT_DIAG");
     }
 }

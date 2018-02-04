@@ -1,5 +1,10 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -21,14 +26,16 @@ import android.widget.TextView;
 
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.services.FCMMessagingService;
-import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
-import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
+import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -50,9 +57,16 @@ public class NavActivity extends AppCompatActivity
     private List<Policy> policies;
     private List<Claim> claims;
     private InsuranceCompany company;
+    private DeathCertificate certificate;
+    private Burial burial;
+    private Claim claim;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
+
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm");
     public static final String TAG = NavActivity.class.getSimpleName();
     public static final DecimalFormat df = new DecimalFormat("###,###,###,###");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,12 +75,47 @@ public class NavActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Claims Business Network");
 
+        certificate = (DeathCertificate) getIntent().getSerializableExtra("cert");
+        burial = (Burial) getIntent().getSerializableExtra("burial");
+        claim = (Claim) getIntent().getSerializableExtra("claim");
+
 
         setup();
         listen();
         getClients();
         getClaims();
         getPolicies();
+        checkMessage();
+    }
+
+    private void checkMessage() {
+        fm = getFragmentManager();
+        int count = 0;
+        dialogFragment = new MyDialogFragment();
+        if (certificate != null) {
+            count++;
+            dialogFragment.setData(certificate);
+        }
+        if (burial != null) {
+            count++;
+            dialogFragment.setData(burial);
+        }
+        if (claim != null) {
+            count++;
+            dialogFragment.setData(claim);
+        }
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                dialogFragment.dismiss();
+                certificate = null;
+                burial = null;
+                claim = null;
+            }
+        });
+        if (count > 0) {
+            dialogFragment.show(fm, "mydiagfragment");
+        }
     }
 
     @Override
@@ -74,13 +123,14 @@ public class NavActivity extends AppCompatActivity
         super.onResume();
         getClients();
     }
+
     private void setup() {
-        FloatingActionButton fab =  findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                showSnack("Refreshing Dashboard ...","ok","yellow");
+                showSnack("Refreshing Dashboard ...", "ok", "yellow");
                 getClients();
                 getClaims();
                 getPolicies();
@@ -88,14 +138,14 @@ public class NavActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         //drawer.openDrawer(GravityCompat.START);
 
-        NavigationView navigationView =  findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         chainListAPI = new ChainListAPI(this);
         company = SharedPrefUtil.getCompany(this);
@@ -157,7 +207,6 @@ public class NavActivity extends AppCompatActivity
         });
     }
 
-
     private void getClients() {
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
@@ -177,13 +226,20 @@ public class NavActivity extends AppCompatActivity
         });
     }
 
-    private void getBeneficiaries() {
-        chainListAPI.getBeneficiaries(new ChainListAPI.BeneficiaryListener() {
+    private void getPolicies() {
+        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
             @Override
-            public void onResponse(List<Beneficiary> list) {
-                beneficiaries = list;
-                Log.w(TAG, "onResponse: beneficiaries found on blockchain: " + list.size());
-
+            public void onResponse(List<Policy> list) {
+                Log.d(TAG, "onResponse: all policies found on blockchain: " + list.size());
+                policies = new ArrayList<>();
+                for (Policy p : list) {
+                    if (p.getInsuranceCompany().contains(company.getInsuranceCompanyID())) {
+                        policies.add(p);
+                    }
+                }
+                txtPolicies.setText(df.format(policies.size()));
+                Log.w(TAG, "onResponse: filtered company policies found on blockchain: " + policies.size());
+                Snackbar.make(toolbar, "Dashboard refreshed", Snackbar.LENGTH_LONG).show();
             }
 
             @Override
@@ -193,32 +249,10 @@ public class NavActivity extends AppCompatActivity
         });
     }
 
-    private void getPolicies() {
-        chainListAPI.getPolicies( new ChainListAPI.PolicyListener() {
-                    @Override
-                    public void onResponse(List<Policy> list) {
-                        Log.d(TAG, "onResponse: all policies found on blockchain: " + list.size());
-                        policies = new ArrayList<>();
-                        for (Policy p: list) {
-                            if (p.getInsuranceCompany().contains(company.getInsuranceCompanyID())) {
-                                policies.add(p);
-                            }
-                        }
-                        txtPolicies.setText(df.format(policies.size()));
-                        Log.w(TAG, "onResponse: filtered company policies found on blockchain: " + policies.size());
-                        Snackbar.make(toolbar,"Dashboard refreshed",Snackbar.LENGTH_LONG).show();
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
-    }
-
     private Snackbar snackbar;
+
     private void showError(String message) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor("red"));
         snackbar.setAction("Error", new View.OnClickListener() {
             @Override
@@ -228,8 +262,9 @@ public class NavActivity extends AppCompatActivity
         });
         snackbar.show();
     }
+
     private void showSnack(String message, String action, String color) {
-        snackbar = Snackbar.make(toolbar,message, Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor(color));
         snackbar.setAction(action, new View.OnClickListener() {
             @Override
@@ -301,15 +336,172 @@ public class NavActivity extends AppCompatActivity
         IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
-        IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver,filterCert);
-        broadcastManager.registerReceiver(receiver,filterClaim);
-        broadcastManager.registerReceiver(receiver,filterPolicy);
-        broadcastManager.registerReceiver(receiver,filterBurial);
+
+        ClaimReceiver receiver = new ClaimReceiver();
+        broadcastManager.registerReceiver(receiver, filterClaim);
+
+        CertReceiver receiverC = new CertReceiver();
+        broadcastManager.registerReceiver(receiverC, filterCert);
+
+        BurialReceiver receiverB = new BurialReceiver();
+        broadcastManager.registerReceiver(receiverB, filterBurial);
 
     }
+
+    private DeathCertificate sentDC;
+    private Burial sentBurial;
+    private Claim sentClaim;
+
+    private class ClaimReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentClaim = (Claim) m.getSerializableExtra("data");
+            if (sentClaim != null) {
+                snackbar = Snackbar.make(toolbar, "Claim Arrived: "
+                        .concat(sentClaim.getClaimId()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showClaim(sentClaim);
+                    }
+                });
+                snackbar.show();
+            }
+            getClaims();
+
+        }
+
+    }
+
+
+    private class BurialReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentBurial = (Burial) m.getSerializableExtra("data");
+            if (sentBurial != null) {
+
+                snackbar = Snackbar.make(toolbar, "Burial registered: "
+                        .concat(sentBurial.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showBurial(sentBurial);
+                    }
+                });
+                snackbar.show();
+            }
+
+
+        }
+
+    }
+
+
+    private class CertReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentDC = (DeathCertificate) m.getSerializableExtra("data");
+            if (sentDC != null) {
+
+                snackbar = Snackbar.make(toolbar, "Certificate Registered: "
+                        .concat(sentDC.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showCert(sentDC);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+
+
+    }
+    private void showClaim(Claim dc) {
+
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "CLAIM_DIAG");
+    }
+    private void showPolicy(Policy dc) {
+
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("POLICY_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "POLICY_DIAG");
+    }
+    private void showBurial(Burial dc) {
+
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("BURIAL_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "BURIAL_DIAG");
+    }
+    private void showCert(DeathCertificate dc) {
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("CERT_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "CERT_DIAG");
+    }
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

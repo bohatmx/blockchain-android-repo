@@ -1,5 +1,6 @@
 package com.aftarobot.hospitalapp;
 
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -29,13 +30,15 @@ import com.aftarobot.hospitalapp.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Hospital;
-import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -45,9 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
-public class NavigActivity extends AppCompatActivity
+public class HospitalNavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private ChainDataAPI chainDataAPI;
@@ -61,7 +63,11 @@ public class NavigActivity extends AppCompatActivity
     private Button btn;
     private String cause;
     private Spinner spinner;
-
+    private DeathCertificate certificate;
+    private Burial burial;
+    private Claim claim;
+    private MyDialogFragment dialogFragment;
+    private FragmentManager fm;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,19 +75,53 @@ public class NavigActivity extends AppCompatActivity
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        certificate= (DeathCertificate) getIntent().getSerializableExtra("cert");
+        burial= (Burial) getIntent().getSerializableExtra("burial");
+        claim= (Claim) getIntent().getSerializableExtra("claim");
+
         hospital = SharedPrefUtil.getHospital(this);
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
         fbApi = new FBApi();
+        fm = getFragmentManager();
+        dialogFragment = new MyDialogFragment();
         listen();
         getClients();
 
-        setup(toolbar);
-        getSupportActionBar().setTitle("Death Certificates");
+        setup();
+        getSupportActionBar().setTitle("Death Certificate Requests");
         getSupportActionBar().setSubtitle(hospital.getName());
+        checkMessage();
+    }
+    private void checkMessage() {
+        fm = getFragmentManager();
+        int count = 0;
+        dialogFragment = new MyDialogFragment();
+        if (certificate != null) {
+            count++;
+            dialogFragment.setData(certificate);
+        }
+        if (burial != null) {
+            count++;
+
+            dialogFragment.setData(burial);
+        }
+        if (claim != null) {
+            count++;
+            dialogFragment.setData(claim);
+        }
+        dialogFragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                dialogFragment.dismiss();
+            }
+        });
+        if (count > 0) {
+            dialogFragment.show(fm,"mydiagfragment");
+        }
     }
 
-    private void setup(Toolbar toolbar) {
+    private void setup() {
         FloatingActionButton fab = findViewById(R.id.fab);
         txtName = findViewById(R.id.name);
         txtId = findViewById(R.id.idNumber);
@@ -96,7 +136,7 @@ public class NavigActivity extends AppCompatActivity
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addCertificate();
+                addCertificateRequest();
             }
         });
         fab.setOnClickListener(new View.OnClickListener() {
@@ -122,28 +162,30 @@ public class NavigActivity extends AppCompatActivity
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    private void addCertificate() {
+    private void addCertificateRequest() {
         if (cause == null) {
             showError("Please select cause of death");
             return;
         }
-        Snackbar.make(toolbar, "Registering Certificate ...", Snackbar.LENGTH_LONG).show();
-        final DeathCertificate dc = new DeathCertificate();
+        showSnack("Requesting Certificate from Home Affairs...","OK","yellow");
+        final DeathCertificateRequest dc = new DeathCertificateRequest();
         dc.setCauseOfDeath(cause);
         dc.setHospital("resource:com.oneconnect.insurenet.Hospital#".concat(hospital.getHospitalId()));
         dc.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         dc.setDateTime(sdf.format(new Date()));
         dc.setIdNumber(client.getIdNumber());
 
-        chainDataAPI.registerDeathCertificate(dc, new ChainDataAPI.Listener() {
+        Log.d(TAG, "DeathCertificateRequest added to blockchain: ".concat(GSON.toJson(dc)));
+
+        chainDataAPI.addDeathCertificateRequestByTranx(dc, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(final Data data) {
-                showSnack("Death Certificate registered", "OK", "green");
+                showSnack("Death Certificate requested from Home Affairs", "OK", "green");
                 reset();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        writetoFirebase((DeathCertificate) data);
+                        writetoFirebase((DeathCertificateRequest) data);
                     }
                 });
 
@@ -156,12 +198,11 @@ public class NavigActivity extends AppCompatActivity
         });
     }
 
-    private void writetoFirebase(DeathCertificate dc) {
-        fbApi.addDeathCert(dc, new FBApi.FBListener() {
+    private void writetoFirebase(final DeathCertificateRequest dc) {
+        fbApi.addDeathCertRequest(dc, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                //find this clients policy, for now, get all policies and do a match
-                findPolicy();
+                Log.i(TAG, "onResponse: DeathCertificateRequest added to Firebase: ".concat(dc.getIdNumber()));
 
             }
 
@@ -172,86 +213,7 @@ public class NavigActivity extends AppCompatActivity
         });
     }
 
-    private Policy policy;
 
-    private void findPolicy() {
-        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
-            @Override
-            public void onResponse(List<Policy> policies) {
-                Log.i(TAG, "onResponse: policies found: ".concat(String.valueOf(policies.size())));
-                policy = null;
-                for (Policy p : policies) {
-                    int i = p.getClient().indexOf("#");
-                    if (i > -1) {
-                        String policyIdNumber = p.getClient().substring(i + 1);
-                        if (policyIdNumber.equalsIgnoreCase(client.getIdNumber())) {
-                            policy = p;
-                            writeClaim();
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
-    }
-
-    private void writeClaim() {
-        Claim claim = new Claim();
-        String[] strings = policy.getInsuranceCompany().split("#");
-        claim.setCompanyId(strings[1]);
-        claim.setDateTime(sdf.format(new Date()));
-        claim.setClaimId(getRandomClaimId());
-        claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
-        claim.setHospital("resource:com.oneconnect.insurenet.Hospital#".concat(hospital.getHospitalId()));
-        chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                final Claim x = (Claim) data;
-                fbApi.addClaim(x, new FBApi.FBListener() {
-                    @Override
-                    public void onResponse(Data data) {
-                        Log.e(TAG, "onResponse: claim added to FB".concat(GSON.toJson(x)));
-                        showSnack("Claims process started","ok","green");
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
-    }
-    public static String getRandomClaimId() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("C");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
-
-        return sb.toString();
-    }
-    private static Random random = new Random(System.currentTimeMillis());
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private void reset() {
@@ -267,10 +229,18 @@ public class NavigActivity extends AppCompatActivity
     }
 
     private void getClients() {
+        showSnack("Getting client list ...","wait","yellow");
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
+                if (clients.isEmpty()) {
+                    showError("There are no patients found, do something!");
+                    auto.setVisibility(View.GONE);
+                    return;
+                }
+                showSnack("Patient list found: ".concat(String.valueOf(clients.size())),"OK","green");
+                auto.setVisibility(View.VISIBLE);
                 setAuto();
             }
 
@@ -339,6 +309,10 @@ public class NavigActivity extends AppCompatActivity
         for (Client c : clients) {
             if (idNumber.trim().equalsIgnoreCase(c.getIdNumber())) {
                 client = c;
+                if (client.isDeceased()) {
+                    showError("A Certificate already exists on the chain");
+                    return;
+                }
                 txtName.setText(client.getFullName());
                 txtId.setText(client.getIdNumber());
                 btn.setAlpha(1f);
@@ -442,12 +416,12 @@ public class NavigActivity extends AppCompatActivity
         IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this);
+        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(receiver,filterClaim);
         broadcastManager.registerReceiver(receiver,filterBurial);
 
     }
 
-    public static final String TAG = NavigActivity.class.getSimpleName();
+    public static final String TAG = HospitalNavActivity.class.getSimpleName();
 }

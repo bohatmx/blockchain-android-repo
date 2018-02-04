@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class UserDTO implements Data, Serializable {
     private String uid, email, displayName, userID, hospitalId, funeralParlourId;
-    private String companyId, fcmToken;
+    private String companyId, fcmToken, password;
     private String userType, stringDateRegistered;
     private long dateRegistered;
 
@@ -21,6 +21,14 @@ public class UserDTO implements Data, Serializable {
             HOSPITAL_USER = "hospital-user",
             DOCTOR = "doctor",
             FUNERAL_PARLOUR_USER = "funeral-parlour";
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public String getHospitalId() {
         return hospitalId;

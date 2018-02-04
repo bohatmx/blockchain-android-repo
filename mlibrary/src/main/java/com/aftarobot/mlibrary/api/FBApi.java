@@ -2,10 +2,13 @@ package com.aftarobot.mlibrary.api;
 
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessageDTO;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.firebase.database.DatabaseError;
@@ -27,9 +30,13 @@ public class FBApi {
     public static final String
             USERS = "users",
             DEATH_CERTS = "certificates",
+            DEATH_CERT_REQUEST = "deathCertRequests",
             CLAIMS = "claims",
+            BENEFICIARIES = "beneficiaries",
+            BENNIE_CLAIM_MESSAGES = "beneficiaryClaimMessages",
             POLICIES = "policies",
             BURIALS = "burials";
+
 
     public interface FBListener {
         void onResponse(Data data);
@@ -55,6 +62,21 @@ public class FBApi {
         });
     }
 
+    public void addBeneficiary(final Beneficiary beneficiary, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARIES);
+        ref.push().setValue(beneficiary, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: beneficiary added to firebase: ".concat(databaseReference.getKey()));
+                    listener.onResponse(beneficiary);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
     public void addPolicy(final Policy policy, final FBListener listener) {
         DatabaseReference ref = db.getReference(POLICIES);
 
@@ -91,6 +113,25 @@ public class FBApi {
         });
     }
 
+    public void addDeathCertRequest(final DeathCertificateRequest request, final FBListener listener) {
+        DatabaseReference ref = db.getReference(DEATH_CERT_REQUEST);
+
+        ref.push().setValue(request, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: request added to firebase: "
+                            .concat(request.getIdNumber()).concat(" cause:").concat(request.getCauseOfDeath()));
+                    listener.onResponse(request);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
+
     public void addBurial(final Burial burial, final FBListener listener) {
         DatabaseReference ref = db.getReference(BURIALS);
 
@@ -118,6 +159,24 @@ public class FBApi {
                     Log.i(TAG, "onComplete: claim added to firebase: "
                             .concat(claim.getClaimId()).concat(" policy:").concat(claim.getPolicy()));
                     listener.onResponse(claim);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
+    public void addBeneficiaryClaimMessage(final BeneficiaryClaimMessageDTO message, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENNIE_CLAIM_MESSAGES);
+
+        ref.push().setValue(message, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: message added to firebase: "
+                            .concat(message.getClaim().getClaimId()).concat(" policy:").concat(message.getClaim().getPolicy()));
+                    listener.onResponse(message);
                 } else {
                     Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
                     listener.onError(databaseError.getMessage());
