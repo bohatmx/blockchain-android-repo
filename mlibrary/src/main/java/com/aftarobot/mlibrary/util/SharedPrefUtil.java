@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
@@ -105,6 +106,25 @@ public class SharedPrefUtil {
         FuneralParlour u = GSON.fromJson(json,FuneralParlour.class);
         if (u != null) {
             Log.w(TAG, "getParlour: " + u.getName());
+        }
+        return u;
+    }
+
+    public static void saveBeneficiary(Beneficiary user, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("bennie", GSON.toJson(user));
+        ed.commit();
+        Log.i(TAG, "saveBeneficiary: " + user.getFullName());
+    }
+
+    public static Beneficiary getBeneficiary(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("bennie", null);
+        Beneficiary u = GSON.fromJson(json,Beneficiary.class);
+        if (u != null) {
+            Log.w(TAG, "getBeneficiary: " + u.getFullName());
         }
         return u;
     }

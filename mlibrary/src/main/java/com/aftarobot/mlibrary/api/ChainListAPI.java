@@ -97,7 +97,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<Client> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);;
             }
         });
     }
@@ -108,9 +108,9 @@ public class ChainListAPI {
             @Override
             public void onResponse(Call<Policy> call, Response<Policy> response) {
                 if (response.isSuccessful()) {
-                    Policy client = response.body();
+                    Policy policy = response.body();
                     List<Policy> list = new ArrayList<>(1);
-                    list.add(client);
+                    list.add(policy);
                     listener.onResponse(list);
                 } else {
                     Log.w(TAG, "onResponse: client not found ");
@@ -121,7 +121,31 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<Policy> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+    public void getInsuranceCompany(String id, final CompanyListener listener) {
+        Call<InsuranceCompany> call = apiService.getInsuranceCompanyById(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<InsuranceCompany>() {
+            @Override
+            public void onResponse(Call<InsuranceCompany> call, Response<InsuranceCompany> response) {
+                if (response.isSuccessful()) {
+                    InsuranceCompany company = response.body();
+                    List<InsuranceCompany> list = new ArrayList<>(1);
+                    list.add(company);
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: client not found ");
+                    listener.onResponse(new ArrayList<InsuranceCompany>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<InsuranceCompany> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -151,7 +175,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Claim>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -181,7 +205,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Client>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -211,7 +235,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Beneficiary>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -242,7 +266,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<FuneralParlour>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -272,7 +296,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Hospital>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -302,7 +326,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Doctor>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -332,7 +356,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Policy>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -362,7 +386,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<InsuranceCompany>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -392,7 +416,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<Policy>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -422,7 +446,7 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<DeathCertificate>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
@@ -453,11 +477,13 @@ public class ChainListAPI {
             @Override
             public void onFailure(Call<List<DeathCertificateRequest>> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(t.getMessage());
+                listener.onError(NETWORK_ERROR);
             }
         });
     }
 
-    public static final String TAG = ChainListAPI.class.getSimpleName();
+    public static final String
+            TAG = ChainListAPI.class.getSimpleName(),
+            NETWORK_ERROR = "Possible network related error";
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

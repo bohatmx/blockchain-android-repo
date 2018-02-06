@@ -292,6 +292,7 @@ public class PolicyActivity extends AppCompatActivity {
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        claim.setPolicyNumber(policy.getPolicyNumber());
         chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {

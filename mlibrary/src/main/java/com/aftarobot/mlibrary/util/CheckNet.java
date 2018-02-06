@@ -18,7 +18,8 @@ public class CheckNet {
             ssid = wifiInfo.getSSID();
         }
         if (ssid == null) {
-            throw new RuntimeException("Network name check failed");
+            //throw new RuntimeException("Network name check failed");
+            Log.e("CheckNet", "Network name check failed ---- WTF?" );
         }
         Log.e("CheckNet", "check: network:  ".concat(ssid) );
         return ssid;

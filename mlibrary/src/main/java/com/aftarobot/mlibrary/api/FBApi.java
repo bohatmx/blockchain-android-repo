@@ -1,5 +1,6 @@
 package com.aftarobot.mlibrary.api;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
@@ -11,6 +12,8 @@ import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -77,6 +80,47 @@ public class FBApi {
             }
         });
     }
+
+    public void updateBeneficiaryFCMToken(final Beneficiary beneficiary, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARIES)
+                .child(beneficiary.getBeneficiaryId()).child("fcmToken");
+        ref.setValue(beneficiary.getFcmToken())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "onSuccess: Beneficiary token updated");
+                        listener.onResponse(beneficiary);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "onComplete: ERROR: ".concat(e.getMessage()));
+                        listener.onError(e.getMessage());
+                    }
+                });
+
+    }
+    public void removeBeneficiaries(final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARIES);
+        ref.removeValue()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "onSuccess: Beneficiary token updated");
+                        listener.onResponse(null);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "onComplete: ERROR: ".concat(e.getMessage()));
+                        listener.onError(e.getMessage());
+                    }
+                });
+
+    }
+
     public void addPolicy(final Policy policy, final FBListener listener) {
         DatabaseReference ref = db.getReference(POLICIES);
 
@@ -149,6 +193,7 @@ public class FBApi {
             }
         });
     }
+
     public void addClaim(final Claim claim, final FBListener listener) {
         DatabaseReference ref = db.getReference(CLAIMS);
 
@@ -192,9 +237,9 @@ public class FBApi {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
-                    Log.e(TAG, "onComplete: user deleted: ".concat(user.getEmail()) );
+                    Log.e(TAG, "onComplete: user deleted: ".concat(user.getEmail()));
                 } else {
-                    Log.e(TAG, "onComplete: ".concat(databaseError.getMessage()) );
+                    Log.e(TAG, "onComplete: ".concat(databaseError.getMessage()));
                 }
             }
         });

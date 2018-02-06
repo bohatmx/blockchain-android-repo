@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.aftarobot.homeaffairs.NotifActivity;
+import com.aftarobot.homeaffairs.NavActivity;
 import com.aftarobot.homeaffairs.R;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
@@ -98,7 +98,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
     }
     private void sendNotification(String messageType, String title, String json) {
 
-        Intent resultIntent = new Intent(getApplicationContext(), NotifActivity.class);
+        Intent resultIntent = new Intent(getApplicationContext(), NavActivity.class);
         resultIntent.putExtra("title", title);
         resultIntent.putExtra("json", json);
         resultIntent.putExtra("messageType", messageType);

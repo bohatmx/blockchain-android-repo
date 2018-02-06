@@ -86,20 +86,8 @@ public class ClientUtil {
                                 .concat(GSON.toJson(beneficiary)) );
 
                         mListener.onProgressMessage("Beneficiary added to BlockChain: ".concat(beneficiary.getFullName().concat("\n")));
-                        fbApi.addBeneficiary(beneficiary, new FBApi.FBListener() {
-                            @Override
-                            public void onResponse(Data data) {
-                                Log.i(TAG, "onResponse: beneficiary added to Firebase: ".concat(beneficiary.getFullName()));
-                                addPolicy(randomClient, beneficiary);
-                            }
+                        addPolicy(randomClient, beneficiary);
 
-                            @Override
-                            public void onError(String message) {
-                                mListener.onError(message);
-                                index++;
-                                controlClients();
-                            }
-                        });
 
                     }
 
@@ -124,13 +112,15 @@ public class ClientUtil {
         });
     }
 
-    private static void addPolicy(final Client client, Beneficiary beneficiary) {
+    private static void addPolicy(final Client client, final Beneficiary beneficiary) {
         final Policy policy = new Policy();
         policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyID()));
+        policy.setInsuranceCompanyID(mCompany.getInsuranceCompanyID());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
         policy.setAmount(ListUtil.getRandomPolicyAmount());
+        policy.setIdNumber(client.getIdNumber());
 
         List<String> list = new ArrayList<>(1);
         list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(beneficiary.getIdNumber()));
@@ -150,6 +140,11 @@ public class ClientUtil {
                 String ply = "resource:com.oneconnect.insurenet.Policy#"
                         .concat(x.getPolicyNumber());
                 client.getPolicies().add(ply);
+                if (beneficiary.getPolicies() == null) {
+                    beneficiary.setPolicies(new ArrayList<String>());
+                }
+                String p = "resource:com.oneconnect.insurenet.Policy#".concat(x.getPolicyNumber());
+                beneficiary.getPolicies().add(p);
 
 
                 Log.d(TAG, "about to update client policy: ".concat(GSON.toJson(client)));
@@ -157,8 +152,39 @@ public class ClientUtil {
                     @Override
                     public void onResponse(Data data) {
                         Log.w(TAG, "updateClientPolicies onResponse: index: " + index );
-                        index++;
-                        controlClients();
+                        final String idNumber = beneficiary.getIdNumber();
+                        chainDataAPI.updateBeneficiary(beneficiary, new ChainDataAPI.Listener() {
+                            @Override
+                            public void onResponse(Data data) {
+                                Log.d(TAG, "onResponse: we good, beneficiary has a policy added, Yay!");
+                                beneficiary.setIdNumber(idNumber);
+                                fbApi.addBeneficiary(beneficiary, new FBApi.FBListener() {
+                                    @Override
+                                    public void onResponse(Data data) {
+                                        Beneficiary x = (Beneficiary)data;
+                                        Log.i(TAG, "onResponse: beneficiary added to Firebase: ".concat(GSON.toJson(x)));
+                                        index++;
+                                        controlClients();
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        mListener.onError(message);
+                                        index++;
+                                        controlClients();
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                mListener.onError(message);
+                                index++;
+                                controlClients();
+                            }
+                        });
+
                     }
 
                     @Override

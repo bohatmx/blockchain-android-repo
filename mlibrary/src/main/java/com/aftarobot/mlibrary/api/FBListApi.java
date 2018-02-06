@@ -81,6 +81,52 @@ public class FBListApi {
             }
         });
     }
+    public void getBeneficiaryByIDnumber(String idNumber, final BeneficiaryListener listener) {
+        DatabaseReference ref = db.getReference(FBApi.BENEFICIARIES);
+        Query query = ref.orderByChild("idNumber").equalTo(idNumber).limitToFirst(1);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "onDataChange: dataSnapshot:\n" + dataSnapshot);
+                List<Beneficiary> beneficiaries = new ArrayList<>();
+                for (DataSnapshot shot: dataSnapshot.getChildren()) {
+                    Beneficiary u = shot.getValue(Beneficiary.class);
+                    beneficiaries.add(u);
+                }
+
+                listener.onResponse(beneficiaries);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(databaseError.getMessage());
+            }
+        });
+    }
+    public void getBeneficiaries(final BeneficiaryListener listener) {
+        DatabaseReference ref = db.getReference(FBApi.BENEFICIARIES);
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "onDataChange: dataSnapshot:\n" + dataSnapshot.getChildrenCount());
+                List<Beneficiary> beneficiaries = new ArrayList<>();
+                for (DataSnapshot shot: dataSnapshot.getChildren()) {
+                    Beneficiary u = shot.getValue(Beneficiary.class);
+                    u.setBeneficiaryId(shot.getKey());
+                    beneficiaries.add(u);
+                }
+
+                listener.onResponse(beneficiaries);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(databaseError.getMessage());
+            }
+        });
+    }
 
 
     public static final String TAG = FBListApi.class.getSimpleName();

@@ -234,6 +234,61 @@ public class ChainDataAPI {
             }
         });
     }
+    public void updateBeneficiary(final Beneficiary beneficiary, final Listener listener) {
+        String id = beneficiary.getIdNumber();
+        beneficiary.setIdNumber(null);
+
+        Call<Beneficiary> call = apiService.updateBeneficiary(id, beneficiary);
+        call.enqueue(new Callback<Beneficiary>() {
+            @Override
+            public void onResponse(@NonNull Call<Beneficiary> call, @NonNull Response<Beneficiary> response) {
+                if (response.isSuccessful()) {
+                    Beneficiary m = response.body();
+                    Log.i(TAG, "onResponse: Beneficiary policy  updated"
+                            .concat(GSON.toJson(m)));
+                    listener.onResponse(m);
+
+                } else {
+                    Log.e(TAG, "onResponse: ERROR: ".concat(response.message()));
+                    listener.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Beneficiary> call, @NonNull Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
+    public void updateDeathCertificateRequest(final DeathCertificateRequest deathCertificateRequest, final Listener listener) {
+        //Log.e(TAG, "updateClientPolicies: ".concat(GSON.toJson(deathCertificateRequest)) );
+        String id = deathCertificateRequest.getIdNumber();
+        deathCertificateRequest.setIdNumber(null);
+
+        Call<DeathCertificateRequest> call = apiService.updateDeathCertificateRequest(id, deathCertificateRequest);
+        call.enqueue(new Callback<DeathCertificateRequest>() {
+            @Override
+            public void onResponse(@NonNull Call<DeathCertificateRequest> call, @NonNull Response<DeathCertificateRequest> response) {
+                if (response.isSuccessful()) {
+                    DeathCertificateRequest m = response.body();
+                    Log.i(TAG, "onResponse: deathCertificateRequest issue flag updated"
+                            .concat(GSON.toJson(m)));
+                    listener.onResponse(m);
+
+                } else {
+                    Log.e(TAG, "onResponse: ERROR: ".concat(response.message()));
+                    listener.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<DeathCertificateRequest> call, @NonNull Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(t.getMessage());
+            }
+        });
+    }
 
     public void addDeathCertificate(final DeathCertificate certificate, final Listener listener) {
         Call<DeathCertificate> call = apiService.addDeathCertificate(certificate);

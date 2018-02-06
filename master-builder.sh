@@ -1,5 +1,6 @@
 #!/bin/bash 
-echo Starting Blockchain Demo Build .................... 
+echo Starting Blockchain Demo Build ....................
+successCnt = 0;
 ./gradlew clean
 ./gradlew :crudder:build
 ./gradlew :hospitalapp:build

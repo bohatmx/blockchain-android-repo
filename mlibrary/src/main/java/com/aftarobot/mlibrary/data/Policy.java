@@ -15,6 +15,23 @@ public class Policy implements Data, Serializable {
     private String insuranceCompany;
     private String client;
     private List<String> beneficiaries;
+    private String insuranceCompanyID, idNumber;
+
+    public String getIdNumber() {
+        return idNumber;
+    }
+
+    public void setIdNumber(String idNumber) {
+        this.idNumber = idNumber;
+    }
+
+    public String getInsuranceCompanyID() {
+        return insuranceCompanyID;
+    }
+
+    public void setInsuranceCompanyID(String insuranceCompanyID) {
+        this.insuranceCompanyID = insuranceCompanyID;
+    }
 
     public String getClassz() { return this.$class; }
 

@@ -8,8 +8,10 @@ import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.FuneralParlour;
+import com.aftarobot.mlibrary.data.HistorianRecord;
 import com.aftarobot.mlibrary.data.HomeAffairs;
 import com.aftarobot.mlibrary.data.Hospital;
+import com.aftarobot.mlibrary.data.Identity;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.Regulator;
@@ -67,16 +69,17 @@ public interface ApiInterface {
     @GET("Beneficiary")
     Call<List<Beneficiary>> getBeneficiaries();
 
+    @PUT("Beneficiary/{id}/")
+    Call<Beneficiary> updateBeneficiary(@Path("id") String idNumber, @Body Beneficiary beneficiary);
+
     @POST("Doctor")
     Call<Doctor> registerDoctor(@Body Doctor client);
 
     @GET("Doctor")
     Call<List<Doctor>> getDoctors();
 
-
-
-    @GET("queries/GetinsuranceCompanyPolicies")
-    Call<List<Policy>> getCompanyPolicies(String insuranceCompanyId, double limitParam, double skipParam);
+    @GET("queries/getinsuranceCompanyPolicies")
+    Call<List<Policy>> getCompanyPolicies(@Path("insuranceCompanyId") String insuranceCompanyId);
 
     @GET("Policy")
     Call<List<Policy>> getPolicies();
@@ -120,6 +123,10 @@ public interface ApiInterface {
     @GET("Burial")
     Call<List<Burial>> getBurials();
 
+    @GET("/system/historian")
+    Call<List<HistorianRecord>> getHistorianRecords();
+    @GET("/system/identities")
+    Call<List<Identity>> getIdentities();
 
     @POST("RegisterDeathCertificate")
     Call<DeathCertificate> registerDeathCertificate(@Body DeathCertificate certificate);
@@ -133,6 +140,15 @@ public interface ApiInterface {
     @GET("DeathCertificateRequest")
     Call<List<DeathCertificateRequest>> getDeathCertificateRequests();
 
+    @PUT("DeathCertificateRequest/{id}/")
+    Call<DeathCertificateRequest> updateDeathCertificateRequest(@Path("id") String idNumber,
+                                                                @Body DeathCertificateRequest deathCertificateRequest);
+
+
     @POST("AddDeathCertificateRequest")
-    Call<DeathCertificateRequest> addDeathCertificateRequestViaTranx(@Body DeathCertificateRequest certificateRequest);
+    Call<DeathCertificateRequest> addDeathCertificateRequestViaTranx(@Body DeathCertificateRequest deathCertificateRequest);
+
+    @GET("/queries/getClaimByPolicyNumber")
+    Call<List<Claim>> getClaimsByPolicyNumber(@Path("policyNumber") String policyNumber);
+
 }

@@ -20,6 +20,7 @@ import com.aftarobot.blockchaintest.crudutils.HospitalUtil;
 import com.aftarobot.blockchaintest.crudutils.ParlourUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
@@ -51,7 +52,7 @@ public class CrudActivity extends AppCompatActivity {
         txt = findViewById(R.id.text);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Blockchain App");
+        getSupportActionBar().setTitle("Blockchain Driver");
         getSupportActionBar().setSubtitle("OneConnect Business Network");
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
@@ -103,7 +104,7 @@ public class CrudActivity extends AppCompatActivity {
                             }
                         }
                         start = System.currentTimeMillis();
-                        ClientUtil.generateClients(getApplicationContext(), company, 27, new ClientUtil.ClientListener() {
+                        ClientUtil.generateClients(getApplicationContext(), company, 5, new ClientUtil.ClientListener() {
                             @Override
                             public void clientsComplete() {
                                 long end = System.currentTimeMillis();
@@ -119,6 +120,7 @@ public class CrudActivity extends AppCompatActivity {
 
                             @Override
                             public void onProgressMessage(String message) {
+                                updateText(message);
                                 showSnackbar(message,"OK","green");
                             }
                         });
@@ -133,12 +135,22 @@ public class CrudActivity extends AppCompatActivity {
                 .show();
     }
 
-    public static final int MAX_CLIENTS = 50;
-
-
+    public static final int MAX_CLIENTS = 10;
     long start;
     private void doCrud() {
         showSnackbar("Starting CRUD for demo data", "ok", "yellow");
+        FBApi api = new FBApi();
+        api.removeBeneficiaries(new FBApi.FBListener() {
+            @Override
+            public void onResponse(Data data) {
+                Log.e(TAG, "onResponse: beneficiaries deleted from Firebase" );
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
         start = System.currentTimeMillis();
         CompaniesUtil.generate(this, new CompaniesUtil.InsuranceCompanyListener() {
             @Override
@@ -227,6 +239,7 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onProgress(InsuranceCompany company) {
                 insuranceCompanies.add(company);
+                updateText(GSON.toJson(company));
                 showSnackbar("Company added: ".concat(company.getName()), "OK", "green");
             }
 
@@ -265,7 +278,7 @@ public class CrudActivity extends AppCompatActivity {
                 updateText(GSON.toJson(data));
                 long end = System.currentTimeMillis();
                 showSnackbar("Regulator added: ".concat(x.getFullName())
-                        .concat(" Elapsed sec ".concat(String.valueOf(getElapsed(start,end)))),
+                        .concat(" Elapsed minutes ".concat(String.valueOf(getElapsed(start,end)))),
                         "OK", "green");
 
             }
@@ -279,7 +292,7 @@ public class CrudActivity extends AppCompatActivity {
 
     double getElapsed(long start, long end) {
         long delta = end - start;
-        Double d1 = Double.parseDouble(String.valueOf(delta)) / 1000;
+        Double d1 = Double.parseDouble(String.valueOf(delta)) / (1000 * 60);
         return d1.doubleValue();
     }
     List<InsuranceCompany> insuranceCompanies = new ArrayList<>();

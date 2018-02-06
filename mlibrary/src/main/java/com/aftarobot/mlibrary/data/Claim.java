@@ -8,8 +8,16 @@ import java.io.Serializable;
 
 public class Claim implements Data, Serializable{
     private String $class;
-    private String claimId, dateTime, companyId;
+    private String claimId, dateTime, companyId, policyNumber;
     private String policy, client, hospital;
+
+    public String getPolicyNumber() {
+        return policyNumber;
+    }
+
+    public void setPolicyNumber(String policyNumber) {
+        this.policyNumber = policyNumber;
+    }
 
     public String getClassz() { return this.$class; }
 

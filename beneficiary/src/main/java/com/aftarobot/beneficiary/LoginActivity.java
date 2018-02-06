@@ -1,34 +1,43 @@
 package com.aftarobot.beneficiary;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
+import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
-import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
@@ -38,6 +47,11 @@ public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     private FBApi fbApi;
     private FBListApi fbListApi;
+    private UserDTO user;
+    private List<Beneficiary> beneficiaries;
+    private BeneficiaryAdapter adapter;
+    private RecyclerView recyclerView;
+    private TextView txtCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +59,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null) {
@@ -57,6 +70,78 @@ public class LoginActivity extends AppCompatActivity {
         fbListApi = new FBListApi();
 
         setFields();
+
+        checkGooglePlay();
+
+    }
+
+    private void setList() {
+        Collections.sort(beneficiaries);
+        if (adapter == null) {
+            adapter = new BeneficiaryAdapter(beneficiaries, new BeneficiaryAdapter.BeneficiaryListener() {
+                @Override
+                public void onRequestTapped(Beneficiary beneficiary) {
+                    confirm(beneficiary);
+                }
+            });
+            recyclerView.setAdapter(adapter);
+        } else {
+            adapter.notifyDataSetChanged();
+        }
+        txtCount.setText(String.valueOf(beneficiaries.size()));
+    }
+    private void confirm(final Beneficiary beneficiary) {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Confirm Authentication")
+                .setMessage("Do you want to authenticate as ".concat(beneficiary.getFullName()).concat("?"))
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startAuth(beneficiary);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
+    private void startAuth(final Beneficiary beneficiary) {
+        mAuth.signInWithEmailAndPassword(beneficiary.getEmail(),beneficiary.getPassword())
+                .addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        FirebaseUser user = authResult.getUser();
+                        Log.i(TAG, "onSuccess: authenticated: ".concat(GSON.toJson(user)));
+                        beneficiary.setFcmToken(SharedPrefUtil.getCloudMsgToken(getApplicationContext()));
+                        SharedPrefUtil.saveBeneficiary(beneficiary,getApplicationContext());
+                        Toast.makeText(getApplicationContext(),"Authentication successful", Toast.LENGTH_LONG).show();
+                        fbApi.updateBeneficiaryFCMToken(beneficiary, new FBApi.FBListener() {
+                            @Override
+                            public void onResponse(Data data) {
+                                Log.i(TAG, "updateBeneficiaryFCMToken onResponse: ######### Yebo! fcmToken done... moving on ...".concat(GSON.toJson(beneficiary)));
+                            }
+
+                            @Override
+                            public void onError(String message) {
+
+                            }
+                        });
+                        startMain();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        showError(e.getMessage());
+                    }
+                });
+    }
+    private void setFields() {
+        recyclerView = findViewById(R.id.recyclerView);
+        txtCount = findViewById(R.id.txtCount);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,11 +150,8 @@ public class LoginActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        checkGooglePlay();
-
-    }
-
-    private void setFields() {
+        LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL,false);
+        recyclerView.setLayoutManager(lm);
 
     }
 
@@ -79,7 +161,7 @@ public class LoginActivity extends AppCompatActivity {
         switch (status) {
             case ConnectionResult.SUCCESS:
                 Log.i(TAG, "checkGooglePlay: ConnectionResult.SUCCESS:");
-                startSignUp();
+                authAnonymously();
                 break;
             case ConnectionResult.SERVICE_MISSING:
                 Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING ");
@@ -104,41 +186,45 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void startSignUp() {
-
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-//                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build());
-
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
-
+    private void authAnonymously() {
+        showSnackbar("Authenticating anonymously at Firebase","OK","cyan");
+        Log.d(TAG, "authAnonymously: ******************** auth anon to Firebase");
+        mAuth.signInAnonymously()
+                .addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        getBeneficiaries();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                       showError(e.getMessage());
+                    }
+                });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            Log.w(TAG, "onActivityResult: IdpResponse: ".concat(GSON.toJson(response)));
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Log.i(TAG, "onActivityResult: Firebase sign in OK: ".concat(GSON.toJson(user)));
-                Snackbar.make(toolbar, "Sign in successful. A-OK", Snackbar.LENGTH_SHORT).show();
-                addUserToFirebase(user);
-            } else {
-                showSnackError("Error signing in, please check");
-                Log.e(TAG, "onActivityResult: Sign in failed, check response for error code");
+    private void getBeneficiaries() {
+        showSnackbar("Loading beneficiaries from Firebase ...","OK","yellow");
+        fbListApi.getBeneficiaries(new FBListApi.BeneficiaryListener() {
+            @Override
+            public void onResponse(List<Beneficiary> list) {
+             beneficiaries = new ArrayList<>();
+             for (Beneficiary b: list) {
+                 if (b.getFcmToken() == null && b.getPassword() != null) {
+                     beneficiaries.add(b);
+                 }
+             }
+             snackbar.dismiss();
+             setList();
             }
-        }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+
     }
 
     private void startMain() {
@@ -147,53 +233,9 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    private void showError(String message) {
-
-    }
-
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
-    private void addUserToFirebase(final FirebaseUser u) {
-        final UserDTO user = new UserDTO();
-        user.setDateRegistered(new Date().getTime());
-        user.setEmail(u.getEmail());
-        user.setUid(u.getUid());
-        user.setDisplayName(u.getDisplayName());
-        user.setStringDateRegistered(sdf.format(new Date()));
-        user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
-        user.setUserType(UserDTO.BENEFICIARY);
-        writeUser(user, u);
-
-    }
-
-    private void writeUser(final UserDTO user, final FirebaseUser u) {
-        fbApi.addUser(user, new FBApi.FBListener() {
-            @Override
-            public void onResponse(Data data) {
-                Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
-                startMain();
-            }
-
-            @Override
-            public void onError(String message) {
-                showSnackError(message);
-            }
-        });
-    }
-
     private Snackbar snackbar;
-
-    private void showSnackError(String message) {
-        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
-        snackbar.setActionTextColor(Color.parseColor("red"));
-        snackbar.setAction("error", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                snackbar.dismiss();
-            }
-        });
-        snackbar.show();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -219,4 +261,29 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String TAG = LoginActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    private void showSnackbar(String message, String action, String color) {
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor(color));
+        snackbar.setAction(action, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
+    }
+    private void showError(String message) {
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor("red"));
+        snackbar.setAction("Error", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
+
+    }
+
 }

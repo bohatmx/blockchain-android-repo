@@ -23,13 +23,14 @@ import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
+import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessageDTO;
 import com.aftarobot.mlibrary.data.Claim;
+import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Policy;
-import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -37,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class NavActivity extends AppCompatActivity
@@ -48,6 +50,7 @@ public class NavActivity extends AppCompatActivity
     TextView txtCount;
     CertRequestAdapter adapter;
     List<DeathCertificateRequest> requests;
+    DeathCertificateRequest request;
     FBApi fbApi;
 
     @Override
@@ -56,14 +59,17 @@ public class NavActivity extends AppCompatActivity
         setContentView(R.layout.activity_nav);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Home Affairs");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Home Affairs");
         getSupportActionBar().setSubtitle("Death Certificate Requests");
         setup();
-
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
         fbApi = new FBApi();
 
+        request = (DeathCertificateRequest)getIntent().getSerializableExtra("request");
+        if (request != null) {
+            confirm(request);
+        }
         getCertRequests();
 
     }
@@ -95,8 +101,14 @@ public class NavActivity extends AppCompatActivity
         chainListAPI.getDeathCertificateRequests(new ChainListAPI.DeathCertRequestListener() {
             @Override
             public void onResponse(List<DeathCertificateRequest> list) {
-                requests = list;
+                requests = new ArrayList<>();
+                for (DeathCertificateRequest x: list) {
+                    if (!x.isIssued()) {
+                        requests.add(x);
+                    }
+                }
                 setList();
+
             }
 
             @Override
@@ -162,6 +174,18 @@ public class NavActivity extends AppCompatActivity
                 requests.remove(request);
                 setList();
                 showSnackbar("Death Certificate issued on blockchain", "OK", "green");
+                deathCertificateRequest.setIssued(true);
+                chainDataAPI.updateDeathCertificateRequest(deathCertificateRequest, new ChainDataAPI.Listener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        showSnackbar("Request updated, set to Issued","OK","green");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
                 fbApi.addDeathCert(x, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
@@ -186,28 +210,40 @@ public class NavActivity extends AppCompatActivity
     private Policy policy;
 
     private void findPolicy(final String idNumber) {
-        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
+        chainListAPI.getClient(idNumber, new ChainListAPI.ClientListener() {
             @Override
-            public void onResponse(List<Policy> policies) {
-                Log.i(TAG, "onResponse: policies found: ".concat(String.valueOf(policies.size())));
-                policy = null;
-                for (Policy p : policies) {
-                    int i = p.getClient().indexOf("#");
-                    if (i > -1) {
-                        String policyIdNumber = p.getClient().substring(i + 1);
-                        if (policyIdNumber.equalsIgnoreCase(idNumber)) {
-                            policy = p;
-                            writeClaim();
-                        }
+            public void onResponse(List<Client> clients) {
+                if (!clients.isEmpty()) {
+                    Client client = clients.get(0);
+                    if (client.getPolicies() != null) {
+                        String[] strings = client.getPolicies().get(0).split("#");
+                        chainListAPI.getPolicy(strings[1], new ChainListAPI.PolicyListener() {
+                            @Override
+                            public void onResponse(List<Policy> policies) {
+                                if (!policies.isEmpty()) {
+                                    policy = policies.get(0);
+                                    writeClaim();
+                                }
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                showError(message);
+                            }
+                        });
+
                     }
+                } else {
+                    showError("Policy search failed. Client not found");
                 }
             }
 
             @Override
             public void onError(String message) {
-                showError(message);
+
             }
         });
+
     }
 
     private void writeClaim() {
@@ -218,6 +254,7 @@ public class NavActivity extends AppCompatActivity
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setHospital(deathCertificateRequest.getHospital());
         chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
             @Override
@@ -227,7 +264,7 @@ public class NavActivity extends AppCompatActivity
                 fbApi.addClaim(x, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.e(TAG, "onResponse: claim added to FB".concat(GSON.toJson(x)));
+                        Log.e(TAG, "onResponse: claim added to Firebase".concat(GSON.toJson(x)));
                         showSnackbar("Claims registration process started", "ok", "green");
                         sendBeneficiaryMessage(claim);
                     }
@@ -252,53 +289,40 @@ public class NavActivity extends AppCompatActivity
     private void sendBeneficiaryMessage(final Claim claim) {
 
         final List<String> idNumbers = new ArrayList<>();
-        chainListAPI.getPolicy(policy.getPolicyNumber(), new ChainListAPI.PolicyListener() {
-            @Override
-            public void onResponse(List<Policy> policies) {
-                if (!policies.isEmpty()) {
-                    Policy policy = policies.get(0);
-                    for (String b : policy.getBeneficiaries()) {
-                        String[] strings = b.split("#");
-                        if (strings.length == 2) {
-                            String idNumber = strings[1];
-                            idNumbers.add(idNumber);
+        for (String b : policy.getBeneficiaries()) {
+            String[] strings = b.split("#");
+            if (strings.length == 2) {
+                String idNumber = strings[1];
+                idNumbers.add(idNumber);
+            }
+        }
+        final List<String> tokens = new ArrayList<>();
+
+        for (String id : idNumbers) {
+            fbListApi.getBeneficiaryByIDnumber(id, new FBListApi.BeneficiaryListener() {
+                @Override
+                public void onResponse(List<Beneficiary> users) {
+                    if (!users.isEmpty()) {
+                        Beneficiary b = users.get(0);
+                        if (b.getFcmToken() != null) {
+                            tokens.add(b.getFcmToken());
                         }
                     }
-                    final List<String> tokens = new ArrayList<>();
-
-                    for (String id : idNumbers) {
-                        fbListApi.getUserByIDnumber(id, new FBListApi.UserListener() {
-                            @Override
-                            public void onResponse(List<UserDTO> users) {
-                                if (!users.isEmpty()) {
-                                    UserDTO b = users.get(0);
-                                    if (b.getFcmToken() != null) {
-                                        tokens.add(b.getFcmToken());
-                                    }
-                                }
-                                count++;
-                                if (count > idNumbers.size()) {
-                                    //send message to tokens ...
-                                    if (!tokens.isEmpty()) {
-                                        sendToTokens(tokens, claim);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(String message) {
-
-                            }
-                        });
+                    count++;
+                    if (count > idNumbers.size()) {
+                        //send message to tokens ...
+                        if (!tokens.isEmpty()) {
+                            sendToTokens(tokens, claim);
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onError(String message) {
+                @Override
+                public void onError(String message) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     private void sendToTokens(List<String> tokens, Claim claim) {
