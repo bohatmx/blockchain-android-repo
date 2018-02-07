@@ -49,7 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class NavActivity extends AppCompatActivity
+public class ParlourNavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
@@ -351,7 +351,7 @@ public class NavActivity extends AppCompatActivity
         snackbar.show();
     }
 
-    public static final String TAG = NavActivity.class.getSimpleName();
+    public static final String TAG = ParlourNavActivity.class.getSimpleName();
     private void listen() {
         IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
 
@@ -379,7 +379,6 @@ public class NavActivity extends AppCompatActivity
                 });
                 snackbar.show();
             }
-            getDeathCerts();
         }
 
     }

@@ -151,4 +151,10 @@ public interface ApiInterface {
     @GET("/queries/getClaimByPolicyNumber")
     Call<List<Claim>> getClaimsByPolicyNumber(@Path("policyNumber") String policyNumber);
 
+    @GET("/queries/getPolicyByIdNumber")
+    Call<List<Policy>> getPoliciesByIdNumber(@Path("idNumber") String idNumber);
+
+    @POST("/SubmitClaim")
+    Call<Claim> registerBurial(@Body Claim claim);
+
 }

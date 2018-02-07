@@ -174,12 +174,16 @@ public class HospitalNavActivity extends AppCompatActivity
         dc.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         dc.setDateTime(sdf.format(new Date()));
         dc.setIdNumber(client.getIdNumber());
+        dc.setHospitalId(hospital.getHospitalId());
+        dc.setIssued(false);
 
-        Log.d(TAG, "DeathCertificateRequest added to blockchain: ".concat(GSON.toJson(dc)));
+        Log.d(TAG, "DeathCertificateRequest adding shit to blockchain: ".concat(GSON.toJson(dc)));
 
         chainDataAPI.addDeathCertificateRequestByTranx(dc, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(final Data data) {
+                DeathCertificateRequest x = (DeathCertificateRequest)data;
+                Log.i(TAG, "addCertificateRequest onResponse: ".concat(GSON.toJson(x)));
                 showSnack("Death Certificate requested from Home Affairs", "OK", "green");
                 reset();
                 runOnUiThread(new Runnable() {
@@ -234,12 +238,13 @@ public class HospitalNavActivity extends AppCompatActivity
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
+                snackbar.dismiss();
                 if (clients.isEmpty()) {
                     showError("There are no patients found, do something!");
                     auto.setVisibility(View.GONE);
                     return;
                 }
-                showSnack("Patient list found: ".concat(String.valueOf(clients.size())),"OK","green");
+                Snackbar.make(toolbar,"Patient list found: ".concat(String.valueOf(clients.size())),Snackbar.LENGTH_SHORT).show();
                 auto.setVisibility(View.VISIBLE);
                 setAuto();
             }

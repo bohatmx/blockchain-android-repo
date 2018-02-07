@@ -330,8 +330,8 @@ public class ChainListAPI {
             }
         });
     }
-    public void getCompanyPolicies(String insuranceCompanyId, double limitParam, double skipParam, final PolicyListener listener) {
-        Call<List<Policy>> call = apiService.getCompanyPolicies(insuranceCompanyId, limitParam, skipParam);
+    public void getCompanyPolicies(String insuranceCompanyId, final PolicyListener listener) {
+        Call<List<Policy>> call = apiService.getCompanyPolicies(insuranceCompanyId);
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<List<Policy>>() {
             @Override
@@ -391,6 +391,37 @@ public class ChainListAPI {
         });
     }
     public void getPolicies(final PolicyListener listener) {
+        Call<List<Policy>> call = apiService.getPolicies();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Policy>>() {
+            @Override
+            public void onResponse(Call<List<Policy>> call, Response<List<Policy>> response) {
+                if (response.isSuccessful()) {
+                    List<Policy> list = response.body();
+                    Log.i(TAG, "getPolicies returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Policy>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+
+    public void getPoliciesByClientId(String idNumber, final PolicyListener listener) {
         Call<List<Policy>> call = apiService.getPolicies();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<List<Policy>>() {

@@ -1,16 +1,22 @@
 package com.aftarobot.homeaffairs;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,7 +24,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.aftarobot.homeaffairs.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -41,7 +49,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class NavActivity extends AppCompatActivity
+public class HomeAffairsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     Toolbar toolbar;
     ChainListAPI chainListAPI;
@@ -61,21 +69,31 @@ public class NavActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Home Affairs");
         getSupportActionBar().setSubtitle("Death Certificate Requests");
-        setup();
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
         fbApi = new FBApi();
-
-        request = (DeathCertificateRequest)getIntent().getSerializableExtra("request");
-        if (request != null) {
-            confirm(request);
+        setup();
+        String json = getIntent().getStringExtra("json");
+        if (json != null) {
+            request = GSON.fromJson(json, DeathCertificateRequest.class);
+            Log.d(TAG, "onCreate ####: ".concat(GSON.toJson(request)));
+            confirm(request, "Request Arrived from Blockchain");
+            getCertRequests();
+            return;
         }
+
+        request = (DeathCertificateRequest) getIntent().getSerializableExtra("request");
+        if (request != null) {
+            confirm(request, "Request Arrived");
+        }
+        listen();
         getCertRequests();
 
     }
 
     private void setup() {
         recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         txtCount = findViewById(R.id.txtCount);
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -101,13 +119,17 @@ public class NavActivity extends AppCompatActivity
         chainListAPI.getDeathCertificateRequests(new ChainListAPI.DeathCertRequestListener() {
             @Override
             public void onResponse(List<DeathCertificateRequest> list) {
+                snackbar.dismiss();
                 requests = new ArrayList<>();
-                for (DeathCertificateRequest x: list) {
+                for (DeathCertificateRequest x : list) {
                     if (!x.isIssued()) {
                         requests.add(x);
                     }
                 }
                 setList();
+                if (requests.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "No requests found on the blockchain", Toast.LENGTH_LONG).show();
+                }
 
             }
 
@@ -119,25 +141,22 @@ public class NavActivity extends AppCompatActivity
     }
 
     private void setList() {
-        if (adapter == null) {
-            adapter = new CertRequestAdapter(requests, new CertRequestAdapter.RequestListener() {
-                @Override
-                public void onRequestTapped(DeathCertificateRequest request) {
-                    Log.d(TAG, "onRequestTapped: ".concat(GSON.toJson(request)));
-                    confirm(request);
-                }
-            });
-        } else {
-            adapter.notifyDataSetChanged();
-        }
+        adapter = new CertRequestAdapter(requests, new CertRequestAdapter.RequestListener() {
+            @Override
+            public void onRequestTapped(DeathCertificateRequest request) {
+                Log.d(TAG, "onRequestTapped: ".concat(GSON.toJson(request)));
+                confirm(request, "Issue Death Certificate");
+            }
+        });
+        recyclerView.setAdapter(adapter);
         txtCount.setText(String.valueOf(requests.size()));
     }
 
-    private void confirm(final DeathCertificateRequest request) {
+    private void confirm(final DeathCertificateRequest request, String title) {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
-        x.setTitle("Issue Death Certificate")
+        x.setTitle(title)
                 .setMessage("Do you want to issue a Death Certificate for ".concat(request.getIdNumber()
-                        .concat("?")))
+                        .concat("?\n\n").concat(GSON.toJson(request))))
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -147,7 +166,7 @@ public class NavActivity extends AppCompatActivity
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        getCertRequests();
                     }
                 })
                 .show();
@@ -165,6 +184,9 @@ public class NavActivity extends AppCompatActivity
         x.setDoctor(request.getDoctor());
         x.setHospital(request.getHospital());
 
+        x.setHospitalId(request.getHospitalId());
+        x.setDoctorId(request.getDoctorId());
+
         showSnackbar("Issuing Death Certificate ...", "Wait", "yellow");
         chainDataAPI.registerDeathCertificate(x, new ChainDataAPI.Listener() {
             @Override
@@ -178,7 +200,7 @@ public class NavActivity extends AppCompatActivity
                 chainDataAPI.updateDeathCertificateRequest(deathCertificateRequest, new ChainDataAPI.Listener() {
                     @Override
                     public void onResponse(Data data) {
-                        showSnackbar("Request updated, set to Issued","OK","green");
+                        showSnackbar("Request updated, set to Issued", "OK", "green");
                     }
 
                     @Override
@@ -202,7 +224,7 @@ public class NavActivity extends AppCompatActivity
 
             @Override
             public void onError(String message) {
-
+                showError(message);
             }
         });
     }
@@ -210,6 +232,7 @@ public class NavActivity extends AppCompatActivity
     private Policy policy;
 
     private void findPolicy(final String idNumber) {
+
         chainListAPI.getClient(idNumber, new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> clients) {
@@ -244,6 +267,7 @@ public class NavActivity extends AppCompatActivity
             }
         });
 
+
     }
 
     private void writeClaim() {
@@ -256,6 +280,7 @@ public class NavActivity extends AppCompatActivity
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
         claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setHospital(deathCertificateRequest.getHospital());
+
         chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
@@ -301,9 +326,9 @@ public class NavActivity extends AppCompatActivity
         for (String id : idNumbers) {
             fbListApi.getBeneficiaryByIDnumber(id, new FBListApi.BeneficiaryListener() {
                 @Override
-                public void onResponse(List<Beneficiary> users) {
-                    if (!users.isEmpty()) {
-                        Beneficiary b = users.get(0);
+                public void onResponse(List<Beneficiary> beneficiaries) {
+                    if (!beneficiaries.isEmpty()) {
+                        Beneficiary b = beneficiaries.get(0);
                         if (b.getFcmToken() != null) {
                             tokens.add(b.getFcmToken());
                         }
@@ -319,7 +344,7 @@ public class NavActivity extends AppCompatActivity
 
                 @Override
                 public void onError(String message) {
-
+                    showError(message);
                 }
             });
         }
@@ -334,7 +359,7 @@ public class NavActivity extends AppCompatActivity
             fbApi.addBeneficiaryClaimMessage(message, new FBApi.FBListener() {
                 @Override
                 public void onResponse(Data data) {
-                    Log.i(TAG, "onResponse: beneficiary message record added to FireBase");
+                    Log.w(TAG, "onResponse: beneficiary message record added to FireBase");
                 }
 
                 @Override
@@ -451,8 +476,37 @@ public class NavActivity extends AppCompatActivity
         snackbar.show();
     }
 
-    public static final String TAG = NavActivity.class.getSimpleName();
+    public static final String TAG = HomeAffairsActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    private void listen() {
+        IntentFilter m = new IntentFilter(FCMMessagingService.BROADCAST_CERT_REQ);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new RequestReceiver(), m);
+    }
+
+    private class RequestReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.w(TAG, "################# RequestReceiver onReceive: ***************: ");
+            DeathCertificateRequest f = (DeathCertificateRequest) intent.getSerializableExtra("data");
+            //getCertRequests();
+            showRequestArrived(f);
+
+        }
+    }
+
+    private void showRequestArrived(final DeathCertificateRequest request) {
+        snackbar = Snackbar.make(toolbar, "Certificate request has arrived", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor("yellow"));
+        snackbar.setAction("Issue", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                confirm(request, "Process Certificate Request");
+            }
+        });
+        snackbar.show();
+    }
 
 }

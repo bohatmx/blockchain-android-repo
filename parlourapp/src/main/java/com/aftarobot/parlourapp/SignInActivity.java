@@ -3,7 +3,7 @@ package com.aftarobot.parlourapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,37 +16,35 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.mlibrary.api.ChainListAPI;
-import com.aftarobot.mlibrary.api.FBApi;
-import com.aftarobot.mlibrary.api.FBListApi;
-import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.FuneralParlour;
-import com.aftarobot.mlibrary.data.UserDTO;
-import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
+import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public class SignInActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private Toolbar toolbar;
-    private static final int RC_SIGN_IN = 123;
-    private FBApi fbApi;
-    private FBListApi fbListApi;
+    private Spinner spinner;
+    private Button btn;
+    private FuneralParlour parlour;
+    private List<FuneralParlour> parlours;
+    private ChainListAPI chainListAPI;
+    private Snackbar snackbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,28 +59,16 @@ public class SignInActivity extends AppCompatActivity {
             startMain();
             return;
         }
-        fbApi = new FBApi();
-        fbListApi = new FBListApi();
+
         chainListAPI = new ChainListAPI(this);
 
         setFields();
-        getCompanies();
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        getParlours();
         checkGooglePlay();
 
     }
 
-    private Spinner spinner;
-    private Button btn;
-    private FuneralParlour parlour;
-    private List<FuneralParlour> parlours;
+
     private void setFields() {
         spinner = findViewById(R.id.spinner);
         btn = findViewById(R.id.btnStart);
@@ -98,13 +84,14 @@ public class SignInActivity extends AppCompatActivity {
         });
         btn.setEnabled(false);
     }
+
     private void setSpinner() {
         List<String> list = new ArrayList<>();
-        for (FuneralParlour p: parlours) {
+        for (FuneralParlour p : parlours) {
             list.add(p.getName());
         }
         list.add(0, "Select Funeral Parlour");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -116,7 +103,7 @@ public class SignInActivity extends AppCompatActivity {
                 }
                 btn.setEnabled(true);
                 parlour = parlours.get(position - 1);
-                SharedPrefUtil.saveParlour(parlour,getApplicationContext());
+                SharedPrefUtil.saveParlour(parlour, getApplicationContext());
                 getSupportActionBar().setTitle(parlour.getName());
                 getSupportActionBar().setSubtitle("Connecting to Blockchain");
             }
@@ -128,6 +115,7 @@ public class SignInActivity extends AppCompatActivity {
         });
 
     }
+
     private void checkGooglePlay() {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         switch (status) {
@@ -135,72 +123,54 @@ public class SignInActivity extends AppCompatActivity {
                 Log.i(TAG, "checkGooglePlay: ConnectionResult.SUCCESS:");
                 break;
             case ConnectionResult.SERVICE_MISSING:
-                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING " );
+                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING ");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
             case ConnectionResult.SERVICE_UPDATING:
-                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_UPDATING" );
+                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_UPDATING");
                 break;
             case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED" );
+                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
             case ConnectionResult.SERVICE_DISABLED:
-                Log.e(TAG, "checkGooglePlay:ConnectionResult.SERVICE_DISABLED" );
+                Log.e(TAG, "checkGooglePlay:ConnectionResult.SERVICE_DISABLED");
                 break;
             case ConnectionResult.SERVICE_INVALID:
-                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_INVALID " );
+                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_INVALID ");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
 
         }
 
     }
+
     private void startSignUp() {
 
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-//                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build());
-
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            Log.w(TAG, "onActivityResult: IdpResponse: ".concat(GSON.toJson(response)) );
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Log.i(TAG, "onActivityResult: Firebase sign in OK: ".concat(GSON.toJson(user)));
-                Snackbar.make(toolbar, "Sign in A-OK", Snackbar.LENGTH_SHORT).show();
-                addUserToFirebase(user);
-            } else {
-                showSnackError("Error signing in, please check");
-                Log.e(TAG, "onActivityResult: Sign in failed, check response for error code");
-            }
-        }
+        mAuth.signInAnonymously()
+                .addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        FirebaseMessaging.getInstance().subscribeToTopic("certificates");
+                        Log.e(TAG, "onResponse: user subscribed to topic: certificates");
+                        startMain();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        showError(e.getMessage());
+                    }
+                });
     }
 
     private void startMain() {
-        Intent m = new Intent(this, NavActivity.class);
+        Intent m = new Intent(this, ParlourNavActivity.class);
         startActivity(m);
         finish();
     }
-    private ChainListAPI chainListAPI;
 
-    private void getCompanies() {
+    private void getParlours() {
         chainListAPI.getFuneralParlours(new ChainListAPI.ParlourListener() {
             @Override
             public void onResponse(List<FuneralParlour> list) {
@@ -217,49 +187,11 @@ public class SignInActivity extends AppCompatActivity {
         });
 
     }
-    private void showError(String message) {
 
-    }
-    public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
-    private void addUserToFirebase(final FirebaseUser u) {
-        final UserDTO user = new UserDTO();
-        user.setFuneralParlourId(parlour.getFuneralParlourId());
-        user.setDateRegistered(new Date().getTime());
-        user.setEmail(u.getEmail());
-        user.setUid(u.getUid());
-        user.setDisplayName(u.getDisplayName());
-        user.setStringDateRegistered(sdf.format(new Date()));
-        user.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
-        user.setUserType(UserDTO.FUNERAL_PARLOUR_USER);
-        writeUser(user,u);
-
-    }
-
-    private void writeUser(UserDTO user, final FirebaseUser u) {
-        fbApi.addUser(user, new FBApi.FBListener() {
-            @Override
-            public void onResponse(Data data) {
-                Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
-                FirebaseMessaging.getInstance().subscribeToTopic("certificates");
-                Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
-                FirebaseMessaging.getInstance().subscribeToTopic("burials");
-                Log.e(TAG, "onResponse: user subscribed to topic: burials" );
-                startMain();
-            }
-
-            @Override
-            public void onError(String message) {
-                showSnackError(message);
-            }
-        });
-    }
-
-    private Snackbar snackbar;
-
-    private void showSnackError(String message) {
+    private void showSnackbar(String message, String action, String color) {
         snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
-        snackbar.setActionTextColor(Color.parseColor("red"));
-        snackbar.setAction("error", new View.OnClickListener() {
+        snackbar.setActionTextColor(Color.parseColor(color));
+        snackbar.setAction(action, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 snackbar.dismiss();
@@ -267,6 +199,21 @@ public class SignInActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
+
+    private void showError(String message) {
+        snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor("red"));
+        snackbar.setAction("Error", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
+
+    }
+
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

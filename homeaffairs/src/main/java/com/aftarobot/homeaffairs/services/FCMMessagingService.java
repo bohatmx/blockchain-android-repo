@@ -9,12 +9,13 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.aftarobot.homeaffairs.NavActivity;
+import com.aftarobot.homeaffairs.HomeAffairsActivity;
 import com.aftarobot.homeaffairs.R;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -35,6 +36,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
 
     public static final String TAG = FCMMessagingService.class.getSimpleName();
     public static final String
+            BROADCAST_CERT_REQ = "com.aftarobot.BROADCAST_CERT_REQUEST",
             BROADCAST_CERT = "com.aftarobot.BROADCAST_CERT",
             BROADCAST_USER = "com.aftarobot.BROADCAST_USER",
             BROADCAST_CLAIM = "com.aftarobot.BROADCAST_CLAIM",
@@ -65,6 +67,11 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_CERT, dc);
                 sendNotification(type, "Death Certificate Issued", map.get("json"));
             }
+            if (type.equalsIgnoreCase("CERT_REQUEST")) {
+                DeathCertificateRequest dc = GSON.fromJson(map.get("json"), DeathCertificateRequest.class);
+                broadcast(BROADCAST_CERT_REQ, dc);
+                sendNotification(type, "Death Certificate Request", map.get("json"));
+            }
             if (type.equalsIgnoreCase("BURIAL")) {
                 Burial burial = GSON.fromJson(map.get("json"), Burial.class);
                 broadcast(BROADCAST_BURIAL, burial);
@@ -80,8 +87,8 @@ public class FCMMessagingService extends FirebaseMessagingService {
 
     private void broadcast(String intent, Data data) {
         Intent m = new Intent(intent);
-        if (data instanceof DeathCertificate) {
-            m.putExtra("data", (DeathCertificate)data);
+        if (data instanceof DeathCertificateRequest) {
+            m.putExtra("data", (DeathCertificateRequest)data);
         }
         if (data instanceof Burial) {
             m.putExtra("data", (Burial)data);
@@ -98,7 +105,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
     }
     private void sendNotification(String messageType, String title, String json) {
 
-        Intent resultIntent = new Intent(getApplicationContext(), NavActivity.class);
+        Intent resultIntent = new Intent(getApplicationContext(), HomeAffairsActivity.class);
         resultIntent.putExtra("title", title);
         resultIntent.putExtra("json", json);
         resultIntent.putExtra("messageType", messageType);

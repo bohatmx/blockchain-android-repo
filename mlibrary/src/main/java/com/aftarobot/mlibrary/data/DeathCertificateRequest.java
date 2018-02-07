@@ -13,8 +13,24 @@ public class DeathCertificateRequest implements Data, Serializable {
     private String causeOfDeath;
     private String hospital;
     private String doctor;
-    private String client;
+    private String client, hospitalId, doctorId;
     private boolean issued;
+
+    public String getHospitalId() {
+        return hospitalId;
+    }
+
+    public void setHospitalId(String hospitalId) {
+        this.hospitalId = hospitalId;
+    }
+
+    public String getDoctorId() {
+        return doctorId;
+    }
+
+    public void setDoctorId(String doctorId) {
+        this.doctorId = doctorId;
+    }
 
     public boolean isIssued() {
         return issued;

@@ -3,6 +3,7 @@ package com.aftarobot.homeaffairs;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,10 +18,12 @@ import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -28,9 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -73,7 +74,21 @@ public class SignInActivity extends AppCompatActivity {
     private void setFields() {
 
     }
-
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 675;
     private void checkGooglePlay() {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         switch (status) {
@@ -106,20 +121,24 @@ public class SignInActivity extends AppCompatActivity {
 
     private void startSignUp() {
 
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build());
-
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
-
-    }
+            Log.d(TAG, "authAnonymously: ******************** auth anon to Firebase");
+            mAuth.signInAnonymously()
+                    .addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
+                        @Override
+                        public void onSuccess(AuthResult authResult) {
+                            Log.i(TAG, "onSuccess: signInAnonymously");
+                            FirebaseMessaging.getInstance().subscribeToTopic("certificateRequests");
+                            Log.e(TAG, "onResponse: user subscribed to topic: certificateRequests");
+                            startMain();
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            showError(e.getMessage());
+                        }
+                    });
+        }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -141,7 +160,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void startMain() {
-        Intent m = new Intent(this, NavActivity.class);
+        Intent m = new Intent(this, HomeAffairsActivity.class);
         startActivity(m);
         finish();
     }

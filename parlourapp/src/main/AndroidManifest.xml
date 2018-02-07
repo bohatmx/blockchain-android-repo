@@ -39,7 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NavActivity"
+            android:name=".ParlourNavActivity"
             android:label="@string/title_activity_nav"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

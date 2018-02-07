@@ -132,7 +132,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError(context.getString(R.string.dc_add_failed));
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                        Log.e(TAG, "addDeathCertificateRequestByTranx onResponse: ".concat(response.errorBody().string()));
                     } catch (Exception e) {
                         Log.e(TAG, "onResponse: ERROR ", e);
                     }
@@ -338,7 +338,7 @@ public class ChainDataAPI {
     }
 
     public void addClaim(final Claim claim, final Listener listener) {
-        Log.w(TAG, "########### addClaim: ".concat(GSON.toJson(claim)));
+        Log.w(TAG, "########### adding Claim: ".concat(GSON.toJson(claim)));
         Call<Claim> call = apiService.registerClaim(claim);
         call.enqueue(new Callback<Claim>() {
             @Override
@@ -347,7 +347,11 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance claim added: ".concat(claim.getClaimId()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "addClaim error: ".concat(GSON.toJson(response)));
+                    try {
+                        Log.e(TAG, "addClaim error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
                     listener.onError(context.getString(R.string.claim_add_failed));
                 }
             }

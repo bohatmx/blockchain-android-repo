@@ -107,7 +107,7 @@ public class CertRequestAdapter extends RecyclerView.Adapter<CertRequestAdapter.
         public RequestViewHolder(View itemView) {
             super(itemView);
             idNumber = itemView.findViewById(R.id.txtId);
-            date = itemView.findViewById(R.id.email);
+            date = itemView.findViewById(R.id.txtDate);
             layout = itemView.findViewById(R.id.layout0);
         }
 
