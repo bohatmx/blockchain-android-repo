@@ -1,6 +1,7 @@
 #!/bin/bash 
 echo Starting Blockchain Demo Build ....................
-successCnt = 0;
+echo ##############################
+
 ./gradlew clean
 ./gradlew :crudder:build
 ./gradlew :hospitalapp:build
@@ -8,4 +9,6 @@ successCnt = 0;
 ./gradlew :beneficiary:build
 ./gradlew :parlourapp:build
 ./gradlew :insurancecompany:build
+
 echo Blockchain Demo Build hopefuly successfully completed
+echo #####################################################
