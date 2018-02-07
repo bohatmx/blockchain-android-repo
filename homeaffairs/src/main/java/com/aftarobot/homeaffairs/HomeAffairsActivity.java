@@ -290,7 +290,7 @@ public class HomeAffairsActivity extends AppCompatActivity
                 fbApi.addClaim(x, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.e(TAG, "onResponse: claim added to Firebase".concat(GSON.toJson(x)));
+                        Log.e(TAG, "onResponse: claim added to Firebase: ".concat(GSON.toJson(x)));
                         showSnackbar("Claims registration process started", "ok", "green");
                         sendBeneficiaryMessage(claim);
                     }
