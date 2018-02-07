@@ -275,13 +275,14 @@ public class HomeAffairsActivity extends AppCompatActivity
         final Claim claim = new Claim();
         String[] strings = policy.getInsuranceCompany().split("#");
         claim.setCompanyId(strings[1]);
+        claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
-        claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setHospital(deathCertificateRequest.getHospital());
 
-        chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
+
+        chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 final Claim x = (Claim) data;

@@ -121,6 +121,7 @@ public class ClientUtil {
         policy.setDescription(ListUtil.getRandomDescription());
         policy.setAmount(ListUtil.getRandomPolicyAmount());
         policy.setIdNumber(client.getIdNumber());
+        policy.setClaimSubmitted(false);
 
         List<String> list = new ArrayList<>(1);
         list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(beneficiary.getIdNumber()));

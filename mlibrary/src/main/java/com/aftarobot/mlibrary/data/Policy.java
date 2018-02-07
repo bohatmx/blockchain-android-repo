@@ -15,7 +15,16 @@ public class Policy implements Data, Serializable {
     private String insuranceCompany;
     private String client;
     private List<String> beneficiaries;
+    private boolean claimSubmitted = false;
     private String insuranceCompanyID, idNumber;
+
+    public boolean isClaimSubmitted() {
+        return claimSubmitted;
+    }
+
+    public void setClaimSubmitted(boolean claimSubmitted) {
+        this.claimSubmitted = claimSubmitted;
+    }
 
     public String getIdNumber() {
         return idNumber;

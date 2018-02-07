@@ -104,7 +104,7 @@ public class CrudActivity extends AppCompatActivity {
                             }
                         }
                         start = System.currentTimeMillis();
-                        ClientUtil.generateClients(getApplicationContext(), company, 5, new ClientUtil.ClientListener() {
+                        ClientUtil.generateClients(getApplicationContext(), company, MAX_CLIENTS + 3, new ClientUtil.ClientListener() {
                             @Override
                             public void clientsComplete() {
                                 long end = System.currentTimeMillis();
@@ -135,7 +135,7 @@ public class CrudActivity extends AppCompatActivity {
                 .show();
     }
 
-    public static final int MAX_CLIENTS = 10;
+    public static final int MAX_CLIENTS = 20;
     long start;
     private void doCrud() {
         showSnackbar("Starting CRUD for demo data", "ok", "yellow");

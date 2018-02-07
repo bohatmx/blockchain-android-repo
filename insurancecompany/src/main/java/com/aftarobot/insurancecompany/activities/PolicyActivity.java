@@ -209,6 +209,7 @@ public class PolicyActivity extends AppCompatActivity {
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
         policy.setAmount(ListUtil.getRandomPolicyAmount());
+        policy.setClaimSubmitted(false);
 
         List<String> list = new ArrayList<>();
         for (Beneficiary b : policyBeneficiaries) {

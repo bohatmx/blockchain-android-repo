@@ -245,6 +245,7 @@ public class ClientsActivity extends AppCompatActivity {
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
         policy.setAmount(ListUtil.getRandomPolicyAmount());
+        policy.setClaimSubmitted(false);
 
         policyBeneficiaries = new ArrayList<>();
         HashMap<String, Beneficiary> map = new HashMap<>();

@@ -154,7 +154,7 @@ public interface ApiInterface {
     @GET("/queries/getPolicyByIdNumber")
     Call<List<Policy>> getPoliciesByIdNumber(@Path("idNumber") String idNumber);
 
-    @POST("/SubmitClaim")
-    Call<Claim> registerBurial(@Body Claim claim);
+    @POST("SubmitClaim")
+    Call<Claim> submitClaim(@Body Claim claim);
 
 }

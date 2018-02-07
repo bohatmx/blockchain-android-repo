@@ -364,6 +364,33 @@ public class ChainDataAPI {
             }
         });
     }
+    public void submitClaim(final Claim claim, final Listener listener) {
+        Log.w(TAG, "########### adding Claim via transaction: ".concat(GSON.toJson(claim)));
+        Call<Claim> call = apiService.submitClaim(claim);
+        call.enqueue(new Callback<Claim>() {
+            @Override
+            public void onResponse(Call<Claim> call, Response<Claim> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "Insurance claim added: ".concat(claim.getClaimId()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        Log.e(TAG, "addClaim error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
+                    listener.onError(context.getString(R.string.claim_add_failed));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Claim> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.claim_add_failed));
+
+            }
+        });
+    }
 
     public void registerPolicyViaTx(final Policy policy, final Listener listener) {
         Call<Policy> call = apiService.registerPolicyViaTx(policy);
