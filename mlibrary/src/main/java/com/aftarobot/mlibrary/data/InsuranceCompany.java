@@ -11,7 +11,7 @@ import java.io.Serializable;
 public class InsuranceCompany implements Data, Serializable, Comparable<InsuranceCompany> {
     private String $class;
     private String email;
-    private String insuranceCompanyID;
+    private String insuranceCompanyId;
     private String name;
     private String address;
 
@@ -23,9 +23,9 @@ public class InsuranceCompany implements Data, Serializable, Comparable<Insuranc
 
     public void setEmail(String email) { this.email = email; }
 
-    public String getInsuranceCompanyID() { return this.insuranceCompanyID; }
+    public String getInsuranceCompanyId() { return this.insuranceCompanyId; }
 
-    public void setInsuranceCompanyID(String insuranceCompanyID) { this.insuranceCompanyID = insuranceCompanyID; }
+    public void setInsuranceCompanyId(String insuranceCompanyId) { this.insuranceCompanyId = insuranceCompanyId; }
 
     public String getName() { return this.name; }
 

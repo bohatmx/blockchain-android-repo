@@ -1,6 +1,7 @@
 package com.aftarobot.mlibrary.api;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
@@ -157,8 +158,8 @@ public class ChainListAPI {
             public void onResponse(Call<List<Claim>> call, Response<List<Claim>> response) {
                 if (response.isSuccessful()) {
                     List<Claim> list = response.body();
-                    Log.i(TAG, "getClaim returns: ".concat(GSON.toJson(list)));
-                    listener.onResponse(response.body());
+                    Log.i(TAG, "getClaims returns: ".concat(String.valueOf(list.size())));
+                    listener.onResponse(list);
 
                 } else {
                     try {
@@ -187,8 +188,8 @@ public class ChainListAPI {
             public void onResponse(Call<List<Client>> call, Response<List<Client>> response) {
                 if (response.isSuccessful()) {
                     List<Client> list = response.body();
-                    Log.i(TAG, "getClients returns: ".concat(GSON.toJson(list)));
-                    listener.onResponse(response.body());
+                    Log.i(TAG, "getClients returns: ".concat(String.valueOf(list.size())));
+                    listener.onResponse(list);
 
                 } else {
                     try {
@@ -217,7 +218,7 @@ public class ChainListAPI {
             public void onResponse(Call<List<Beneficiary>> call, Response<List<Beneficiary>> response) {
                 if (response.isSuccessful()) {
                     List<Beneficiary> list = response.body();
-                    Log.i(TAG, "getBeneficiaries returns: ".concat(GSON.toJson(list)));
+                    Log.i(TAG, "getBeneficiaries returns: ".concat(String.valueOf(list.size())));
                     listener.onResponse(response.body());
 
                 } else {
@@ -332,14 +333,14 @@ public class ChainListAPI {
     }
     public void getCompanyPolicies(String insuranceCompanyId, final PolicyListener listener) {
         Call<List<Policy>> call = apiService.getCompanyPolicies(insuranceCompanyId);
-        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        Log.w(TAG, "######### getCompanyPolicies calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<List<Policy>>() {
             @Override
-            public void onResponse(Call<List<Policy>> call, Response<List<Policy>> response) {
+            public void onResponse(@NonNull Call<List<Policy>> call, @NonNull Response<List<Policy>> response) {
                 if (response.isSuccessful()) {
                     List<Policy> list = response.body();
-                    Log.i(TAG, "getPolicies returns: ".concat(GSON.toJson(list)));
-                    listener.onResponse(response.body());
+                    Log.i(TAG, "getCompanyPolicies returns: ".concat(String.valueOf(list.size())));
+                    listener.onResponse(list);
 
                 } else {
                     try {
@@ -392,7 +393,7 @@ public class ChainListAPI {
     }
     public void getPolicies(final PolicyListener listener) {
         Call<List<Policy>> call = apiService.getPolicies();
-        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        Log.e(TAG, "######### getPolicies calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<List<Policy>>() {
             @Override
             public void onResponse(Call<List<Policy>> call, Response<List<Policy>> response) {
@@ -406,7 +407,7 @@ public class ChainListAPI {
                         Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
                                 .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
                                         .concat(response.errorBody().string())));
-                        listener.onError(response.errorBody().string());
+                        listener.onError("Failed to get Policies");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -451,6 +452,7 @@ public class ChainListAPI {
             }
         });
     }
+
     public void getDeathCertificates(final DeathCertListener listener) {
         Call<List<DeathCertificate>> call = apiService.getDeathCertificates();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());

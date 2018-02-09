@@ -25,6 +25,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by aubreymalabie on 1/12/18.
@@ -80,7 +81,7 @@ public interface ApiInterface {
     Call<List<Doctor>> getDoctors();
 
     @GET("queries/getinsuranceCompanyPolicies")
-    Call<List<Policy>> getCompanyPolicies(@Path("insuranceCompanyId") String insuranceCompanyId);
+    Call<List<Policy>> getCompanyPolicies(@Query("insuranceCompanyId") String insuranceCompanyId);
 
     @GET("Policy")
     Call<List<Policy>> getPolicies();
@@ -160,5 +161,7 @@ public interface ApiInterface {
 
     @POST("AddBeneficiaryToPolicy")
     Call<PolicyBeneficiary> addBeneficiaryToPolicy(@Body PolicyBeneficiary policyBeneficiary);
+
+
 
 }

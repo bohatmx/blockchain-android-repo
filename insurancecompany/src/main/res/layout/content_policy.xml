@@ -29,33 +29,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
+
                 <TextView
                     android:id="@+id/txtTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="@string/title_policies"
+                    android:text="Title Will Be here"
                     android:textSize="20sp"
                     android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_add" />
-
                 <TextView
                     android:id="@+id/txtCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginRight="60dp"
-                    android:layout_toLeftOf="@id/icon"
+                    android:layout_toRightOf="@id/txtTitle"
+                    android:layout_marginLeft="@dimen/fab_margin"
                     android:text="0"
                     android:textColor="@color/teal_500"
-                    android:textSize="36sp"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
             </RelativeLayout>
 
@@ -64,14 +56,12 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/layout1">
 
-                <Button
+                <android.support.design.widget.FloatingActionButton
                     android:id="@+id/btnPolicy"
-                    style="@style/Base.Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:text="Sell"
-                    android:textColor="@color/blue_600" />
+                    android:src="@drawable/ic_done_white" />
 
                 <AutoCompleteTextView
                     android:id="@+id/auto"

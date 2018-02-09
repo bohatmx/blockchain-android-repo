@@ -167,8 +167,8 @@ public class ClientsActivity extends AppCompatActivity {
         showSnack("Registering policy to the blockchain ...","ok","yellow");
         Policy policy = new Policy();
         policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
-                .concat(company.getInsuranceCompanyID()));
-        policy.setInsuranceCompanyId(company.getInsuranceCompanyID());
+                .concat(company.getInsuranceCompanyId()));
+        policy.setInsuranceCompanyId(company.getInsuranceCompanyId());
         policy.setIdNumber(client.getIdNumber());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));

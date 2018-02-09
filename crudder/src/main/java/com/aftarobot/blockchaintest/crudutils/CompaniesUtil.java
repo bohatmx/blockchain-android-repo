@@ -33,7 +33,7 @@ public class CompaniesUtil {
             switch (mCount) {
                 case 0:
                     InsuranceCompany co = new InsuranceCompany();
-                    co.setInsuranceCompanyID("COMPANY_001");
+                    co.setInsuranceCompanyId("COMPANY_001");
                     co.setName("OneConnect Insurance LLC");
                     co.setEmail("info@oneconnectinsurance.com");
                     co.setAddress("234 Maude Street, Sandton");
@@ -41,7 +41,7 @@ public class CompaniesUtil {
                     break;
                 case 1:
                     InsuranceCompany co1 = new InsuranceCompany();
-                    co1.setInsuranceCompanyID("COMPANY_002");
+                    co1.setInsuranceCompanyId("COMPANY_002");
                     co1.setName("Phila Insurance");
                     co1.setEmail("info@phila.com");
                     co1.setAddress("26 Remington Street, Cape Town");
@@ -49,7 +49,7 @@ public class CompaniesUtil {
                     break;
                 case 2:
                     InsuranceCompany co3 = new InsuranceCompany();
-                    co3.setInsuranceCompanyID("COMPANY_003");
+                    co3.setInsuranceCompanyId("COMPANY_003");
                     co3.setName("Cape Insurance");
                     co3.setEmail("info@kzninsurance.com");
                     co3.setAddress("12 Beach Street, Cape Town");

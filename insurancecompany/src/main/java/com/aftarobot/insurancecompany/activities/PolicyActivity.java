@@ -1,8 +1,10 @@
 package com.aftarobot.insurancecompany.activities;
 
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,8 +22,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +32,7 @@ import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
@@ -56,7 +57,6 @@ import java.util.Random;
 public class PolicyActivity extends AppCompatActivity {
 
     private TextView txtTitle, txtCount;
-    private ImageView imgAdd;
     private RecyclerView recyclerView;
     private ChainListAPI chainListAPI;
     private List<Policy> policies;
@@ -67,10 +67,11 @@ public class PolicyActivity extends AppCompatActivity {
     private List<Client> clients;
     private List<Beneficiary> beneficiaries;
     private AutoCompleteTextView auto;
-    private Button btnPolicy;
+    private FloatingActionButton btnPolicy;
     private Client client;
     private MyDialogFragment dialogFragment;
     private FragmentManager fm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,32 +111,23 @@ public class PolicyActivity extends AppCompatActivity {
         txtCount = findViewById(R.id.txtCount);
         txtTitle.setText("Policies");
         txtCount.setText("0");
-        imgAdd = findViewById(R.id.icon);
-        imgAdd.setEnabled(false);
-        imgAdd.setVisibility(View.INVISIBLE);
+
         recyclerView = findViewById(R.id.recycler);
         LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(lm);
 
+        btnPolicy.setVisibility(View.GONE);
         btnPolicy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (client == null) {
-                    Toast.makeText(getApplicationContext(),"Find client first", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Find client first", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 confirm(client);
             }
         });
 
-        imgAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(toolbar, "Generating random policy?", Snackbar.LENGTH_SHORT).show();
-                count = 0;
-                addRandomPolicy();
-            }
-        });
     }
 
     int count;
@@ -143,11 +135,11 @@ public class PolicyActivity extends AppCompatActivity {
 
     private void setAuto() {
         List<String> list = new ArrayList<>();
-        for (Client c: clients) {
+        for (Client c : clients) {
             list.add(c.getFullName());
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,android.R.layout.simple_list_item_1,list);
+                this, android.R.layout.simple_list_item_1, list);
         auto.setAdapter(adapter);
         auto.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -158,32 +150,16 @@ public class PolicyActivity extends AppCompatActivity {
         });
 
     }
+
     private void setClient(String s) {
-        for (Client c: clients) {
+        for (Client c : clients) {
             if (c.getFullName().equalsIgnoreCase(s)) {
                 client = c;
                 hideKeyboard();
+                btnPolicy.setVisibility(View.VISIBLE);
                 break;
             }
         }
-    }
-    private void addRandomPolicy() {
-        if (count > 100) {
-            showError("Seems all clients have policies");
-            return;
-        }
-        Snackbar.make(toolbar, "Generating policy ...", Snackbar.LENGTH_LONG).show();
-        int clientIndex = random.nextInt(clients.size() - 1);
-        Client client = clients.get(clientIndex);
-        for (Policy p : policies) {
-            if (p.getClient().contains(client.getIdNumber())) {
-                count++;
-                addRandomPolicy();
-            }
-        }
-        addSinglePolicy(client);
-
-
     }
 
     private void confirm(final Client client) {
@@ -204,8 +180,9 @@ public class PolicyActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     private void addSinglePolicy(Client client) {
-        showSnack("Registering policy ...","ok","yellow");
+        showSnack("Registering policy ...", "ok", "yellow");
         int benCount = random.nextInt(3);
         if (benCount == 0) {
             benCount = 2;
@@ -223,8 +200,8 @@ public class PolicyActivity extends AppCompatActivity {
         }
 
         Policy policy = new Policy();
-        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(company.getInsuranceCompanyID()));
-        policy.setInsuranceCompanyId(company.getInsuranceCompanyID());
+        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(company.getInsuranceCompanyId()));
+        policy.setInsuranceCompanyId(company.getInsuranceCompanyId());
         policy.setIdNumber(client.getIdNumber());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
@@ -237,7 +214,7 @@ public class PolicyActivity extends AppCompatActivity {
             list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
         }
         policy.setBeneficiaries(list);
-        Log.w(TAG, "addSinglePolicy: beneficiaries:".concat(GSON.toJson(policyBeneficiaries)) );
+        Log.w(TAG, "addSinglePolicy: beneficiaries:".concat(GSON.toJson(policyBeneficiaries)));
 
         chainDataAPI.registerPolicyViaTransaction(policy, new ChainDataAPI.Listener() {
             @Override
@@ -247,6 +224,7 @@ public class PolicyActivity extends AppCompatActivity {
                 policies.add(0, p);
                 setList();
                 recyclerView.smoothScrollToPosition(0);
+                btnPolicy.setVisibility(View.GONE);
                 showSnack("Policy added to blockchain: ".concat(p.getPolicyNumber()), "ok", "green");
                 FBApi api = new FBApi();
                 api.addPolicy(p, new FBApi.FBListener() {
@@ -308,18 +286,23 @@ public class PolicyActivity extends AppCompatActivity {
     }
 
     private FBApi fbApi = new FBApi();
+
+    private Claim claim;
+
     private void registerClaim(Policy policy) {
-        Claim claim = new Claim();
+        showSnack("Registering claim on the blockchain", "ok", "yellow");
+        claim = new Claim();
         String[] strings = policy.getInsuranceCompany().split("#");
         claim.setCompanyId(strings[1]);
         claim.setDateTime(sdf.format(new Date()));
-        claim.setClaimId(getRandomClaimId());
+        claim.setClaimId(ListUtil.getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
         claim.setPolicyNumber(policy.getPolicyNumber());
         chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 final Claim x = (Claim) data;
+                showSnack("Claim registered: ".concat(x.getClaimId()), "OK", "green");
                 fbApi.addClaim(x, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
@@ -339,27 +322,10 @@ public class PolicyActivity extends AppCompatActivity {
             }
         });
     }
-    public static String getRandomClaimId() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("C");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
 
-        return sb.toString();
-    }
+
     private static Random random = new Random(System.currentTimeMillis());
+
     private void getClients() {
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
@@ -396,17 +362,11 @@ public class PolicyActivity extends AppCompatActivity {
 
     private void getPolicies() {
         Snackbar.make(toolbar, "Refreshing policy list ...", Snackbar.LENGTH_LONG).show();
-        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
+        chainListAPI.getCompanyPolicies(company.getInsuranceCompanyId(), new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> list) {
                 Log.d(TAG, "onResponse: policies found on blockchain" + list.size());
-
-                policies = new ArrayList<>();
-                for (Policy p : list) {
-                    if (p.getInsuranceCompany().contains(company.getInsuranceCompanyID())) {
-                        policies.add(p);
-                    }
-                }
+                policies = list;
                 txtCount.setText(df.format(policies.size()));
                 setList();
             }
@@ -443,6 +403,7 @@ public class PolicyActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
+
     void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager)
                 getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -462,12 +423,36 @@ public class PolicyActivity extends AppCompatActivity {
 
         MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver,filterCert);
-        broadcastManager.registerReceiver(receiver,filterClaim);
-        broadcastManager.registerReceiver(receiver,filterPolicy);
-        broadcastManager.registerReceiver(receiver,filterBurial);
+        broadcastManager.registerReceiver(receiver, filterCert);
+        broadcastManager.registerReceiver(new ClaimReceiver(), filterClaim);
+        broadcastManager.registerReceiver(new BurialReceiver(), filterBurial);
 
     }
 
 
+    private class ClaimReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "ClaimReceiver onReceive: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            Claim claimMsg = (Claim) intent.getSerializableExtra("data");
+            if (claim.getClaimId().equalsIgnoreCase(claimMsg.getClaimId())) {
+                Log.w(TAG, "onReceive: Claim that was issued HERE... so, no sweat!".concat(GSON.toJson(claimMsg)));
+            } else {
+                showSnack("Claim received: ".concat(claimMsg.getClaimId()), "ok", "green");
+            }
+
+        }
+    }
+
+    private class BurialReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "BurialReceiver onReceive: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            Burial burial = (Burial) intent.getSerializableExtra("data");
+            showSnack("Burial record received: ".concat(burial.getIdNumber()), "ok", "green");
+
+        }
+    }
 }

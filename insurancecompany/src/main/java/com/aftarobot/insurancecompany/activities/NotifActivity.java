@@ -39,7 +39,7 @@ public class NotifActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                Intent m = new Intent(getApplicationContext(), CompanyNavActivity.class);
                 startActivity(m);
                 finish();
             }
@@ -86,7 +86,7 @@ public class NotifActivity extends AppCompatActivity {
                 .setPositiveButton("Yes, thank you!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                        Intent m = new Intent(getApplicationContext(), CompanyNavActivity.class);
                         startActivity(m);
                     }
                 })
@@ -99,7 +99,7 @@ public class NotifActivity extends AppCompatActivity {
         dialogFragment.setListener(new MyDialogFragment.Listener() {
             @Override
             public void onCloseButtonClicked() {
-                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                Intent m = new Intent(getApplicationContext(), CompanyNavActivity.class);
                 m.putExtra("cert", dc);
                 startActivity(m);
                 finish();
@@ -117,7 +117,7 @@ public class NotifActivity extends AppCompatActivity {
         dialogFragment.setListener(new MyDialogFragment.Listener() {
             @Override
             public void onCloseButtonClicked() {
-                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                Intent m = new Intent(getApplicationContext(), CompanyNavActivity.class);
                 m.putExtra("burial", burial);
                 startActivity(m);
                 finish();
@@ -133,7 +133,7 @@ public class NotifActivity extends AppCompatActivity {
         dialogFragment.setListener(new MyDialogFragment.Listener() {
             @Override
             public void onCloseButtonClicked() {
-                Intent m = new Intent(getApplicationContext(), NavActivity.class);
+                Intent m = new Intent(getApplicationContext(), CompanyNavActivity.class);
                 m.putExtra("claim", claim);
                 startActivity(m);
                 finish();

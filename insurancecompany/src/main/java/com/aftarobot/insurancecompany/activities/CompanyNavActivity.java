@@ -27,7 +27,6 @@ import android.widget.TextView;
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainListAPI;
-import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -41,11 +40,10 @@ import com.google.gson.GsonBuilder;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class NavActivity extends AppCompatActivity
+public class CompanyNavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
@@ -53,7 +51,6 @@ public class NavActivity extends AppCompatActivity
     private View layout3, layout1, layout2;
     private ChainListAPI chainListAPI;
     private List<Client> clients;
-    private List<Beneficiary> beneficiaries;
     private List<Policy> policies;
     private List<Claim> claims;
     private InsuranceCompany company;
@@ -64,7 +61,7 @@ public class NavActivity extends AppCompatActivity
     private FragmentManager fm;
 
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm");
-    public static final String TAG = NavActivity.class.getSimpleName();
+    public static final String TAG = CompanyNavActivity.class.getSimpleName();
     public static final DecimalFormat df = new DecimalFormat("###,###,###,###");
 
     @Override
@@ -83,8 +80,7 @@ public class NavActivity extends AppCompatActivity
         setup();
         listen();
         getClients();
-        getClaims();
-        getPolicies();
+
         checkMessage();
     }
 
@@ -118,10 +114,11 @@ public class NavActivity extends AppCompatActivity
         }
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
-        getClients();
+
     }
 
     private void setup() {
@@ -149,6 +146,7 @@ public class NavActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         chainListAPI = new ChainListAPI(this);
         company = SharedPrefUtil.getCompany(this);
+        Log.e(TAG, "setup: company: ".concat(GSON.toJson(company)));
         if (company != null) {
             View hdr = navigationView.getHeaderView(0);
             TextView txt = hdr.findViewById(R.id.txtTitle);
@@ -197,6 +195,7 @@ public class NavActivity extends AppCompatActivity
                 Log.w(TAG, "onResponse: claims found on blockchain: " + list.size());
                 txtClaims.setText(df.format(claims.size()));
                 txtDate.setText(sdf.format(new Date()));
+                getPolicies();
 
             }
 
@@ -214,8 +213,8 @@ public class NavActivity extends AppCompatActivity
                 clients = list;
                 Log.w(TAG, "onResponse: clients found on blockchain: " + list.size());
                 txtClients.setText(df.format(clients.size()));
-
                 txtDate.setText(sdf.format(new Date()));
+                getClaims();
 
             }
 
@@ -226,25 +225,23 @@ public class NavActivity extends AppCompatActivity
         });
     }
 
+
     private void getPolicies() {
-        chainListAPI.getPolicies(new ChainListAPI.PolicyListener() {
+
+        chainListAPI.getCompanyPolicies(company.getInsuranceCompanyId(), new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> list) {
-                Log.d(TAG, "onResponse: all policies found on blockchain: " + list.size());
-                policies = new ArrayList<>();
-                for (Policy p : list) {
-                    if (p.getInsuranceCompany().contains(company.getInsuranceCompanyID())) {
-                        policies.add(p);
-                    }
-                }
+                Log.d(TAG, "getCompanyPolicies: policies found on blockchain: " + list.size() + " companyId:  "
+                        + company.getInsuranceCompanyId());
+                policies = list;
                 txtPolicies.setText(df.format(policies.size()));
-                Log.w(TAG, "onResponse: filtered company policies found on blockchain: " + policies.size());
+                Log.w(TAG, "getCompanyPolicies: company policies found on blockchain: " + policies.size());
                 Snackbar.make(toolbar, "Dashboard refreshed", Snackbar.LENGTH_LONG).show();
             }
 
             @Override
             public void onError(String message) {
-                showError(message);
+
             }
         });
     }
@@ -371,7 +368,7 @@ public class NavActivity extends AppCompatActivity
                 });
                 snackbar.show();
             }
-            getClaims();
+            //getClaims();
 
         }
 
@@ -425,8 +422,8 @@ public class NavActivity extends AppCompatActivity
         }
 
 
-
     }
+
     private void showClaim(Claim dc) {
 
         FragmentTransaction ft = fm.beginTransaction();
@@ -446,6 +443,7 @@ public class NavActivity extends AppCompatActivity
         });
         fragment.show(ft, "CLAIM_DIAG");
     }
+
     private void showPolicy(Policy dc) {
 
         FragmentTransaction ft = fm.beginTransaction();
@@ -465,6 +463,7 @@ public class NavActivity extends AppCompatActivity
         });
         fragment.show(ft, "POLICY_DIAG");
     }
+
     private void showBurial(Burial dc) {
 
         FragmentTransaction ft = fm.beginTransaction();
@@ -484,6 +483,7 @@ public class NavActivity extends AppCompatActivity
         });
         fragment.show(ft, "BURIAL_DIAG");
     }
+
     private void showCert(DeathCertificate dc) {
         FragmentTransaction ft = fm.beginTransaction();
         Fragment prev = fm.findFragmentByTag("CERT_DIAG");

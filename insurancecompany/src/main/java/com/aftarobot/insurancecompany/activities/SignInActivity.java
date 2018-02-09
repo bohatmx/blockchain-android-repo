@@ -117,6 +117,7 @@ private FBListApi fbListApi;
                 }
                 btn.setEnabled(true);
                 company = companies.get(position - 1);
+                Log.d(TAG, "onItemSelected: saving company: ".concat(GSON.toJson(company)));
                 SharedPrefUtil.saveCompany(company,getApplicationContext());
                 getSupportActionBar().setTitle(company.getName());
                 getSupportActionBar().setSubtitle("Connecting to Blockchain");
@@ -195,7 +196,7 @@ private FBListApi fbListApi;
     }
 
     private void startMain() {
-        Intent m = new Intent(this, NavActivity.class);
+        Intent m = new Intent(this, CompanyNavActivity.class);
         startActivity(m);
         finish();
     }
@@ -208,7 +209,7 @@ private FBListApi fbListApi;
             public void onResponse(List<InsuranceCompany> list) {
                 companies = list;
                 Collections.sort(companies);
-                Log.w(TAG, "onResponse: companies found on blockchain: " + list.size());
+                Log.w(TAG, "onResponse: companies found on blockchain: ".concat(GSON.toJson(companies)));
                 setSpinner();
             }
 
@@ -225,7 +226,7 @@ private FBListApi fbListApi;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
     private void addUserToFirebase(final FirebaseUser u) {
        final UserDTO user = new UserDTO();
-        user.setCompanyId(company.getInsuranceCompanyID());
+        user.setCompanyId(company.getInsuranceCompanyId());
         user.setDateRegistered(new Date().getTime());
         user.setEmail(u.getEmail());
         user.setUid(u.getUid());
@@ -247,8 +248,8 @@ private FBListApi fbListApi;
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
                 if (company != null) {
-                    FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(company.getInsuranceCompanyID()));
-                    Log.e(TAG, "onResponse: user subscribed to topic: claims" + company.getInsuranceCompanyID());
+                    FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(company.getInsuranceCompanyId()));
+                    Log.e(TAG, "onResponse: user subscribed to topic: claims" + company.getInsuranceCompanyId());
                 } else {
                     throw new RuntimeException("Things are fucked up! No companyID ...");
                 }

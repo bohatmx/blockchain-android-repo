@@ -123,19 +123,44 @@ public class ListUtil {
         int i = random.nextInt(types.length - 1);
         return types[i];
     }
+    public static String getRandomClaimId() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("C");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+
     private static final String[] types = {"Death Benefit", "Disability Benefit", "Pension", "Health Cover","Travel","Education"};
     private static final String[] fNames = {"Thabo", "Jonathan", "Roger", "Andre", "Harold", "John", "Thabiso", "Spikiri", "Stina",
             "Samuel", "Anthony", "Johan", "Peter", "Mpho", "Phumzile", "Veronica", "Maria", "Mary", "Meisie", "Jabulani", "Zorro",
             "Nelson", "Bathabile", "Bhuti", "Boetie", "Davis", "David", "Kwanele", "Hlupheka", "Denzel", "Daisy", "John B",
             "Lesego","Kenneth","Catherine","Nomonde","Nozipho","Wendy","Lindiwe", "Oupa", "Jimmy", "Benjamin", "Jimbo", "Bafana", "Joyce",
             "Billy", "Petrus", "Johannes", "Mmaphefo","Michael", "Jordan", "Nokuhle", "Marianne", "Franklin", "Jones",
-            "Xavier", "Hunter", "Nancy", "Vincent", "Malenga", "Dlamani", "Msapa", "Geraldine",
+            "Xavier", "Hunter", "Nancy", "Vincent", "Malenga", "Dlamani", "Msapa", "Geraldine","Gift", "Junior", "Prince",
+            "Siyabonga", "Amogelang", "Lubanzi", "Mlungisi", "Bandile","Ayanda","Nokwanda", "Saviour", "Innocent", "Edgar", "Blessing",
+            "Luthando","Princess","Angel", "Amahle","Sipho","Siphokazi", "Boetie", "Frank", "Nancy","Olivia","Olive", "Portia",
             "Khanyisa","Thompson","Derrick","Joseph", "Nkululeko","Kate", "Thomas","Daniel", "Lunga", "Donald",
             "Robert","Samuel","Patrick","John","Tracy","Ainsley","Ashley","Ashleigh","Lee","Tony","Barrick",
             "Barack","Trent","Brady","Antonio","Bryce","Boyce","Boysie",
             "Jennifer", "Susan", "Mmaphefo", "Ntini", "Mmapaseka","Paseka","Lesedi","Thapelo","Clive","Mpho"};
     private static final String[] lNames = {"Adams","Abrams","Macheke","Matime","Ngwenya","Moriri","Moroka", "Khoza", "van der Merwe", "Pieterse", "Maluleke",
-            "Nkosi", "Malenga", "Mathibe", "Mthembu", "Shiluvane", "Shibambu",
+            "Nkosi", "Malenga", "Mathibe", "Mthembu", "Shiluvane", "Shibambu", "Gumede", "Ngcobo","Zulu","Mkhize","Mokoena",
+            "Khumalo", "Sithole","Ndlovu","Dlamini","Thebe","Sibanyoni","Bhengu","Mthembu","Nkosi",
             "Venter", "Jonathan", "Kelly", "Thebe", "Nhlapho", "Nkruma", "Sibiya", "Sibanyoni",
             "Motlhana", "Nthlese", "Petrus", "Henk", "Khulumani", "Jameson", "Walker", "Welker",
             "Brady", "Brown", "Wentz", "Foles","Peterson", "Agholor", "Nelson", "Frederick", "Franks",

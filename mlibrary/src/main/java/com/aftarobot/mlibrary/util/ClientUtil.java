@@ -58,7 +58,7 @@ public class ClientUtil {
     private static Random random = new Random(System.currentTimeMillis());
     private static void addRandomClient() {
         Client client = ListUtil.getRandomClient();
-        client.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyID()));
+        client.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyId()));
         chainDataAPI.addClient(client, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
@@ -114,8 +114,8 @@ public class ClientUtil {
 
     private static void addPolicy(final Client client, final Beneficiary beneficiary) {
         final Policy policy = new Policy();
-        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyID()));
-        policy.setInsuranceCompanyId(mCompany.getInsuranceCompanyID());
+        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyId()));
+        policy.setInsuranceCompanyId(mCompany.getInsuranceCompanyId());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
@@ -127,65 +127,22 @@ public class ClientUtil {
         list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(beneficiary.getIdNumber()));
         policy.setBeneficiaries(list);
 
-        chainDataAPI.addPolicy(policy, new ChainDataAPI.Listener() {
+        chainDataAPI.registerPolicyViaTransaction(policy, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 Policy x = (Policy)data;
                 policies.add(x);
-                //todo - add this policy to client via PUT call
                 Log.e(TAG, "onResponse: policy added to chain: "
                         .concat(String.valueOf(policies.size())).concat(" ")
                         .concat(GSON.toJson(x)));
                 mListener.onProgressMessage("Policy added to BlockChain: ".concat(x.getPolicyNumber()));
-                client.setPolicies(new ArrayList<String>());
-                String ply = "resource:com.oneconnect.insurenet.Policy#"
-                        .concat(x.getPolicyNumber());
-                client.getPolicies().add(ply);
-                if (beneficiary.getPolicies() == null) {
-                    beneficiary.setPolicies(new ArrayList<String>());
-                }
-                String p = "resource:com.oneconnect.insurenet.Policy#".concat(x.getPolicyNumber());
-                beneficiary.getPolicies().add(p);
-
-
-                Log.d(TAG, "about to update client policy: ".concat(GSON.toJson(client)));
-                chainDataAPI.updateClientPolicies(client, new ChainDataAPI.Listener() {
+                fbApi.addBeneficiary(beneficiary, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.w(TAG, "updateClientPolicies onResponse: index: " + index );
-                        final String idNumber = beneficiary.getIdNumber();
-                        chainDataAPI.updateBeneficiary(beneficiary, new ChainDataAPI.Listener() {
-                            @Override
-                            public void onResponse(Data data) {
-                                Log.d(TAG, "onResponse: we good, beneficiary has a policy added, Yay!");
-                                beneficiary.setIdNumber(idNumber);
-                                fbApi.addBeneficiary(beneficiary, new FBApi.FBListener() {
-                                    @Override
-                                    public void onResponse(Data data) {
-                                        Beneficiary x = (Beneficiary)data;
-                                        Log.i(TAG, "onResponse: beneficiary added to Firebase: ".concat(GSON.toJson(x)));
-                                        index++;
-                                        controlClients();
-                                    }
-
-                                    @Override
-                                    public void onError(String message) {
-                                        mListener.onError(message);
-                                        index++;
-                                        controlClients();
-                                    }
-                                });
-
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                mListener.onError(message);
-                                index++;
-                                controlClients();
-                            }
-                        });
-
+                        Beneficiary x = (Beneficiary)data;
+                        Log.i(TAG, "onResponse: beneficiary added to Firebase: ".concat(GSON.toJson(x)));
+                        index++;
+                        controlClients();
                     }
 
                     @Override
@@ -195,7 +152,6 @@ public class ClientUtil {
                         controlClients();
                     }
                 });
-
 
             }
 
