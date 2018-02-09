@@ -16,7 +16,7 @@ public class Policy implements Data, Serializable {
     private String client;
     private List<String> beneficiaries;
     private boolean claimSubmitted = false;
-    private String insuranceCompanyID, idNumber;
+    private String insuranceCompanyId, idNumber;
 
     public boolean isClaimSubmitted() {
         return claimSubmitted;
@@ -34,12 +34,12 @@ public class Policy implements Data, Serializable {
         this.idNumber = idNumber;
     }
 
-    public String getInsuranceCompanyID() {
-        return insuranceCompanyID;
+    public String getInsuranceCompanyId() {
+        return insuranceCompanyId;
     }
 
-    public void setInsuranceCompanyID(String insuranceCompanyID) {
-        this.insuranceCompanyID = insuranceCompanyID;
+    public void setInsuranceCompanyId(String insuranceCompanyId) {
+        this.insuranceCompanyId = insuranceCompanyId;
     }
 
     public String getClassz() { return this.$class; }

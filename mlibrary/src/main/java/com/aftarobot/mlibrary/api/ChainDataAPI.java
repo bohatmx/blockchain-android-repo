@@ -18,6 +18,7 @@ import com.aftarobot.mlibrary.data.HomeAffairs;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.data.PolicyBeneficiary;
 import com.aftarobot.mlibrary.data.Regulator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -391,18 +392,49 @@ public class ChainDataAPI {
             }
         });
     }
+    public void addPolicyBeneficiary(final PolicyBeneficiary policyBeneficiary, final Listener listener) {
+        Log.w(TAG, "########### addPolicyBeneficiary via transaction: ".concat(GSON.toJson(policyBeneficiary)));
+        Call<PolicyBeneficiary> call = apiService.addBeneficiaryToPolicy(policyBeneficiary);
+        call.enqueue(new Callback<PolicyBeneficiary>() {
+            @Override
+            public void onResponse(Call<PolicyBeneficiary> call, Response<PolicyBeneficiary> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "Insurance policy Beneficiary added: ".concat(policyBeneficiary.getPolicyNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        Log.e(TAG, "addPolicyBeneficiary error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
+                    listener.onError("Failed adding Beneficiary to Policy");
+                }
+            }
 
-    public void registerPolicyViaTx(final Policy policy, final Listener listener) {
+            @Override
+            public void onFailure(Call<PolicyBeneficiary> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError("Possible network error. Failed adding Beneficiary to Policy");
+
+            }
+        });
+    }
+
+    public void registerPolicyViaTransaction(final Policy policy, final Listener listener) {
         Call<Policy> call = apiService.registerPolicyViaTx(policy);
-        Log.d(TAG, "registerPolicyViaTx: ".concat(call.request().url().toString()));
+        Log.d(TAG, "registerPolicyViaTransaction: ".concat(call.request().url().toString()));
         call.enqueue(new Callback<Policy>() {
             @Override
             public void onResponse(Call<Policy> call, Response<Policy> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance policy registered via tx: ".concat(policy.getPolicyNumber()));
+                    Log.i(TAG, "Insurance policy registered via blockchain transaction: ".concat(policy.getPolicyNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    try {
+                        Log.e(TAG, "onResponse: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     listener.onError(context.getString(R.string.policy_add_failed));
                 }
             }
@@ -410,13 +442,13 @@ public class ChainDataAPI {
             @Override
             public void onFailure(Call<Policy> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
-                listener.onError(context.getString(R.string.policy_add_failed));
+                listener.onError("Possible network error. ".concat(context.getString(R.string.policy_add_failed)));
 
             }
         });
     }
     public void addPolicy(final Policy policy, final Listener listener) {
-        Call<Policy> call = apiService.registerPolicy(policy);
+        Call<Policy> call = apiService.addPolicy(policy);
         Log.d(TAG, "addPolicy: ".concat(call.request().url().toString()));
         call.enqueue(new Callback<Policy>() {
             @Override

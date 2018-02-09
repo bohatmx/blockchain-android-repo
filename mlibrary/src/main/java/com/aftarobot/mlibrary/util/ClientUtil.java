@@ -115,7 +115,7 @@ public class ClientUtil {
     private static void addPolicy(final Client client, final Beneficiary beneficiary) {
         final Policy policy = new Policy();
         policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(mCompany.getInsuranceCompanyID()));
-        policy.setInsuranceCompanyID(mCompany.getInsuranceCompanyID());
+        policy.setInsuranceCompanyId(mCompany.getInsuranceCompanyID());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());

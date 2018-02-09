@@ -112,6 +112,7 @@ public class PolicyActivity extends AppCompatActivity {
         txtCount.setText("0");
         imgAdd = findViewById(R.id.icon);
         imgAdd.setEnabled(false);
+        imgAdd.setVisibility(View.INVISIBLE);
         recyclerView = findViewById(R.id.recycler);
         LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(lm);
@@ -123,7 +124,7 @@ public class PolicyActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Find client first", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                addSinglePolicy(client);
+                confirm(client);
             }
         });
 
@@ -185,6 +186,24 @@ public class PolicyActivity extends AppCompatActivity {
 
     }
 
+    private void confirm(final Client client) {
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Confirm New Policy")
+                .setMessage("Do you want to register a new Policy for \n\n".concat(client.getFullName()).concat(" ?"))
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        addSinglePolicy(client);
+                    }
+                })
+                .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
     private void addSinglePolicy(Client client) {
         showSnack("Registering policy ...","ok","yellow");
         int benCount = random.nextInt(3);
@@ -205,6 +224,8 @@ public class PolicyActivity extends AppCompatActivity {
 
         Policy policy = new Policy();
         policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(company.getInsuranceCompanyID()));
+        policy.setInsuranceCompanyId(company.getInsuranceCompanyID());
+        policy.setIdNumber(client.getIdNumber());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
@@ -216,8 +237,9 @@ public class PolicyActivity extends AppCompatActivity {
             list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
         }
         policy.setBeneficiaries(list);
+        Log.w(TAG, "addSinglePolicy: beneficiaries:".concat(GSON.toJson(policyBeneficiaries)) );
 
-        chainDataAPI.addPolicy(policy, new ChainDataAPI.Listener() {
+        chainDataAPI.registerPolicyViaTransaction(policy, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 Policy p = (Policy) data;
@@ -294,7 +316,7 @@ public class PolicyActivity extends AppCompatActivity {
         claim.setClaimId(getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
         claim.setPolicyNumber(policy.getPolicyNumber());
-        chainDataAPI.addClaim(claim, new ChainDataAPI.Listener() {
+        chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 final Claim x = (Claim) data;

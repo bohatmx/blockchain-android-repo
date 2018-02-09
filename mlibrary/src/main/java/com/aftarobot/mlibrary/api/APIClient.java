@@ -61,8 +61,8 @@ public class APIClient {
             okHttpClient = new OkHttpClient();
             okHttpClient.newBuilder()
                     .connectTimeout(60, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(10, TimeUnit.SECONDS);
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS);
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(url)

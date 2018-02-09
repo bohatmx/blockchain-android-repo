@@ -14,6 +14,7 @@ import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.Identity;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.data.PolicyBeneficiary;
 import com.aftarobot.mlibrary.data.Regulator;
 
 import java.util.List;
@@ -88,7 +89,7 @@ public interface ApiInterface {
     Call<Policy> getPolicy(@Path("id") String id);
 
     @POST("Policy")
-    Call<Policy> registerPolicy(@Body Policy policy);
+    Call<Policy> addPolicy(@Body Policy policy);
 
     @POST("RegisterPolicy")
     Call<Policy> registerPolicyViaTx(@Body Policy policy);
@@ -144,7 +145,6 @@ public interface ApiInterface {
     Call<DeathCertificateRequest> updateDeathCertificateRequest(@Path("id") String idNumber,
                                                                 @Body DeathCertificateRequest deathCertificateRequest);
 
-
     @POST("AddDeathCertificateRequest")
     Call<DeathCertificateRequest> addDeathCertificateRequestViaTranx(@Body DeathCertificateRequest deathCertificateRequest);
 
@@ -156,5 +156,9 @@ public interface ApiInterface {
 
     @POST("SubmitClaim")
     Call<Claim> submitClaim(@Body Claim claim);
+    //
+
+    @POST("AddBeneficiaryToPolicy")
+    Call<PolicyBeneficiary> addBeneficiaryToPolicy(@Body PolicyBeneficiary policyBeneficiary);
 
 }
