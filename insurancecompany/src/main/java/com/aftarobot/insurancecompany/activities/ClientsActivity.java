@@ -95,19 +95,10 @@ public class ClientsActivity extends AppCompatActivity {
         txtCount = findViewById(R.id.txtCount);
         txtTitle.setText("Clients");
         txtCount.setText("0");
-        imgAdd = findViewById(R.id.icon);
         recyclerView = findViewById(R.id.recycler);
         LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(lm);
 
-        imgAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSnack("Generating random clients ...","ok","yellow");
-                count = 0;
-                control();
-            }
-        });
     }
 
     private Client randomClient;
@@ -127,72 +118,6 @@ public class ClientsActivity extends AppCompatActivity {
 
             }
         });
-    }
-    private void control() {
-        if (count < MAX_CLIENTS) {
-            addRandomClient();
-        } else {
-
-            count = 0;
-            controlBennies();
-        }
-
-    }
-
-    private void addRandomClient() {
-        Client client = ListUtil.getRandomClient();
-        chainDataAPI.addClient(client, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                randomClient = (Client) data;
-                Log.w(TAG, "onResponse: random client added: "
-                        .concat(GSON.toJson(randomClient)));
-                clients.add(0, randomClient);
-                Log.e(TAG, "onResponse: total clients:".concat(String.valueOf(clients.size())) );
-                setList();
-                recyclerView.smoothScrollToPosition(0);
-                count++;
-                control();
-
-            }
-
-            @Override
-            public void onError(String message) {
-                Log.e(TAG, "onError: ".concat(message));
-                showError(message);
-            }
-        });
-    }
-
-    private void controlBennies() {
-        if (count < MAX_BENNIES) {
-            addRandomBenny();
-        } else {
-            showSnack("Clients and Beneficiaries generated", "OK", "green");
-        }
-
-    }
-
-    private void addRandomBenny() {
-
-        Beneficiary beneficiary = ListUtil.getRandomBeneficiary();
-        chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                Beneficiary v = (Beneficiary) data;
-                count++;
-                Log.i(TAG, "onResponse: bennie added to blockchain".concat(GSON.toJson(v)));
-                Log.e(TAG, "onResponse: total beneficiaries:".concat(String.valueOf(count)) );
-
-                controlBennies();
-            }
-
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
-
     }
 
     private void setList() {
@@ -219,8 +144,9 @@ public class ClientsActivity extends AppCompatActivity {
 
     private void processClient(final Client client) {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
-        x.setTitle("Policy Sale")
-                .setMessage("Do you want to buy a Policy?")
+        x.setTitle("Policy Registration ")
+                .setMessage("Do you want to register a Policy for \n\n".concat(client.getFullName()
+                        .concat(" ?\n\nThis policy will be registered on the blockchain")))
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -238,9 +164,12 @@ public class ClientsActivity extends AppCompatActivity {
 
     private Random random = new Random(System.currentTimeMillis());
     private void addPolicy(Client client) {
-        showSnack("Adding policy to blockchain...","ok","yellow");
+        showSnack("Registering policy to the blockchain ...","ok","yellow");
         Policy policy = new Policy();
-        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(company.getInsuranceCompanyID()));
+        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
+                .concat(company.getInsuranceCompanyID()));
+        policy.setInsuranceCompanyId(company.getInsuranceCompanyID());
+        policy.setIdNumber(client.getIdNumber());
         policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
         policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
         policy.setDescription(ListUtil.getRandomDescription());
@@ -268,19 +197,19 @@ public class ClientsActivity extends AppCompatActivity {
             list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
         }
         policy.setBeneficiaries(list);
-
-        chainDataAPI.addPolicy(policy, new ChainDataAPI.Listener() {
+        showSnack("Registering policy on the Blockchain","ok","yellow");
+        chainDataAPI.registerPolicyViaTransaction(policy, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 Policy p = (Policy) data;
-                Log.w(TAG, "onResponse: we seem to have sold a fucking policy: ".concat(GSON.toJson(p)));
+                Log.e(TAG, "onResponse: we seem to have registered a fucking policy with a trabsaction!!!: ".concat(GSON.toJson(p)));
 
-                showSnack("Policy added to blockchain: ".concat(p.getPolicyNumber()), "ok", "green");
+                showSnack("Policy registered: ".concat(p.getPolicyNumber()), "ok", "green");
                 FBApi api = new FBApi();
                 api.addPolicy(p, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.i(TAG, "onResponse: policy added to FB");
+                        Log.i(TAG, "onResponse: policy added to Firebase");
                     }
 
                     @Override
@@ -308,11 +237,6 @@ public class ClientsActivity extends AppCompatActivity {
                 Log.d(TAG, "onResponse: clients found on blockchain" + list.size());
                 clients = list;
                 setList();
-                if (clients.isEmpty()) {
-                    showSnack("Generating client list", "ok", "cyan");
-                    count = 0;
-                    control();
-                }
             }
 
             @Override

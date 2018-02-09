@@ -123,10 +123,10 @@ public class ListUtil {
         int i = random.nextInt(types.length - 1);
         return types[i];
     }
-    private static final String[] types = {"Death Benefit", "Disability Benefit"};
+    private static final String[] types = {"Death Benefit", "Disability Benefit", "Pension", "Health Cover","Travel","Education"};
     private static final String[] fNames = {"Thabo", "Jonathan", "Roger", "Andre", "Harold", "John", "Thabiso", "Spikiri", "Stina",
             "Samuel", "Anthony", "Johan", "Peter", "Mpho", "Phumzile", "Veronica", "Maria", "Mary", "Meisie", "Jabulani", "Zorro",
-            "Nelson", "Bathabile", "Bhuti", "Boetie", "Davis", "David", "Kwanele",
+            "Nelson", "Bathabile", "Bhuti", "Boetie", "Davis", "David", "Kwanele", "Hlupheka", "Denzel", "Daisy", "John B",
             "Lesego","Kenneth","Catherine","Nomonde","Nozipho","Wendy","Lindiwe", "Oupa", "Jimmy", "Benjamin", "Jimbo", "Bafana", "Joyce",
             "Billy", "Petrus", "Johannes", "Mmaphefo","Michael", "Jordan", "Nokuhle", "Marianne", "Franklin", "Jones",
             "Xavier", "Hunter", "Nancy", "Vincent", "Malenga", "Dlamani", "Msapa", "Geraldine",
