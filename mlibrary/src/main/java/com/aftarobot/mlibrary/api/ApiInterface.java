@@ -83,6 +83,12 @@ public interface ApiInterface {
     @GET("queries/getinsuranceCompanyPolicies")
     Call<List<Policy>> getCompanyPolicies(@Query("insuranceCompanyId") String insuranceCompanyId);
 
+    @GET("queries/getInsuranceCompanyClaims")
+    Call<List<Claim>> getCompanyClaims(@Query("insuranceCompanyId") String insuranceCompanyId);
+
+    @GET("queries/getInsuranceCompanyClients")
+    Call<List<Client>> getCompanyClients(@Query("insuranceCompany") String insuranceCompany);
+
     @GET("Policy")
     Call<List<Policy>> getPolicies();
 

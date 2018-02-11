@@ -12,8 +12,15 @@ import java.util.List;
 public class Client extends Person implements Data, Serializable, Comparable<Client>{
     private Double accountBalance;
     private boolean isDeceased;
-    private String insuranceCompany;
-    private List<String> policies;
+    private List<String> policies, companies;
+
+    public List<String> getCompanies() {
+        return companies;
+    }
+
+    public void setCompanies(List<String> companies) {
+        this.companies = companies;
+    }
 
     public List<String> getPolicies() {
         return policies;
@@ -21,14 +28,6 @@ public class Client extends Person implements Data, Serializable, Comparable<Cli
 
     public void setPolicies(List<String> policies) {
         this.policies = policies;
-    }
-
-    public String getInsuranceCompany() {
-        return insuranceCompany;
-    }
-
-    public void setInsuranceCompany(String insuranceCompany) {
-        this.insuranceCompany = insuranceCompany;
     }
 
     public boolean isDeceased() {

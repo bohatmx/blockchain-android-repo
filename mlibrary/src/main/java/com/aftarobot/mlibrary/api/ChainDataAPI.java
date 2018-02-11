@@ -447,36 +447,13 @@ public class ChainDataAPI {
             }
         });
     }
-    public void addPolicy(final Policy policy, final Listener listener) {
-        Call<Policy> call = apiService.addPolicy(policy);
-        Log.d(TAG, "addPolicy: ".concat(call.request().url().toString()));
-        call.enqueue(new Callback<Policy>() {
-            @Override
-            public void onResponse(Call<Policy> call, Response<Policy> response) {
-                if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance policy added: ".concat(policy.getPolicyNumber()));
-                    listener.onResponse(response.body());
-                } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
-                    listener.onError(context.getString(R.string.policy_add_failed));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Policy> call, Throwable t) {
-                Log.e(TAG, "onFailure: ", t);
-                listener.onError(context.getString(R.string.policy_add_failed));
-
-            }
-        });
-    }
     public void addRegulator(final Regulator regulator, final Listener listener) {
         Call<Regulator> call = apiService.registerRegulator(regulator);
         call.enqueue(new Callback<Regulator>() {
             @Override
-            public void onResponse(Call<Regulator> call, Response<Regulator> response) {
+            public void onResponse(@NonNull Call<Regulator> call, @NonNull Response<Regulator> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance regulator added: ".concat(regulator.getFirstName()));
+                    Log.i(TAG, "Insurance regulator added: ".concat(regulator.getFullName()));
                     listener.onResponse(response.body());
                 } else {
                     Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
@@ -485,7 +462,7 @@ public class ChainDataAPI {
             }
 
             @Override
-            public void onFailure(Call<Regulator> call, Throwable t) {
+            public void onFailure(@NonNull Call<Regulator> call, @NonNull Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.regulator_add_failed));
 
@@ -497,9 +474,9 @@ public class ChainDataAPI {
         Call<Client> call = apiService.registerClient(client);
         call.enqueue(new Callback<Client>() {
             @Override
-            public void onResponse(Call<Client> call, Response<Client> response) {
+            public void onResponse(@NonNull Call<Client> call, @NonNull Response<Client> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance client added: ".concat(client.getFirstName()));
+                    Log.i(TAG, "client added to blockchain: ".concat(client.getFullName()));
                     listener.onResponse(response.body());
                 } else {
                     try {
@@ -512,7 +489,7 @@ public class ChainDataAPI {
             }
 
             @Override
-            public void onFailure(Call<Client> call, Throwable t) {
+            public void onFailure(@NonNull Call<Client> call, @NonNull Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.client_add_failed));
 
@@ -524,9 +501,9 @@ public class ChainDataAPI {
         Call<Beneficiary> call = apiService.registerBeneficiary(beneficiary);
         call.enqueue(new Callback<Beneficiary>() {
             @Override
-            public void onResponse(Call<Beneficiary> call, Response<Beneficiary> response) {
+            public void onResponse(@NonNull Call<Beneficiary> call, @NonNull Response<Beneficiary> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance beneficiary added: ".concat(beneficiary.getFirstName()));
+                    Log.i(TAG, "beneficiary added: ".concat(beneficiary.getFullName()));
                     listener.onResponse(response.body());
                 } else {
                     Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
@@ -535,7 +512,7 @@ public class ChainDataAPI {
             }
 
             @Override
-            public void onFailure(Call<Beneficiary> call, Throwable t) {
+            public void onFailure(@NonNull Call<Beneficiary> call, @NonNull Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.benefic_add_failed));
 

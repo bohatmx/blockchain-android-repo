@@ -7,6 +7,7 @@ import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessageDTO;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
+import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
@@ -31,6 +32,7 @@ public class FBApi {
     }
 
     public static final String
+            CLIENTS = "clients",
             USERS = "users",
             DEATH_CERTS = "certificates",
             DEATH_CERT_REQUEST = "deathCertRequests",
@@ -45,6 +47,24 @@ public class FBApi {
         void onResponse(Data data);
 
         void onError(String message);
+    }
+
+    public void addClient(final Client client, final FBListener listener) {
+        DatabaseReference ref = db.getReference(CLIENTS);
+
+        ref.push().setValue(client, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: client added to firebase: "
+                            .concat(client.getEmail()).concat(" name:").concat(client.getFullName()));
+                    listener.onResponse(client);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
     }
 
     public void addUser(final UserDTO user, final FBListener listener) {
@@ -71,7 +91,7 @@ public class FBApi {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
-                    Log.i(TAG, "onComplete: beneficiary added to firebase: ".concat(databaseReference.getKey()));
+                    Log.i(TAG, "onComplete: beneficiary added to firebase: ".concat(beneficiary.getFullName()));
                     listener.onResponse(beneficiary);
                 } else {
                     Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));

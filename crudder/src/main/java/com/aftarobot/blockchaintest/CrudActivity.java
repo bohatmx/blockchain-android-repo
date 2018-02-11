@@ -12,12 +12,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.aftarobot.blockchaintest.crudutils.CompaniesUtil;
 import com.aftarobot.blockchaintest.crudutils.DoctorUtil;
 import com.aftarobot.blockchaintest.crudutils.HospitalUtil;
 import com.aftarobot.blockchaintest.crudutils.ParlourUtil;
+import com.aftarobot.blockchaintest.crudutils.PolicyUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -29,10 +31,10 @@ import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Regulator;
-import com.aftarobot.mlibrary.util.ClientUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,17 +42,23 @@ import java.util.List;
 
 public class CrudActivity extends AppCompatActivity {
     Toolbar toolbar;
-    TextView txt;
+    TextView txt, txtNumber;
     ChainDataAPI chainDataAPI;
     ChainListAPI chainListAPI;
     StringBuilder sb = new StringBuilder();
+    SeekBar seekBar;
+    int numberOfClients = 3;
+    public static final int MINIMUM_CLIENTS = 4;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txt = findViewById(R.id.text);
+        txtNumber = findViewById(R.id.txtNumberClients);
         toolbar = findViewById(R.id.toolbar);
+        seekBar = findViewById(R.id.seekBar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Blockchain Driver");
         getSupportActionBar().setSubtitle("OneConnect Business Network");
@@ -66,6 +74,33 @@ public class CrudActivity extends AppCompatActivity {
             }
         });
         getInsuranceCompanies();
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress == 0) {
+                    seekBar.setProgress(MINIMUM_CLIENTS);
+                    txtNumber.setText(String.valueOf(MINIMUM_CLIENTS));
+                    numberOfClients = MINIMUM_CLIENTS;
+                } else {
+                    txtNumber.setText(String.valueOf(progress));
+                    numberOfClients = progress;
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        seekBar.setProgress(MINIMUM_CLIENTS);
+
     }
 
     private void confirm() {
@@ -75,6 +110,9 @@ public class CrudActivity extends AppCompatActivity {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (seekBar.getProgress() == MINIMUM_CLIENTS) {
+                            seekBar.setProgress(75);
+                        }
                         doCrud();
                     }
                 })
@@ -90,7 +128,7 @@ public class CrudActivity extends AppCompatActivity {
     private void confirmClients() {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
         x.setTitle("Confirm")
-                .setMessage("Do you really, really want to do this?\n\nThis generates  about " + MAX_CLIENTS
+                .setMessage("Do you really, really want to do this?\n\nThis generates  about " + numberOfClients
                         + " clients and beneficiaries demo data needed on the blockchain.\n\n" +
                         "It will take a few minutes to complete .....")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -104,13 +142,13 @@ public class CrudActivity extends AppCompatActivity {
                             }
                         }
                         start = System.currentTimeMillis();
-                        ClientUtil.generateClients(getApplicationContext(), company, MAX_CLIENTS + 3, new ClientUtil.ClientListener() {
+                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(), numberOfClients, insuranceCompanies, new PolicyUtil.PolicyUtilListener() {
                             @Override
                             public void clientsComplete() {
                                 long end = System.currentTimeMillis();
-                                showSnackbar("Client generation done."
-                                        .concat(" Elapsed sec ".concat(String.valueOf(getElapsed(start,end)))),
-                                        "OK","green");
+                                showSnackbar("Clients done."
+                                                .concat(" Elapsed: ".concat(df.format(getElapsed(start, end)).concat(" minutes"))),
+                                        "OK", "green");
                             }
 
                             @Override
@@ -121,7 +159,7 @@ public class CrudActivity extends AppCompatActivity {
                             @Override
                             public void onProgressMessage(String message) {
                                 updateText(message);
-                                showSnackbar(message,"OK","green");
+                                showSnackbar(message, "OK", "green");
                             }
                         });
                     }
@@ -135,15 +173,15 @@ public class CrudActivity extends AppCompatActivity {
                 .show();
     }
 
-    public static final int MAX_CLIENTS = 20;
     long start;
+    public static final DecimalFormat df = new DecimalFormat("###,##0.00");
     private void doCrud() {
         showSnackbar("Starting CRUD for demo data", "ok", "yellow");
         FBApi api = new FBApi();
         api.removeBeneficiaries(new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.e(TAG, "onResponse: beneficiaries deleted from Firebase" );
+                Log.e(TAG, "onResponse: beneficiaries deleted from Firebase");
             }
 
             @Override
@@ -174,8 +212,8 @@ public class CrudActivity extends AppCompatActivity {
                                                 throw new RuntimeException("Company is null");
                                             }
                                         }
-                                        ClientUtil.generateClients(getApplicationContext(),
-                                                company, MAX_CLIENTS, new ClientUtil.ClientListener() {
+                                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(),
+                                                numberOfClients, insuranceCompanies, new PolicyUtil.PolicyUtilListener() {
                                                     @Override
                                                     public void clientsComplete() {
                                                         updateText("\n#############################################\n");
@@ -278,7 +316,7 @@ public class CrudActivity extends AppCompatActivity {
                 updateText(GSON.toJson(data));
                 long end = System.currentTimeMillis();
                 showSnackbar("Regulator added: ".concat(x.getFullName())
-                        .concat(" Elapsed minutes ".concat(String.valueOf(getElapsed(start,end)))),
+                                .concat(" Elapsed: ".concat(df.format(getElapsed(start, end)).concat(" minutes"))),
                         "OK", "green");
 
             }
@@ -295,12 +333,13 @@ public class CrudActivity extends AppCompatActivity {
         Double d1 = Double.parseDouble(String.valueOf(delta)) / (1000 * 60);
         return d1.doubleValue();
     }
+
     List<InsuranceCompany> insuranceCompanies = new ArrayList<>();
     List<Client> clients = new ArrayList<>();
     List<Hospital> hospitals = new ArrayList<>();
     List<Doctor> doctors = new ArrayList<>();
 
-   private void addCertViaTransaction() {
+    private void addCertViaTransaction() {
         showSnackbar("Adding Cert via Transaction", "OK", "cyan");
         Client client = clients.get(13);
         Hospital hospital = hospitals.get(0);

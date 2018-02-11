@@ -112,7 +112,9 @@ public class ListUtil {
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
         sb.append("-");
+        sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         Log.d("ListUtil", "getRandomPolicyNumber: ".concat(sb.toString()));
@@ -137,7 +139,9 @@ public class ListUtil {
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
         sb.append("-");
+        sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
@@ -155,8 +159,9 @@ public class ListUtil {
             "Siyabonga", "Amogelang", "Lubanzi", "Mlungisi", "Bandile","Ayanda","Nokwanda", "Saviour", "Innocent", "Edgar", "Blessing",
             "Luthando","Princess","Angel", "Amahle","Sipho","Siphokazi", "Boetie", "Frank", "Nancy","Olivia","Olive", "Portia",
             "Khanyisa","Thompson","Derrick","Joseph", "Nkululeko","Kate", "Thomas","Daniel", "Lunga", "Donald",
-            "Robert","Samuel","Patrick","John","Tracy","Ainsley","Ashley","Ashleigh","Lee","Tony","Barrick",
-            "Barack","Trent","Brady","Antonio","Bryce","Boyce","Boysie",
+            "Robert","Samuel","Patrick","John","Tracy","Ainsley","Ashley","Ashleigh","Lee","Tony","Barrick", "Jack", "Bernard", "Fikile",
+            "Obama","Paul","George","Lebogang","lesetja", "Baker","Bobby","Robert","Sipho","Thebe","Maria","Kwanele","Andile","Joseph","Bryan",
+            "Barack","Trent","Brady","Antonio","Bryce","Boyce","Boysie","Khensani","Tsakane","Mihloti","Raletsatsi",
             "Jennifer", "Susan", "Mmaphefo", "Ntini", "Mmapaseka","Paseka","Lesedi","Thapelo","Clive","Mpho"};
     private static final String[] lNames = {"Adams","Abrams","Macheke","Matime","Ngwenya","Moriri","Moroka", "Khoza", "van der Merwe", "Pieterse", "Maluleke",
             "Nkosi", "Malenga", "Mathibe", "Mthembu", "Shiluvane", "Shibambu", "Gumede", "Ngcobo","Zulu","Mkhize","Mokoena",

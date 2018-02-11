@@ -331,6 +331,67 @@ public class ChainListAPI {
             }
         });
     }
+    public void getCompanyClients(String insuranceCompany, final ClientListener listener) {
+        Call<List<Client>> call = apiService.getCompanyClients(insuranceCompany);
+        Log.w(TAG, "######### getCompanyClaims calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Client>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Client>> call, @NonNull Response<List<Client>> response) {
+                if (response.isSuccessful()) {
+                    List<Client> list = response.body();
+                    Log.i(TAG, "getCompanyClients returns: ".concat(String.valueOf(list.size())));
+                    listener.onResponse(list);
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Client>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+    public void getCompanyClaims(String insuranceCompanyId, final ClaimsListener listener) {
+        Call<List<Claim>> call = apiService.getCompanyClaims(insuranceCompanyId);
+        Log.w(TAG, "######### getCompanyClaims calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Claim>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Claim>> call, @NonNull Response<List<Claim>> response) {
+                if (response.isSuccessful()) {
+                    List<Claim> list = response.body();
+                    Log.i(TAG, "getCompanyClaims returns: ".concat(String.valueOf(list.size())));
+                    listener.onResponse(list);
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Claim>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+
     public void getCompanyPolicies(String insuranceCompanyId, final PolicyListener listener) {
         Call<List<Policy>> call = apiService.getCompanyPolicies(insuranceCompanyId);
         Log.w(TAG, "######### getCompanyPolicies calling ... " + call.request().url().url().toString());

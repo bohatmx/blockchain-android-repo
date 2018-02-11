@@ -29,7 +29,7 @@ public class CompaniesUtil {
     }
 
     private static void controlInsuranceCompanys() {
-        if (mCount < 3) {
+        if (mCount < 4) {
             switch (mCount) {
                 case 0:
                     InsuranceCompany co = new InsuranceCompany();
@@ -54,6 +54,14 @@ public class CompaniesUtil {
                     co3.setEmail("info@kzninsurance.com");
                     co3.setAddress("12 Beach Street, Cape Town");
                     writeCompany(co3);
+                    break;
+                case 3:
+                    InsuranceCompany co4 = new InsuranceCompany();
+                    co4.setInsuranceCompanyId("COMPANY_004");
+                    co4.setName("Black Ox Insurance");
+                    co4.setEmail("info@blackoxinsurance.com");
+                    co4.setAddress("132 Fricker Road, Illovo, Johannesburg");
+                    writeCompany(co4);
                     break;
             }
 

@@ -188,7 +188,7 @@ public class CompanyNavActivity extends AppCompatActivity
     }
 
     private void getClaims() {
-        chainListAPI.getClaims(new ChainListAPI.ClaimsListener() {
+        chainListAPI.getCompanyClaims(company.getInsuranceCompanyId(),new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> list) {
                 claims = list;
@@ -207,7 +207,11 @@ public class CompanyNavActivity extends AppCompatActivity
     }
 
     private void getClients() {
-        chainListAPI.getClients(new ChainListAPI.ClientListener() {
+        StringBuilder x = new StringBuilder();
+        x.append("resource:com.oneconnect.insurenet.InsuranceCompany#");
+        x.append(company.getInsuranceCompanyId());
+
+        chainListAPI.getCompanyClients(x.toString(),new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
@@ -368,7 +372,6 @@ public class CompanyNavActivity extends AppCompatActivity
                 });
                 snackbar.show();
             }
-            //getClaims();
 
         }
 
