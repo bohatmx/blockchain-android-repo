@@ -15,7 +15,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -48,6 +47,7 @@ public class PolicyUtil {
         mContext = context;
         index = 0;
         chainDataAPI = new ChainDataAPI(context);
+        Log.d(TAG, "generateClientsAndPolicies: companies: ".concat(GSON.toJson(companies)));
         controlGeneration();
     }
 
@@ -112,40 +112,37 @@ public class PolicyUtil {
 
     private static void createPolicies(final Client client, final List<Beneficiary> beneficiaries) {
         clientPolicies = new ArrayList<>();
-        Collections.shuffle(companyList);
-        int index = 0;
+        buildPolicy(client,beneficiaries,companyList.get(0));
         for (InsuranceCompany c : companyList) {
-            int doIt = 0;
-            if (index == 0) {
-                doIt = 10;
-            } else {
-                doIt = random.nextInt(100);
-            }
+            int doIt  = random.nextInt(100);
             if (doIt > 60) {
-                final Policy policy = new Policy();
-                policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
-                        .concat(c.getInsuranceCompanyId()));
-                policy.setInsuranceCompanyId(c.getInsuranceCompanyId());
-                policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
-                policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
-                policy.setDescription(ListUtil.getRandomDescription());
-                policy.setAmount(ListUtil.getRandomPolicyAmount());
-                policy.setIdNumber(client.getIdNumber());
-                policy.setClaimSubmitted(false);
-
-                List<String> list = new ArrayList<>(beneficiaries.size());
-                for (Beneficiary b : beneficiaries) {
-                    list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
-                }
-                policy.setBeneficiaries(list);
-                clientPolicies.add(policy);
+                buildPolicy(client, beneficiaries, c);
             }
-            index++;
         }
         Log.d(TAG, "&&&&&&&&&&&&& created list of Policies for: ".concat(client.getFullName()
-                .concat(" ")).concat(GSON.toJson(clientPolicies)));
+                .concat(" ")).concat(String.valueOf(clientPolicies.size())));
 
 
+    }
+
+    private static void buildPolicy(Client client, List<Beneficiary> beneficiaries, InsuranceCompany c) {
+        final Policy policy = new Policy();
+        policy.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
+                .concat(c.getInsuranceCompanyId()));
+        policy.setInsuranceCompanyId(c.getInsuranceCompanyId());
+        policy.setPolicyNumber(ListUtil.getRandomPolicyNumber());
+        policy.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
+        policy.setDescription(ListUtil.getRandomDescription());
+        policy.setAmount(ListUtil.getRandomPolicyAmount());
+        policy.setIdNumber(client.getIdNumber());
+        policy.setClaimSubmitted(false);
+
+        List<String> list = new ArrayList<>(beneficiaries.size());
+        for (Beneficiary b : beneficiaries) {
+            list.add("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
+        }
+        policy.setBeneficiaries(list);
+        clientPolicies.add(policy);
     }
 
     private static void controlPolicies() {

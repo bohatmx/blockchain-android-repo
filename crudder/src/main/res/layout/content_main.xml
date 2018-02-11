@@ -59,6 +59,7 @@
     <ScrollView
         android:id="@+id/scroll"
         android:layout_below="@id/card"
+        android:padding="@dimen/fab_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
