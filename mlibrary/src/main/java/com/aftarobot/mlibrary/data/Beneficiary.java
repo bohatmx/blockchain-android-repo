@@ -10,9 +10,16 @@ import java.util.List;
  */
 
 public class Beneficiary extends Person implements Data, Serializable, Comparable<Beneficiary> {
-    private Double accountBalance;
     private String fcmToken, password, beneficiaryId;
-    private List<String> policies;
+    private List<String> policies, bankAccounts;
+
+    public List<String> getBankAccounts() {
+        return bankAccounts;
+    }
+
+    public void setBankAccounts(List<String> bankAccounts) {
+        this.bankAccounts = bankAccounts;
+    }
 
     public List<String> getPolicies() {
         return policies;
@@ -44,14 +51,6 @@ public class Beneficiary extends Person implements Data, Serializable, Comparabl
 
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
-    }
-
-    public Double getAccountBalance() {
-        return accountBalance;
-    }
-
-    public void setAccountBalance(Double accountBalance) {
-        this.accountBalance = accountBalance;
     }
 
     @Override

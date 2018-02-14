@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
@@ -36,14 +37,16 @@ public class PolicyUtil {
     private static PolicyUtilListener mListener;
     private static List<InsuranceCompany> companyList;
     private static Context mContext;
+    private static Bank mBank;
 
 
-    public static void generateClientsAndPolicies(Context context, int count,
+    public static void generateClientsAndPolicies(Context context, int count, Bank bank,
                                                   final List<InsuranceCompany> companies,
                                                   final PolicyUtilListener listener) {
         companyList = companies;
         mListener = listener;
         mCount = count;
+        mBank = bank;
         mContext = context;
         index = 0;
         chainDataAPI = new ChainDataAPI(context);
@@ -83,7 +86,7 @@ public class PolicyUtil {
             beneficiaries.add(b);
         }
         ClientBeneficiariesUtil.addClientAndBeneficiaries(mContext,
-                client, beneficiaries, new ClientBeneficiariesUtil.ClientBennieListener() {
+                client, mBank, beneficiaries, new ClientBeneficiariesUtil.ClientBennieListener() {
             @Override
             public void onClientAndBeneficiariesAdded() {
                 createPolicies(client, beneficiaries);
@@ -108,7 +111,7 @@ public class PolicyUtil {
     }
 
 
-    private static List<Policy> clientPolicies = new ArrayList<>();
+    private static List<Policy> clientPolicies;
 
     private static void createPolicies(final Client client, final List<Beneficiary> beneficiaries) {
         clientPolicies = new ArrayList<>();
@@ -116,6 +119,9 @@ public class PolicyUtil {
         for (InsuranceCompany c : companyList) {
             int doIt  = random.nextInt(100);
             if (doIt > 60) {
+                buildPolicy(client, beneficiaries, c);
+            }
+            if (doIt > 90) {
                 buildPolicy(client, beneficiaries, c);
             }
         }

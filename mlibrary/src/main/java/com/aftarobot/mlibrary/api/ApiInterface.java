@@ -1,12 +1,17 @@
 package com.aftarobot.mlibrary.api;
 
+import com.aftarobot.mlibrary.data.Bank;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
+import com.aftarobot.mlibrary.data.ClaimApproval;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
+import com.aftarobot.mlibrary.data.FundsTransfer;
+import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.HistorianRecord;
 import com.aftarobot.mlibrary.data.HomeAffairs;
@@ -39,22 +44,40 @@ public interface ApiInterface {
     Call<List<InsuranceCompany>> getInsuranceCompanies();
 
     @GET("InsuranceCompany/{id}")
-    Call<InsuranceCompany> getInsuranceCompanyById(@Path("id") String id);
+    Call<InsuranceCompany> getInsuranceCompany(@Path("id") String id);
+
+    @POST("Bank")
+    Call<Bank> addBank(@Body Bank bank);
+
+    @GET("Bank")
+    Call<List<Bank>> getBanks();
+
+    @GET("Bank/{id}")
+    Call<Bank> getBank(@Path("id") String id);
+
+    @POST("BankAccount")
+    Call<BankAccount> addBankAccount(@Body BankAccount bankAccount);
+
+    @GET("BankAccount")
+    Call<List<BankAccount>> getBankAccounts();
+
+    @GET("BankAccount/{id}")
+    Call<BankAccount> getBankAccount(@Path("id") String accountNumber);
 
     @POST("Hospital")
-    Call<Hospital> registerHospital(@Body Hospital hospital);
+    Call<Hospital> addHospital(@Body Hospital hospital);
 
     @GET("Hospital")
     Call<List<Hospital>> getHospital();
 
     @POST("FuneralParlour")
-    Call<FuneralParlour> registerFuneralParlour(@Body FuneralParlour funeralParlour);
+    Call<FuneralParlour> addFuneralParlour(@Body FuneralParlour funeralParlour);
 
     @GET("FuneralParlour")
     Call<List<FuneralParlour>> getFuneralParlours();
 
     @POST("Client")
-    Call<Client> registerClient(@Body Client client);
+    Call<Client> addClient(@Body Client client);
 
     @GET("Client/{id}")
     Call<Client> getClient(@Path("id") String id);
@@ -163,11 +186,22 @@ public interface ApiInterface {
 
     @POST("SubmitClaim")
     Call<Claim> submitClaim(@Body Claim claim);
-    //
+
+    @POST("RequestFundsTransfer")
+    Call<FundsTransferRequest> requestFundsTransfer(@Body FundsTransferRequest fundsTransferRequest);
+
+    @POST("TransferFunds")
+    Call<FundsTransfer> transferFunds(@Body FundsTransfer fundsTransfer);
 
     @POST("AddBeneficiaryToPolicy")
     Call<PolicyBeneficiary> addBeneficiaryToPolicy(@Body PolicyBeneficiary policyBeneficiary);
 
+    @POST("RegisterBeneficiaryBankAccount")
+    Call<BankAccount> registerBeneficiaryBankAccount(@Body BankAccount account);
 
+    @POST("RegisterClientBankAccount")
+    Call<BankAccount> registerClientBankAccount(@Body BankAccount account);
 
+    @POST("ProcessClaimApproval")
+    Call<ClaimApproval> processClaimApproval(@Body ClaimApproval approval);
 }

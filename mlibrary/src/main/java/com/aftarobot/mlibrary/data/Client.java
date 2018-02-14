@@ -10,9 +10,17 @@ import java.util.List;
  */
 
 public class Client extends Person implements Data, Serializable, Comparable<Client>{
-    private Double accountBalance;
+    private String fcmToken, password, clientId;
     private boolean isDeceased;
-    private List<String> policies, companies;
+    private List<String> policies, companies, bankAccounts;
+
+    public List<String> getBankAccounts() {
+        return bankAccounts;
+    }
+
+    public void setBankAccounts(List<String> bankAccounts) {
+        this.bankAccounts = bankAccounts;
+    }
 
     public List<String> getCompanies() {
         return companies;
@@ -38,12 +46,28 @@ public class Client extends Person implements Data, Serializable, Comparable<Cli
         isDeceased = deceased;
     }
 
-    public Double getAccountBalance() {
-        return accountBalance;
+    public String getFcmToken() {
+        return fcmToken;
     }
 
-    public void setAccountBalance(Double accountBalance) {
-        this.accountBalance = accountBalance;
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     @Override

@@ -278,9 +278,9 @@ public class HomeAffairsActivity extends AppCompatActivity
         claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(getRandomClaimId());
+        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
         claim.setHospital(deathCertificateRequest.getHospital());
-
 
         chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
             @Override
@@ -492,7 +492,7 @@ public class HomeAffairsActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             Log.w(TAG, "################# RequestReceiver onReceive: ***************: ");
             DeathCertificateRequest f = (DeathCertificateRequest) intent.getSerializableExtra("data");
-            //getCertRequests();
+            getCertRequests();
             showRequestArrived(f);
 
         }

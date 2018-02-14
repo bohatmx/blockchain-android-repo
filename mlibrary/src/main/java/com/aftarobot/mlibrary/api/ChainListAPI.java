@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -77,6 +78,10 @@ public class ChainListAPI {
         void onResponse(List<DeathCertificateRequest> requests);
         void onError(String message);
     }
+    public interface BankListener {
+        void onResponse(List<Bank> banks);
+        void onError(String message);
+    }
 
     public void getClient(String id, final ClientListener listener) {
         Call<Client> call = apiService.getClient(id);
@@ -127,7 +132,7 @@ public class ChainListAPI {
         });
     }
     public void getInsuranceCompany(String id, final CompanyListener listener) {
-        Call<InsuranceCompany> call = apiService.getInsuranceCompanyById(id);
+        Call<InsuranceCompany> call = apiService.getInsuranceCompany(id);
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<InsuranceCompany>() {
             @Override
@@ -301,6 +306,38 @@ public class ChainListAPI {
             }
         });
     }
+
+    public void getBanks(final BankListener listener) {
+        Call<List<Bank>> call = apiService.getBanks();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<Bank>>() {
+            @Override
+            public void onResponse(Call<List<Bank>> call, Response<List<Bank>> response) {
+                if (response.isSuccessful()) {
+                    List<Bank> list = response.body();
+                    Log.i(TAG, "getBanks returns: ".concat(GSON.toJson(list)));
+                    listener.onResponse(response.body());
+
+                } else {
+                    try {
+                        Log.e(TAG, "onResponse: things are fucked up!: ".concat(response.message())
+                                .concat(" code: ".concat(String.valueOf(response.code())).concat(" body: ")
+                                        .concat(response.errorBody().string())));
+                        listener.onError(response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Bank>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+
     public void getDoctors(final DoctorListener listener) {
         Call<List<Doctor>> call = apiService.getDoctors();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());

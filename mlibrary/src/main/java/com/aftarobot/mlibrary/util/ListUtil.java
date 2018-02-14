@@ -21,7 +21,6 @@ public class ListUtil {
         beneficiary.setLastName(lNames[indexl]);
         beneficiary.setEmail(beneficiary.getFirstName()
         .concat(".").concat(beneficiary.getLastName()).toLowerCase().concat("@email.com"));
-        beneficiary.setAccountBalance(0.00);
         beneficiary.setIdNumber(getRandomIdNumber());
         return beneficiary;
     }
@@ -33,7 +32,6 @@ public class ListUtil {
         client.setLastName(lNames[indexl]);
         client.setEmail(client.getFirstName()
                 .concat(".").concat(client.getLastName()).toLowerCase().concat("@company.com"));
-        client.setAccountBalance(0.00);
         client.setDeceased(false);
         client.setIdNumber(getRandomIdNumber());
 
@@ -145,6 +143,50 @@ public class ListUtil {
         sb.append(random.nextInt(9));
         sb.append(random.nextInt(9));
         Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+    public static String getRandomClaimApprovalId() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CA-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomClaimApprovalNumber: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+
+    public static String getRandomAccountNumber() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("AC");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomAccountNumber: ".concat(sb.toString()));
 
         return sb.toString();
     }

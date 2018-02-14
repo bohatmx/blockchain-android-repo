@@ -5,14 +5,19 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.R;
+import com.aftarobot.mlibrary.data.Bank;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
+import com.aftarobot.mlibrary.data.ClaimApproval;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
+import com.aftarobot.mlibrary.data.FundsTransfer;
+import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.HomeAffairs;
 import com.aftarobot.mlibrary.data.Hospital;
@@ -71,6 +76,28 @@ public class ChainDataAPI {
         });
     }
 
+    public void addBank(final Bank bank, final Listener listener) {
+        Call<Bank> call = apiService.addBank(bank);
+        call.enqueue(new Callback<Bank>() {
+            @Override
+            public void onResponse(@NonNull Call<Bank> call, @NonNull Response<Bank> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "Bank added: ".concat(bank.getName()));
+                    listener.onResponse(response.body());
+                } else {
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    listener.onError("Failed to add Bank");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Bank> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError("Failed to add Bank");
+
+            }
+        });
+    }
     public void addDoctor(final Doctor doctor, final Listener listener) {
         Call<Doctor> call = apiService.registerDoctor(doctor);
         call.enqueue(new Callback<Doctor>() {
@@ -178,6 +205,33 @@ public class ChainDataAPI {
         });
     }
 
+    public void processClaimApproval(final ClaimApproval approval, final Listener listener) {
+        Call<ClaimApproval> call = apiService.processClaimApproval(approval);
+        call.enqueue(new Callback<ClaimApproval>() {
+            @Override
+            public void onResponse(Call<ClaimApproval> call, Response<ClaimApproval> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "ClaimApproval processed: ".concat(approval.getClaimApprovalId()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        listener.onError("Failed to register burial");
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ClaimApproval> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError("Claim Approval Failed");
+
+            }
+        });
+    }
     public void registerBurial(final Burial burial, final Listener listener) {
         Call<Burial> call = apiService.registerBurial(burial);
         call.enqueue(new Callback<Burial>() {
@@ -338,33 +392,112 @@ public class ChainDataAPI {
         });
     }
 
-    public void addClaim(final Claim claim, final Listener listener) {
-        Log.w(TAG, "########### adding Claim: ".concat(GSON.toJson(claim)));
-        Call<Claim> call = apiService.registerClaim(claim);
-        call.enqueue(new Callback<Claim>() {
+    public void registerClientBankAccount(final BankAccount account, final Listener listener) {
+        Call<BankAccount> call = apiService.registerClientBankAccount(account);
+        call.enqueue(new Callback<BankAccount>() {
             @Override
-            public void onResponse(Call<Claim> call, Response<Claim> response) {
+            public void onResponse(Call<BankAccount> call, Response<BankAccount> response) {
                 if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance claim added: ".concat(claim.getClaimId()));
+                    Log.i(TAG, "client account added: ".concat(account.getAccountNumber()));
                     listener.onResponse(response.body());
                 } else {
                     try {
-                        Log.e(TAG, "addClaim error: ".concat(response.errorBody().string()));
+                        Log.e(TAG, "registerClientBankAccount error: ".concat(response.errorBody().string()));
                     } catch (IOException e) {
                         listener.onError(e.getMessage());
                     }
-                    listener.onError(context.getString(R.string.claim_add_failed));
+                    listener.onError("Failed to register client bank account");
                 }
             }
 
             @Override
-            public void onFailure(Call<Claim> call, Throwable t) {
+            public void onFailure(Call<BankAccount> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.claim_add_failed));
 
             }
         });
     }
+
+    public void requestFundsTransfer(final FundsTransferRequest fundsTransferRequest, final Listener listener) {
+        Call<FundsTransferRequest> call = apiService.requestFundsTransfer(fundsTransferRequest);
+        call.enqueue(new Callback<FundsTransferRequest>() {
+            @Override
+            public void onResponse(Call<FundsTransferRequest> call, Response<FundsTransferRequest> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "fundsTransferRequest added: ".concat(fundsTransferRequest.getFundsTransferRequestId()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        Log.e(TAG, "registerClientBankAccount error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
+                    listener.onError("Failed to request funds transfer");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FundsTransferRequest> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.claim_add_failed));
+
+            }
+        });
+    }
+    public void transferFunds(final FundsTransfer fundsTransfer, final Listener listener) {
+        Call<FundsTransfer> call = apiService.transferFunds(fundsTransfer);
+        call.enqueue(new Callback<FundsTransfer>() {
+            @Override
+            public void onResponse(Call<FundsTransfer> call, Response<FundsTransfer> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "fundsTransfer added: ".concat(fundsTransfer.getFundsTransferId()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        Log.e(TAG, "registerClientBankAccount error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
+                    listener.onError("Failed to transfer funds");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FundsTransfer> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.claim_add_failed));
+
+            }
+        });
+    }
+    public void registerBeneficiaryBankAccount(final BankAccount account, final Listener listener) {
+        Call<BankAccount> call = apiService.registerBeneficiaryBankAccount(account);
+        call.enqueue(new Callback<BankAccount>() {
+            @Override
+            public void onResponse(Call<BankAccount> call, Response<BankAccount> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "beneficiary account added: ".concat(account.getAccountNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    try {
+                        Log.e(TAG, "registerBeneficiaryBankAccount error: ".concat(response.errorBody().string()));
+                    } catch (IOException e) {
+                        listener.onError(e.getMessage());
+                    }
+                    listener.onError("Failed to register beneficiary bank account");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BankAccount> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(context.getString(R.string.claim_add_failed));
+
+            }
+        });
+    }
+
     public void submitClaim(final Claim claim, final Listener listener) {
         Log.w(TAG, "########### adding Claim via transaction: ".concat(GSON.toJson(claim)));
         Call<Claim> call = apiService.submitClaim(claim);
@@ -471,7 +604,7 @@ public class ChainDataAPI {
     }
 
     public void addClient(final Client client, final Listener listener) {
-        Call<Client> call = apiService.registerClient(client);
+        Call<Client> call = apiService.addClient(client);
         call.enqueue(new Callback<Client>() {
             @Override
             public void onResponse(@NonNull Call<Client> call, @NonNull Response<Client> response) {
@@ -545,7 +678,7 @@ public class ChainDataAPI {
     }
 
     public void addHospital(final Hospital hospital, final Listener listener) {
-        Call<Hospital> call = apiService.registerHospital(hospital);
+        Call<Hospital> call = apiService.addHospital(hospital);
         Log.d(TAG, "addHospital: ".concat(call.request().url().url().toString()));
         call.enqueue(new Callback<Hospital>() {
             @Override
@@ -569,7 +702,7 @@ public class ChainDataAPI {
     }
 
     public void addFuneralParlour(final FuneralParlour funeralParlour, final Listener listener) {
-        Call<FuneralParlour> call = apiService.registerFuneralParlour(funeralParlour);
+        Call<FuneralParlour> call = apiService.addFuneralParlour(funeralParlour);
         call.enqueue(new Callback<FuneralParlour>() {
             @Override
             public void onResponse(Call<FuneralParlour> call, Response<FuneralParlour> response) {

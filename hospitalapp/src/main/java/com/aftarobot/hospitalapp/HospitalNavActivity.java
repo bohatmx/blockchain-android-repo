@@ -37,7 +37,6 @@ import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Hospital;
-import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
 import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
@@ -421,10 +420,8 @@ public class HospitalNavActivity extends AppCompatActivity
         IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver,filterClaim);
-        broadcastManager.registerReceiver(receiver,filterBurial);
+
 
     }
 

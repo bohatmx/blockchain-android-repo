@@ -1,7 +1,12 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -25,12 +30,14 @@ import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Burial;
+import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
+import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
-import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
 import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
@@ -279,12 +286,145 @@ public class ClientsActivity extends AppCompatActivity {
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
         IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver,filterCert);
-        broadcastManager.registerReceiver(receiver,filterClaim);
-        broadcastManager.registerReceiver(receiver,filterPolicy);
-        broadcastManager.registerReceiver(receiver,filterBurial);
+        broadcastManager.registerReceiver(new CertReceiver(),filterCert);
+        broadcastManager.registerReceiver(new ClaimReceiver(),filterClaim);
+        broadcastManager.registerReceiver(new BurialReceiver(),filterBurial);
 
     }
+    private class ClaimReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            final Claim sentClaim = (Claim) m.getSerializableExtra("data");
+            if (sentClaim != null) {
+                snackbar = Snackbar.make(toolbar, "Claim Arrived: "
+                        .concat(sentClaim.getClaimId()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showClaim(sentClaim);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+    }
+
+
+    private class BurialReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            final Burial sentBurial = (Burial) m.getSerializableExtra("data");
+            if (sentBurial != null) {
+
+                snackbar = Snackbar.make(toolbar, "Burial registered: "
+                        .concat(sentBurial.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showBurial(sentBurial);
+                    }
+                });
+                snackbar.show();
+            }
+
+
+        }
+
+    }
+
+
+    private class CertReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            final DeathCertificate sentDC = (DeathCertificate) m.getSerializableExtra("data");
+            if (sentDC != null) {
+
+                snackbar = Snackbar.make(toolbar, "Certificate Registered: "
+                        .concat(sentDC.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showCert(sentDC);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+
+    }
+
+    private void showClaim(Claim claim) {
+        Intent m = new Intent(this,ClaimsActivity.class);
+        m.putExtra("claim", claim);
+        startActivity(m);
+
+//        FragmentTransaction ft = fm.beginTransaction();
+//        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
+//        if (prev != null) {
+//            ft.remove(prev);
+//        }
+//        ft.addToBackStack(null);
+//        // Create and show the dialog.
+//        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+//        fragment.setData(dc);
+//        fragment.setListener(new MyDialogFragment.Listener() {
+//            @Override
+//            public void onCloseButtonClicked() {
+//                fragment.dismiss();
+//            }
+//        });
+//        fragment.show(ft, "CLAIM_DIAG");
+    }
+
+
+    private void showBurial(Burial dc) {
+
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("BURIAL_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "BURIAL_DIAG");
+    }
+
+    private void showCert(DeathCertificate dc) {
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("CERT_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "CERT_DIAG");
+    }
+
 }

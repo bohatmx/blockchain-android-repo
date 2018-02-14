@@ -39,7 +39,6 @@ import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
-import com.aftarobot.mlibrary.util.MyBroadcastReceiver;
 import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
@@ -297,6 +296,7 @@ public class PolicyActivity extends AppCompatActivity {
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(ListUtil.getRandomClaimId());
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
         claim.setPolicyNumber(policy.getPolicyNumber());
         chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
             @Override
@@ -421,9 +421,7 @@ public class PolicyActivity extends AppCompatActivity {
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
         IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
 
-        MyBroadcastReceiver receiver = new MyBroadcastReceiver(this, fm);
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(receiver, filterCert);
         broadcastManager.registerReceiver(new ClaimReceiver(), filterClaim);
         broadcastManager.registerReceiver(new BurialReceiver(), filterBurial);
 
@@ -435,16 +433,30 @@ public class PolicyActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e(TAG, "ClaimReceiver onReceive: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            Claim claimMsg = (Claim) intent.getSerializableExtra("data");
+            final Claim claimMsg = (Claim) intent.getSerializableExtra("data");
             if (claim.getClaimId().equalsIgnoreCase(claimMsg.getClaimId())) {
                 Log.w(TAG, "onReceive: Claim that was issued HERE... so, no sweat!".concat(GSON.toJson(claimMsg)));
             } else {
-                showSnack("Claim received: ".concat(claimMsg.getClaimId()), "ok", "green");
+                snackbar = Snackbar.make(toolbar, "Claim received: ".concat(claimMsg.getClaimId()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.parseColor("yellow"));
+                snackbar.setAction("Process", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        processClaim(claimMsg);
+                    }
+                });
+                snackbar.show();
             }
 
         }
     }
 
+    private void processClaim(Claim claim) {
+
+        Intent m = new Intent(this,ClaimsActivity.class);
+        m.putExtra("claim",claim);
+        startActivity(m);
+    }
     private class BurialReceiver extends BroadcastReceiver {
 
         @Override

@@ -12,9 +12,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.aftarobot.blockchaintest.crudutils.BankUtil;
 import com.aftarobot.blockchaintest.crudutils.CompaniesUtil;
 import com.aftarobot.blockchaintest.crudutils.DoctorUtil;
 import com.aftarobot.blockchaintest.crudutils.HospitalUtil;
@@ -23,9 +27,9 @@ import com.aftarobot.blockchaintest.crudutils.PolicyUtil;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
-import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
@@ -37,7 +41,6 @@ import com.google.gson.GsonBuilder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class CrudActivity extends AppCompatActivity {
@@ -49,32 +52,42 @@ public class CrudActivity extends AppCompatActivity {
     SeekBar seekBar;
     int numberOfClients = 3;
     public static final int MINIMUM_CLIENTS = 4;
+    Spinner spinner;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        txt = findViewById(R.id.text);
-        txtNumber = findViewById(R.id.txtNumberClients);
-        toolbar = findViewById(R.id.toolbar);
-        seekBar = findViewById(R.id.seekBar);
+        setup();
+
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Blockchain Driver");
-        getSupportActionBar().setSubtitle("OneConnect Business Network");
+        getSupportActionBar().setSubtitle("OCT Business Network");
+
         chainDataAPI = new ChainDataAPI(this);
         chainListAPI = new ChainListAPI(this);
 
+        getInsuranceCompanies();
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+    }
+
+    FloatingActionButton fab;
+
+    private void setup() {
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 confirm();
             }
         });
-        getInsuranceCompanies();
-
+        txt = findViewById(R.id.text);
+        txtNumber = findViewById(R.id.txtNumberClients);
+        toolbar = findViewById(R.id.toolbar);
+        seekBar = findViewById(R.id.seekBar);
+        spinner = findViewById(R.id.spinner);
+        spinner.setVisibility(View.GONE);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -100,7 +113,6 @@ public class CrudActivity extends AppCompatActivity {
             }
         });
         seekBar.setProgress(MINIMUM_CLIENTS);
-
     }
 
     private void confirm() {
@@ -125,6 +137,8 @@ public class CrudActivity extends AppCompatActivity {
                 .show();
     }
 
+    private boolean busy;
+
     private void confirmClients() {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
         x.setTitle("Confirm")
@@ -134,21 +148,37 @@ public class CrudActivity extends AppCompatActivity {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (company == null) {
-                            if (!insuranceCompanies.isEmpty()) {
-                                company = insuranceCompanies.get(0);
+                        List<InsuranceCompany> list = new ArrayList<>();
+                        if (insuranceCompanies.isEmpty()) {
+                            showError("Companies do not exist yet");
+                            return;
+                        } else {
+                            if (company != null) {
+                                list.add(company);
                             } else {
-                                throw new RuntimeException("Company is null");
+                                list = insuranceCompanies;
                             }
                         }
+                        spinner.setEnabled(false);
+                        busy = true;
                         start = System.currentTimeMillis();
-                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(), numberOfClients, insuranceCompanies, new PolicyUtil.PolicyUtilListener() {
+                        if (banks.isEmpty()) {
+                            showError("There are no banks, cannot go on");
+                            return;
+                        }
+                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(), numberOfClients, banks.get(0),list, new PolicyUtil.PolicyUtilListener() {
                             @Override
                             public void clientsComplete() {
                                 long end = System.currentTimeMillis();
                                 showSnackbar("Clients done."
                                                 .concat(" Elapsed: ".concat(df.format(getElapsed(start, end)).concat(" minutes"))),
                                         "OK", "green");
+                                company = null;
+                                busy = false;
+                                if (insuranceCompanies.size() > 0) {
+                                    spinner.setSelection(0, true);
+                                    spinner.setEnabled(true);
+                                }
                             }
 
                             @Override
@@ -175,8 +205,12 @@ public class CrudActivity extends AppCompatActivity {
 
     long start;
     public static final DecimalFormat df = new DecimalFormat("###,##0.00");
+
     private void doCrud() {
         showSnackbar("Starting CRUD for demo data", "ok", "yellow");
+        busy = true;
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         FBApi api = new FBApi();
         api.removeBeneficiaries(new FBApi.FBListener() {
             @Override
@@ -212,26 +246,43 @@ public class CrudActivity extends AppCompatActivity {
                                                 throw new RuntimeException("Company is null");
                                             }
                                         }
-                                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(),
-                                                numberOfClients, insuranceCompanies, new PolicyUtil.PolicyUtilListener() {
-                                                    @Override
-                                                    public void clientsComplete() {
-                                                        updateText("\n#############################################\n");
-                                                        showSnackbar("Clients and Policies generated", "Cool", "green");
-                                                        addRegulator();
-                                                    }
+                                        BankUtil.generate(getApplicationContext(), new BankUtil.BankListener() {
+                                            @Override
+                                            public void onBanksComplete(List<Bank> banks) {
+                                                Bank bank = banks.get(0);
+                                                PolicyUtil.generateClientsAndPolicies(getApplicationContext(),
+                                                        numberOfClients, bank, insuranceCompanies, new PolicyUtil.PolicyUtilListener() {
+                                                            @Override
+                                                            public void clientsComplete() {
+                                                                updateText("\n#############################################\n");
+                                                                showSnackbar("Clients and Policies generated", "Cool", "green");
+                                                                addRegulator();
+                                                            }
 
-                                                    @Override
-                                                    public void onError(String message) {
-                                                        showError(message);
-                                                    }
+                                                            @Override
+                                                            public void onError(String message) {
+                                                                showError(message);
+                                                            }
 
-                                                    @Override
-                                                    public void onProgressMessage(String message) {
-                                                        updateText(message);
-                                                        showSnackbar(message, "OK", "green");
-                                                    }
-                                                });
+                                                            @Override
+                                                            public void onProgressMessage(String message) {
+                                                                updateText(message);
+                                                                showSnackbar(message, "OK", "green");
+                                                            }
+                                                        });
+                                            }
+
+                                            @Override
+                                            public void onProgress(Bank doc) {
+                                                showSnackbar("Bank added: ".concat(doc.getName()),"ok","yellow");
+                                            }
+
+                                            @Override
+                                            public void onError(String message) {
+                                                showError(message);
+                                            }
+                                        });
+
                                     }
 
                                     @Override
@@ -318,12 +369,16 @@ public class CrudActivity extends AppCompatActivity {
                 showSnackbar("Regulator added: ".concat(x.getFullName())
                                 .concat(" Elapsed: ".concat(df.format(getElapsed(start, end)).concat(" minutes"))),
                         "OK", "green");
-
+                busy = false;
+                fab.setEnabled(false);
             }
 
             @Override
             public void onError(String message) {
                 showFailureSnackbar(message);
+                busy = false;
+                fab.setEnabled(false);
+                getInsuranceCompanies();
             }
         });
     }
@@ -338,46 +393,34 @@ public class CrudActivity extends AppCompatActivity {
     List<Client> clients = new ArrayList<>();
     List<Hospital> hospitals = new ArrayList<>();
     List<Doctor> doctors = new ArrayList<>();
+    InsuranceCompany company;
 
-    private void addCertViaTransaction() {
-        showSnackbar("Adding Cert via Transaction", "OK", "cyan");
-        Client client = clients.get(13);
-        Hospital hospital = hospitals.get(0);
-        Doctor doctor = doctors.get(0);
-
-        DeathCertificate dc = new DeathCertificate();
-        dc.setClass("com.oneconnect.insurenet.RegisterDeathCertificate");
-        dc.setIdNumber(client.getIdNumber());
-        dc.setCauseOfDeath("Natural Causes");
-        dc.setDateTime(sdf.format(new Date()));
-        dc.setClient("resource:".concat(client.getClassz().concat("#")
-                .concat(client.getIdNumber())));
-        dc.setHospital("resource:".concat(hospital.getClassz().concat("#")
-                .concat(hospital.getHospitalId())));
-        dc.setDoctor("resource:".concat(doctor.getClassz()).concat("#")
-                .concat(doctor.getIdNumber()));
-
-        writeDeathCertificate(dc);
-    }
-
-    private void writeDeathCertificate(DeathCertificate certificate) {
-        Log.d(TAG, "about to writeDeathCertificate: %%%% ".concat(GSON.toJson(certificate)));
-
-        chainDataAPI.registerDeathCertificate(certificate, new ChainDataAPI.Listener() {
+    private void setSpinner() {
+        List<String> list = new ArrayList<>();
+        for (InsuranceCompany c : insuranceCompanies) {
+            list.add(c.getName());
+        }
+        list.add(0, "Select Insurance Company");
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, list);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onResponse(Data data) {
-                Log.i(TAG, "writeDeathCertificate onResponse: ".concat(GSON.toJson(data)));
-                showSnackbar("Certificate registered via transaction call", "OK", "green");
-                updateText(GSON.toJson(data));
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    company = null;
+                } else {
+                    company = insuranceCompanies.get(position - 1);
+                }
             }
 
             @Override
-            public void onError(String message) {
-                showFailureSnackbar(message);
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
     }
 
+    private List<Bank> banks = new ArrayList<>();
     private void getInsuranceCompanies() {
         Snackbar.make(toolbar, "Getting companies", Snackbar.LENGTH_LONG).show();
 
@@ -386,9 +429,24 @@ public class CrudActivity extends AppCompatActivity {
             public void onResponse(List<InsuranceCompany> companies) {
                 insuranceCompanies = companies;
                 if (!insuranceCompanies.isEmpty()) {
-                    company = insuranceCompanies.get(0);
+                    spinner.setVisibility(View.VISIBLE);
+                    setSpinner();
+                    updateText(GSON.toJson(companies));
+                    fab.setEnabled(false);
+                    fab.setAlpha(0.3f);
                 }
-                updateText(GSON.toJson(companies));
+                chainListAPI.getBanks(new ChainListAPI.BankListener() {
+                    @Override
+                    public void onResponse(List<Bank> list) {
+                        banks = list;
+                        Log.w(TAG, "onResponse: banks found:".concat(String.valueOf(banks.size())) );
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
                 showSnackbar("Found " + companies.size() + " insurance companies", "OK", "green");
             }
 
@@ -456,7 +514,9 @@ public class CrudActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
+        if (busy) {
+            return super.onOptionsItemSelected(item);
+        }
         switch (id) {
             case R.id.nav_hospital:
                 getHospitals();
@@ -465,14 +525,12 @@ public class CrudActivity extends AppCompatActivity {
                 getInsuranceCompanies();
                 break;
             case R.id.nav_cert:
+
                 confirmClients();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-    private InsuranceCompany company;
 
     private void showError(String message) {
         snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);

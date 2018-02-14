@@ -360,6 +360,7 @@ public class CompanyNavActivity extends AppCompatActivity
         @Override
         public void onReceive(Context ctx, Intent m) {
             sentClaim = (Claim) m.getSerializableExtra("data");
+            getClaims();
             if (sentClaim != null) {
                 snackbar = Snackbar.make(toolbar, "Claim Arrived: "
                         .concat(sentClaim.getClaimId()), Snackbar.LENGTH_INDEFINITE);
@@ -427,24 +428,28 @@ public class CompanyNavActivity extends AppCompatActivity
 
     }
 
-    private void showClaim(Claim dc) {
+    private void showClaim(Claim claim) {
 
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-        // Create and show the dialog.
-        final MyDialogFragment fragment = MyDialogFragment.newInstance();
-        fragment.setData(dc);
-        fragment.setListener(new MyDialogFragment.Listener() {
-            @Override
-            public void onCloseButtonClicked() {
-                fragment.dismiss();
-            }
-        });
-        fragment.show(ft, "CLAIM_DIAG");
+        Intent m = new Intent(this,ClaimsActivity.class);
+        m.putExtra("claim", claim);
+        startActivity(m);
+
+//        FragmentTransaction ft = fm.beginTransaction();
+//        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
+//        if (prev != null) {
+//            ft.remove(prev);
+//        }
+//        ft.addToBackStack(null);
+//        // Create and show the dialog.
+//        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+//        fragment.setData(dc);
+//        fragment.setListener(new MyDialogFragment.Listener() {
+//            @Override
+//            public void onCloseButtonClicked() {
+//                fragment.dismiss();
+//            }
+//        });
+//        fragment.show(ft, "CLAIM_DIAG");
     }
 
     private void showPolicy(Policy dc) {
