@@ -8,6 +8,8 @@ echo ##############################
 ./gradlew :homeaffairs:build
 ./gradlew :beneficiary:build
 ./gradlew :parlourapp:build
+./gradlew :bank:build
+./gradlew :clientapp:build
 ./gradlew :insurancecompany:build
 
 echo Blockchain Demo Build hopefuly successfully completed

@@ -11,6 +11,8 @@ import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.Doctor;
+import com.aftarobot.mlibrary.data.FundsTransfer;
+import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
@@ -78,9 +80,88 @@ public class ChainListAPI {
         void onResponse(List<DeathCertificateRequest> requests);
         void onError(String message);
     }
+    public interface FundsTransferRequestListener {
+        void onResponse(List<FundsTransferRequest> requests);
+        void onError(String message);
+    }
+    public interface FundsTransferListener {
+        void onResponse(List<FundsTransfer> requests);
+        void onError(String message);
+    }
     public interface BankListener {
         void onResponse(List<Bank> banks);
         void onError(String message);
+    }
+
+    public void getFundsTransferRequests(String id, final FundsTransferRequestListener listener) {
+        Call<List<FundsTransferRequest>> call = apiService.getFundsTransferRequests(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<FundsTransferRequest>>() {
+            @Override
+            public void onResponse(Call<List<FundsTransferRequest>> call, Response<List<FundsTransferRequest>> response) {
+                if (response.isSuccessful()) {
+                    List<FundsTransferRequest> list = response.body();
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: ftr's not found ");
+                    listener.onResponse(new ArrayList<FundsTransferRequest>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<FundsTransferRequest>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+    public void getFundsTransfers(String id, final FundsTransferListener listener) {
+        Call<List<FundsTransfer>> call = apiService.getFundsTransfers(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<FundsTransfer>>() {
+            @Override
+            public void onResponse(Call<List<FundsTransfer>> call, Response<List<FundsTransfer>> response) {
+                if (response.isSuccessful()) {
+                    List<FundsTransfer> list = response.body();
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: ftr's not found ");
+                    listener.onResponse(new ArrayList<FundsTransfer>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<FundsTransfer>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+
+
+    public void getBeneficiary(String id, final BeneficiaryListener listener) {
+        Call<Beneficiary> call = apiService.getBeneficiary(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<Beneficiary>() {
+            @Override
+            public void onResponse(Call<Beneficiary> call, Response<Beneficiary> response) {
+                if (response.isSuccessful()) {
+                    Beneficiary client = response.body();
+                    List<Beneficiary> list = new ArrayList<>(1);
+                    list.add(client);
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: client not found ");
+                    listener.onResponse(new ArrayList<Beneficiary>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Beneficiary> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);;
+            }
+        });
     }
 
     public void getClient(String id, final ClientListener listener) {
@@ -107,6 +188,7 @@ public class ChainListAPI {
             }
         });
     }
+
     public void getPolicy(String id, final PolicyListener listener) {
         Call<Policy> call = apiService.getPolicy(id);
         Log.w(TAG, "calling ... " + call.request().url().url().toString());

@@ -278,6 +278,8 @@ public class HomeAffairsActivity extends AppCompatActivity
         claim.setPolicyNumber(policy.getPolicyNumber());
         claim.setDateTime(sdf.format(new Date()));
         claim.setClaimId(getRandomClaimId());
+        claim.setAmount(policy.getAmount());
+        claim.setApproved(false);
         claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
         claim.setHospital(deathCertificateRequest.getHospital());

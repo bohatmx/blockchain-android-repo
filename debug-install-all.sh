@@ -5,5 +5,7 @@ echo Starting Blockchain Debug Installs ....................
 ./gradlew :homeaffairs:installDebug
 ./gradlew :beneficiary:installDebug
 ./gradlew :parlourapp:installDebug
+./gradlew :bank:installDebug
+./gradlew :clientapp:installDebug
 ./gradlew :insurancecompany:installDebug
 echo Blockchain Debug Installs hopefuly successfully completed

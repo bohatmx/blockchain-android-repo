@@ -8,6 +8,7 @@ echo ###################################
 ./gradlew :insurancecompany:uninstallDebug
 ./gradlew :homeaffairs:uninstallDebug
 ./gradlew :beneficiary:uninstallDebug
-
+./gradlew :bank:uninstallDebug
+./gradlew :clientapp:uninstallDebug
 echo Blockchain Debug uninstalls hopefuly successfully completed
 echo #####################################################

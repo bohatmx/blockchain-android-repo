@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.api.ChainDataAPI;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.google.gson.Gson;
@@ -72,15 +73,34 @@ public class CompaniesUtil {
 
     }
 
-    private static void writeCompany(InsuranceCompany doctor) {
-        chainDataAPI.addInsuranceCompany(doctor, new ChainDataAPI.Listener() {
+    private static void writeCompany(final InsuranceCompany company) {
+        chainDataAPI.addInsuranceCompany(company, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 InsuranceCompany x = (InsuranceCompany) data;
-                Log.d(TAG, "onResponse, doctor added: ".concat(GSON.toJson(x)));
+                Log.d(TAG, "onResponse, company added: ".concat(GSON.toJson(x)));
                 mListener.onProgress(x);
-                mCount++;
-                controlInsuranceCompanys();
+                BankAccount ba = new BankAccount();
+                ba.setBank("resource:com.oneconnect.insurenet.Bank#BANK_001");
+                ba.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
+                        .concat(company.getInsuranceCompanyId()));
+                ba.setBalance(500000000);
+                ba.setAccountNumber(company.getInsuranceCompanyId());
+
+                chainDataAPI.addBankAccount(ba, new ChainDataAPI.Listener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.w(TAG, "onResponse: bank account added for: ".concat(company.getName()) );
+                        mCount++;
+                        controlInsuranceCompanys();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        mListener.onError(message);
+                    }
+                });
+
             }
 
             @Override

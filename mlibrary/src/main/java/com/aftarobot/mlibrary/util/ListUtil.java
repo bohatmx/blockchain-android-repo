@@ -169,6 +169,53 @@ public class ListUtil {
 
         return sb.toString();
     }
+    public static String getRandomFTRid() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("FTR-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomFTRid: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
+
+    public static String getRandomTransferId() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("TRN-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append("-");
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        sb.append(random.nextInt(9));
+        Log.d("ListUtil", "getRandomFTRid: ".concat(sb.toString()));
+
+        return sb.toString();
+    }
 
     public static String getRandomAccountNumber() {
         StringBuilder sb = new StringBuilder();

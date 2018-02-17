@@ -162,7 +162,6 @@ private FBListApi fbListApi;
 
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-//                new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
                 new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
                 new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
                 new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build());
@@ -247,6 +246,8 @@ private FBListApi fbListApi;
                 Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
                 Log.e(TAG, "onResponse: user subscribed to topic: burials" );
+                FirebaseMessaging.getInstance().subscribeToTopic("fundTransfers".concat(company.getInsuranceCompanyId()));
+                Log.e(TAG, "onResponse: user subscribed to topic: fundTransfers".concat(company.getInsuranceCompanyId()) );
                 if (company != null) {
                     FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(company.getInsuranceCompanyId()));
                     Log.e(TAG, "onResponse: user subscribed to topic: claims" + company.getInsuranceCompanyId());

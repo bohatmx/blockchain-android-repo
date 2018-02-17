@@ -1,10 +1,12 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -23,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.services.FCMMessagingService;
@@ -31,6 +34,8 @@ import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.FundsTransfer;
+import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.MyDialogFragment;
@@ -40,6 +45,7 @@ import com.google.gson.GsonBuilder;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -337,6 +343,7 @@ public class CompanyNavActivity extends AppCompatActivity
         IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+        IntentFilter filterFundsTransfer = new IntentFilter(FCMMessagingService.BROADCAST_FUNDS_TRANSFER);
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
@@ -348,6 +355,9 @@ public class CompanyNavActivity extends AppCompatActivity
 
         BurialReceiver receiverB = new BurialReceiver();
         broadcastManager.registerReceiver(receiverB, filterBurial);
+
+        FundsTransferReceiver fundsTransferReceiver = new FundsTransferReceiver();
+        broadcastManager.registerReceiver(fundsTransferReceiver, filterFundsTransfer);
 
     }
 
@@ -378,7 +388,6 @@ public class CompanyNavActivity extends AppCompatActivity
 
     }
 
-
     private class BurialReceiver extends BroadcastReceiver {
 
         @Override
@@ -402,7 +411,6 @@ public class CompanyNavActivity extends AppCompatActivity
         }
 
     }
-
 
     private class CertReceiver extends BroadcastReceiver {
 
@@ -452,26 +460,6 @@ public class CompanyNavActivity extends AppCompatActivity
 //        fragment.show(ft, "CLAIM_DIAG");
     }
 
-    private void showPolicy(Policy dc) {
-
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment prev = fm.findFragmentByTag("POLICY_DIAG");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-        // Create and show the dialog.
-        final MyDialogFragment fragment = MyDialogFragment.newInstance();
-        fragment.setData(dc);
-        fragment.setListener(new MyDialogFragment.Listener() {
-            @Override
-            public void onCloseButtonClicked() {
-                fragment.dismiss();
-            }
-        });
-        fragment.show(ft, "POLICY_DIAG");
-    }
-
     private void showBurial(Burial dc) {
 
         FragmentTransaction ft = fm.beginTransaction();
@@ -509,6 +497,47 @@ public class CompanyNavActivity extends AppCompatActivity
             }
         });
         fragment.show(ft, "CERT_DIAG");
+    }
+    private class FundsTransferReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "onReceive: FundsTransferReceiver ###########" );
+            FundsTransfer data = (FundsTransfer)intent.getSerializableExtra("data");
+            Log.i(TAG, "FundsTransferReceiver onReceive: "
+                    .concat(GSON.toJson(data)));
+            showRequest(data);
+        }
+    }
+    private void showRequest(FundsTransfer transfer) {
+
+        showSnack("Funds Transfer arrived: "
+                .concat(transfer.getFundsTransferId()), "ok", "yellow");
+
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Funds Transfer Arrived")
+                .setMessage("A Funds Transfer message has arrived from the Bank. " +
+                        "Do you want to notify the Beneficiary? \n\n".concat(transfer.getFundsTransferId()
+                        ))
+                .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        underConstruction();
+                    }
+                })
+                .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+
+
+
+    }
+    private void underConstruction() {
+        Toast.makeText(this, "This feature still under construction", Toast.LENGTH_SHORT).show();
     }
 
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

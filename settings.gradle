@@ -1,1 +1,1 @@
-include ':mlibrary', ':crudder', ':insurancecompany', ':hospitalapp', ':parlourapp', ':homeaffairs', ':beneficiary'
+include ':mlibrary', ':crudder', ':insurancecompany', ':hospitalapp', ':parlourapp', ':homeaffairs', ':beneficiary', ':bank', ':clientapp'

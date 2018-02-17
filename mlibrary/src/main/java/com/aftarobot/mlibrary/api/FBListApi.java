@@ -3,6 +3,7 @@ package com.aftarobot.mlibrary.api;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,6 +31,10 @@ public class FBListApi {
     }
     public interface BeneficiaryListener {
         void onResponse(List<Beneficiary> beneficiaries);
+        void onError(String message);
+    }
+    public interface ClientListener {
+        void onResponse(List<Client> clients);
         void onError(String message);
     }
 
@@ -110,7 +115,7 @@ public class FBListApi {
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i(TAG, "onDataChange: dataSnapshot:\n" + dataSnapshot.getChildrenCount());
+                Log.i(TAG, "getBeneficiaries onDataChange: dataSnapshot:\n" + dataSnapshot.getChildrenCount());
                 List<Beneficiary> beneficiaries = new ArrayList<>();
                 for (DataSnapshot shot: dataSnapshot.getChildren()) {
                     Beneficiary u = shot.getValue(Beneficiary.class);
@@ -119,6 +124,29 @@ public class FBListApi {
                 }
 
                 listener.onResponse(beneficiaries);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(databaseError.getMessage());
+            }
+        });
+    }
+    public void getClients(final ClientListener listener) {
+        DatabaseReference ref = db.getReference(FBApi.CLIENTS);
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "getClients onDataChange: dataSnapshot:\n" + dataSnapshot.getChildrenCount());
+                List<Client> clients = new ArrayList<>();
+                for (DataSnapshot shot: dataSnapshot.getChildren()) {
+                    Client u = shot.getValue(Client.class);
+                    u.setClientId(shot.getKey());
+                    clients.add(u);
+                }
+
+                listener.onResponse(clients);
             }
 
             @Override

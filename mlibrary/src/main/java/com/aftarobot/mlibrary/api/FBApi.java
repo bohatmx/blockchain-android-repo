@@ -11,6 +11,8 @@ import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
+import com.aftarobot.mlibrary.data.FundsTransfer;
+import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,6 +35,8 @@ public class FBApi {
 
     public static final String
             CLIENTS = "clients",
+            FUNDS_TRANSFER_REQUESTS = "fundsTransferRequests",
+            FUNDS_TRANSFERS = "fundsTransfers",
             USERS = "users",
             DEATH_CERTS = "certificates",
             DEATH_CERT_REQUEST = "deathCertRequests",
@@ -101,15 +105,15 @@ public class FBApi {
         });
     }
 
-    public void updateBeneficiaryFCMToken(final Beneficiary beneficiary, final FBListener listener) {
-        DatabaseReference ref = db.getReference(BENEFICIARIES)
-                .child(beneficiary.getBeneficiaryId()).child("fcmToken");
-        ref.setValue(beneficiary.getFcmToken())
+    public void updateClientFCMToken(final Client client, final FBListener listener) {
+        DatabaseReference ref = db.getReference(CLIENTS)
+                .child(client.getClientId()).child("fcmToken");
+        ref.setValue(client.getFcmToken())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.i(TAG, "onSuccess: Beneficiary token updated");
-                        listener.onResponse(beneficiary);
+                        listener.onResponse(client);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -127,7 +131,27 @@ public class FBApi {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.i(TAG, "onSuccess: Beneficiary token updated");
+                        Log.i(TAG, "onSuccess: Beneficiaries removed from Firebase");
+                        listener.onResponse(null);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "onComplete: ERROR: ".concat(e.getMessage()));
+                        listener.onError(e.getMessage());
+                    }
+                });
+
+    }
+    public void removeClients(final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARIES);
+        ref.removeValue()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "onSuccess: Clients removed from Firebase");
+
                         listener.onResponse(null);
                     }
                 })
@@ -224,6 +248,42 @@ public class FBApi {
                     Log.i(TAG, "onComplete: claim added to firebase: "
                             .concat(claim.getClaimId()).concat(" policy:").concat(claim.getPolicy()));
                     listener.onResponse(claim);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
+    public void addFundsTransferRequest(final FundsTransferRequest transferRequest, final FBListener listener) {
+        DatabaseReference ref = db.getReference(FUNDS_TRANSFER_REQUESTS);
+
+        ref.push().setValue(transferRequest, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: transferRequest added to firebase: "
+                            .concat(transferRequest.getFundsTransferRequestId()));
+                    listener.onResponse(transferRequest);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
+    public void addFundsTransfer(final FundsTransfer fundsTransfer, final FBListener listener) {
+        DatabaseReference ref = db.getReference(FUNDS_TRANSFERS);
+
+        ref.push().setValue(fundsTransfer, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: fundsTransfer added to firebase: "
+                            .concat(fundsTransfer.getFundsTransferId()));
+                    listener.onResponse(fundsTransfer);
                 } else {
                     Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
                     listener.onError(databaseError.getMessage());

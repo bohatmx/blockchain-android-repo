@@ -211,11 +211,22 @@ public class CrudActivity extends AppCompatActivity {
         busy = true;
         fab.setEnabled(false);
         fab.setAlpha(0.3f);
-        FBApi api = new FBApi();
+        final FBApi api = new FBApi();
         api.removeBeneficiaries(new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.e(TAG, "onResponse: beneficiaries deleted from Firebase");
+                Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
+                api.removeClients(new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
             }
 
             @Override

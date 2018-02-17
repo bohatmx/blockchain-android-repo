@@ -429,7 +429,7 @@ public class ChainDataAPI {
                     listener.onResponse(response.body());
                 } else {
                     try {
-                        Log.e(TAG, "registerClientBankAccount error: ".concat(response.errorBody().string()));
+                        Log.e(TAG, "fundsTransferRequest error: ".concat(response.errorBody().string()));
                     } catch (IOException e) {
                         listener.onError(e.getMessage());
                     }
@@ -672,6 +672,29 @@ public class ChainDataAPI {
             public void onFailure(Call<InsuranceCompany> call, Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(context.getString(R.string.company_add_failled));
+
+            }
+        });
+    }
+    public void addBankAccount(final BankAccount bankAccount, final Listener listener) {
+        Call<BankAccount> call = apiService.addBankAccount(bankAccount);
+        Log.d(TAG, "addBankAccount: ".concat(call.request().url().url().toString()));
+        call.enqueue(new Callback<BankAccount>() {
+            @Override
+            public void onResponse(Call<BankAccount> call, Response<BankAccount> response) {
+                if (response.isSuccessful()) {
+                    Log.i(TAG, "bankAccount added: ".concat(bankAccount.getAccountNumber()));
+                    listener.onResponse(response.body());
+                } else {
+                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    listener.onError(context.getString(R.string.company_add_failled));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BankAccount> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError("Failed to add bank account");
 
             }
         });

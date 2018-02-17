@@ -1,12 +1,28 @@
 package com.aftarobot.mlibrary.data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class FundsTransfer implements Data, Serializable {
-    private String fundsTransferId, fundsTransferRequest, fromAccount, toAccount, insuranceCompany, bank;
-    private Date dateTime;
+    private String fundsTransferId, fundsTransferRequest, fromAccount, toAccount,
+            insuranceCompany, bank, bankId, insuranceCompanyId;
+    private String dateTime;
     private double amount;
+
+    public String getBankId() {
+        return bankId;
+    }
+
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
+    }
+
+    public String getInsuranceCompanyId() {
+        return insuranceCompanyId;
+    }
+
+    public void setInsuranceCompanyId(String insuranceCompanyId) {
+        this.insuranceCompanyId = insuranceCompanyId;
+    }
 
     public String getFundsTransferId() {
         return fundsTransferId;
@@ -56,11 +72,11 @@ public class FundsTransfer implements Data, Serializable {
         this.bank = bank;
     }
 
-    public Date getDateTime() {
+    public String getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(Date dateTime) {
+    public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
     }
 

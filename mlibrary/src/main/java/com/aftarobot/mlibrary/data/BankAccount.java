@@ -3,8 +3,16 @@ package com.aftarobot.mlibrary.data;
 import java.io.Serializable;
 
 public class BankAccount implements Data, Serializable{
-    private String accountNumber, client, beneficiary, bank;
+    private String accountNumber, client, beneficiary, bank, insuranceCompany;
     private double balance;
+
+    public String getInsuranceCompany() {
+        return insuranceCompany;
+    }
+
+    public void setInsuranceCompany(String insuranceCompany) {
+        this.insuranceCompany = insuranceCompany;
+    }
 
     public String getBank() {
         return bank;

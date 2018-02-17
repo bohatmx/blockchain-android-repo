@@ -10,6 +10,24 @@ public class Claim implements Data, Serializable{
     private String $class;
     private String claimId, dateTime, companyId, policyNumber, insuranceCompany;
     private String policy, client, hospital;
+    private double amount;
+    private boolean approved;
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 
     public String getInsuranceCompany() {
         return insuranceCompany;

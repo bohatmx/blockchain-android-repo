@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/bank" />
+            <option value="$PROJECT_DIR$/beneficiary" />
+            <option value="$PROJECT_DIR$/clientapp" />
+            <option value="$PROJECT_DIR$/crudder" />
+            <option value="$PROJECT_DIR$/homeaffairs" />
+            <option value="$PROJECT_DIR$/hospitalapp" />
+            <option value="$PROJECT_DIR$/insurancecompany" />
+            <option value="$PROJECT_DIR$/mlibrary" />
+            <option value="$PROJECT_DIR$/parlourapp" />
+          </set>
+        </option>
+        <option name="resolveModulePerSourceSet" value="false" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

@@ -15,6 +15,7 @@ import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -39,6 +40,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
             BROADCAST_USER = "com.aftarobot.BROADCAST_USER",
             BROADCAST_CLAIM = "com.aftarobot.BROADCAST_CLAIM",
             BROADCAST_POLICY = "com.aftarobot.BROADCAST_POLICY",
+            BROADCAST_FUNDS_TRANSFER = "com.aftarobot.BROADCAST_FUNDS_TRANSFER",
             BROADCAST_BURIAL = "com.aftarobot.BROADCAST_BURIAL";
 
     @Override
@@ -74,8 +76,13 @@ public class FCMMessagingService extends FirebaseMessagingService {
             }
             if (type.equalsIgnoreCase("POLICY")) {
                 Policy pol = GSON.fromJson(map.get("json"), Policy.class);
-                broadcast(BROADCAST_USER, pol);
+                broadcast(BROADCAST_POLICY, pol);
                 sendNotification(type, "Policy Registered", map.get("json"));
+            }
+            if (type.equalsIgnoreCase("FUNDS_TRANSFER")) {
+                FundsTransfer pol = GSON.fromJson(map.get("json"), FundsTransfer.class);
+                broadcast(BROADCAST_FUNDS_TRANSFER, pol);
+                sendNotification(type, "Funds Transfer", map.get("json"));
             }
         }
 
@@ -94,6 +101,9 @@ public class FCMMessagingService extends FirebaseMessagingService {
         }
         if (data instanceof Policy) {
             m.putExtra("data", (Policy) data);
+        }
+        if (data instanceof FundsTransfer) {
+            m.putExtra("data", (FundsTransfer) data);
         }
         LocalBroadcastManager lm = LocalBroadcastManager.getInstance(getApplicationContext());
         lm.sendBroadcast(m);

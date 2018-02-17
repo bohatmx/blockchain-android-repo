@@ -67,46 +67,41 @@ public class PolicyUtil {
     }
 
     private static void addRandomClientWithPolicies() {
-        Log.e(TAG, "addRandomClientWithPolicies: ##########################################" );
+        Log.e(TAG, "addRandomClientWithPolicies: ##########################################");
         final Client client = ListUtil.getRandomClient();
 
         final List<Beneficiary> beneficiaries = new ArrayList<>();
-        int count = random.nextInt(4);
-        if (count == 0) {
-            count = 2;
-        }
-        for (int j = 0; j < count; j++) {
-            Beneficiary b = ListUtil.getRandomBeneficiary();
-            b.setLastName(client.getLastName());
-            StringBuilder sb = new StringBuilder();
-            sb.append(b.getFirstName().toLowerCase()).append(".");
-            sb.append(b.getLastName()).append(String.valueOf(random.nextInt(50)));
-            sb.append("@companyemail.com");
-            b.setEmail(sb.toString());
-            beneficiaries.add(b);
-        }
+        Beneficiary b = ListUtil.getRandomBeneficiary();
+        b.setLastName(client.getLastName());
+        StringBuilder sb = new StringBuilder();
+        sb.append(b.getFirstName().toLowerCase()).append(".");
+        sb.append(b.getLastName().toLowerCase()).append(String.valueOf(random.nextInt(50)));
+        sb.append("@companyemail.com");
+        b.setEmail(sb.toString());
+        beneficiaries.add(b);
+
         ClientBeneficiariesUtil.addClientAndBeneficiaries(mContext,
                 client, mBank, beneficiaries, new ClientBeneficiariesUtil.ClientBennieListener() {
-            @Override
-            public void onClientAndBeneficiariesAdded() {
-                createPolicies(client, beneficiaries);
-                pIndex = 0;
-                index++;
-                controlPolicies();
-            }
+                    @Override
+                    public void onClientAndBeneficiariesAdded() {
+                        createPolicies(client, beneficiaries);
+                        pIndex = 0;
+                        index++;
+                        controlPolicies();
+                    }
 
-            @Override
-            public void onError(String message) {
-                mListener.onError(message);
-                index++;
-                controlGeneration();
-            }
+                    @Override
+                    public void onError(String message) {
+                        mListener.onError(message);
+                        index++;
+                        controlGeneration();
+                    }
 
-            @Override
-            public void onProgress(String message) {
-                mListener.onProgressMessage(message);
-            }
-        });
+                    @Override
+                    public void onProgress(String message) {
+                        mListener.onProgressMessage(message);
+                    }
+                });
 
     }
 
@@ -115,20 +110,7 @@ public class PolicyUtil {
 
     private static void createPolicies(final Client client, final List<Beneficiary> beneficiaries) {
         clientPolicies = new ArrayList<>();
-        buildPolicy(client,beneficiaries,companyList.get(0));
-        for (InsuranceCompany c : companyList) {
-            int doIt  = random.nextInt(100);
-            if (doIt > 60) {
-                buildPolicy(client, beneficiaries, c);
-            }
-            if (doIt > 90) {
-                buildPolicy(client, beneficiaries, c);
-            }
-        }
-        Log.d(TAG, "&&&&&&&&&&&&& created list of Policies for: ".concat(client.getFullName()
-                .concat(" ")).concat(String.valueOf(clientPolicies.size())));
-
-
+        buildPolicy(client, beneficiaries, companyList.get(0));
     }
 
     private static void buildPolicy(Client client, List<Beneficiary> beneficiaries, InsuranceCompany c) {
