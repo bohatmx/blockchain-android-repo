@@ -176,125 +176,43 @@ public class HomeAffairsActivity extends AppCompatActivity
 
     private void issueCertificate(final DeathCertificateRequest request) {
         deathCertificateRequest = request;
-        DeathCertificate x = new DeathCertificate();
-        x.setIdNumber(request.getIdNumber());
-        x.setCauseOfDeath(request.getCauseOfDeath());
-        x.setClient(request.getClient());
-        x.setDateTime(request.getDateTime());
-        x.setDoctor(request.getDoctor());
-        x.setHospital(request.getHospital());
+        DeathCertificate certificate = new DeathCertificate();
+        certificate.setIdNumber(request.getIdNumber());
+        certificate.setCauseOfDeath(request.getCauseOfDeath());
+        certificate.setClient(request.getClient());
+        certificate.setDateTime(request.getDateTime());
 
-        x.setHospitalId(request.getHospitalId());
-        x.setDoctorId(request.getDoctorId());
+
+
+        if (request.getHospital() != null) {
+            certificate.setHospital(request.getHospital());
+            certificate.setHospitalId(request.getHospital().split("#")[1]);
+        }
+        if (request.getDoctor() != null) {
+            certificate.setDoctor(request.getDoctor());
+            certificate.setDoctorId(request.getDoctor().split("#")[1]);
+        }
 
         showSnackbar("Issuing Death Certificate ...", "Wait", "yellow");
-        chainDataAPI.registerDeathCertificate(x, new ChainDataAPI.Listener() {
+        chainDataAPI.registerDeathCertificate(certificate, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
-                final DeathCertificate x = (DeathCertificate) data;
-                Log.i(TAG, "issueCertificate done: ".concat(GSON.toJson(x)));
+                final DeathCertificate chainCert = (DeathCertificate) data;
+                Log.i(TAG, "issueCertificate done: ".concat(GSON.toJson(chainCert)));
                 requests.remove(request);
                 setList();
-                showSnackbar("Death Certificate issued on blockchain", "OK", "green");
-                deathCertificateRequest.setIssued(true);
-                chainDataAPI.updateDeathCertificateRequest(deathCertificateRequest, new ChainDataAPI.Listener() {
+
+                fbApi = new FBApi();
+                fbApi.addDeathCertificate(chainCert, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        showSnackbar("Request updated, set to Issued", "OK", "green");
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
-                fbApi.addDeathCert(x, new FBApi.FBListener() {
-                    @Override
-                    public void onResponse(Data data) {
-                        Log.i(TAG, "onResponse: certificate added to Firebase: ".concat(x.getIdNumber()));
-                        findPolicy(x.getIdNumber());
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
-    }
-
-    private Policy policy;
-
-    private void findPolicy(final String idNumber) {
-
-        chainListAPI.getClient(idNumber, new ChainListAPI.ClientListener() {
-            @Override
-            public void onResponse(List<Client> clients) {
-                if (!clients.isEmpty()) {
-                    Client client = clients.get(0);
-                    if (client.getPolicies() != null) {
-                        String[] strings = client.getPolicies().get(0).split("#");
-                        chainListAPI.getPolicy(strings[1], new ChainListAPI.PolicyListener() {
+                        Log.e(TAG, "onResponse: certificate added to Firebase: ".concat(chainCert.getIdNumber()));
+                        runOnUiThread(new Runnable() {
                             @Override
-                            public void onResponse(List<Policy> policies) {
-                                if (!policies.isEmpty()) {
-                                    policy = policies.get(0);
-                                    writeClaim();
-                                }
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                showError(message);
+                            public void run() {
+                                showSnackbar("Death Certificate issued on blockchain", "OK", "green");
                             }
                         });
-
-                    }
-                } else {
-                    showError("Policy search failed. Client not found");
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-
-            }
-        });
-
-
-    }
-
-    private void writeClaim() {
-        showSnackbar("Adding Claim to blockchain", "OK", "cyan");
-        final Claim claim = new Claim();
-        String[] strings = policy.getInsuranceCompany().split("#");
-        claim.setCompanyId(strings[1]);
-        claim.setPolicyNumber(policy.getPolicyNumber());
-        claim.setDateTime(sdf.format(new Date()));
-        claim.setClaimId(getRandomClaimId());
-        claim.setAmount(policy.getAmount());
-        claim.setApproved(false);
-        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
-        claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
-        claim.setHospital(deathCertificateRequest.getHospital());
-
-        chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
-            @Override
-            public void onResponse(Data data) {
-                final Claim x = (Claim) data;
-                //todo send beneficiaries a message that claim has been recorded
-                fbApi.addClaim(x, new FBApi.FBListener() {
-                    @Override
-                    public void onResponse(Data data) {
-                        Log.e(TAG, "onResponse: claim added to Firebase: ".concat(GSON.toJson(x)));
-                        showSnackbar("Claims registration process started", "ok", "green");
-                        sendBeneficiaryMessage(claim);
                     }
 
                     @Override
@@ -302,6 +220,7 @@ public class HomeAffairsActivity extends AppCompatActivity
                         showError(message);
                     }
                 });
+
             }
 
             @Override
@@ -310,92 +229,6 @@ public class HomeAffairsActivity extends AppCompatActivity
             }
         });
     }
-
-    FBListApi fbListApi = new FBListApi();
-    int count;
-
-    private void sendBeneficiaryMessage(final Claim claim) {
-
-        final List<String> idNumbers = new ArrayList<>();
-        for (String b : policy.getBeneficiaries()) {
-            String[] strings = b.split("#");
-            if (strings.length == 2) {
-                String idNumber = strings[1];
-                idNumbers.add(idNumber);
-            }
-        }
-        final List<String> tokens = new ArrayList<>();
-
-        for (String id : idNumbers) {
-            fbListApi.getBeneficiaryByIDnumber(id, new FBListApi.BeneficiaryListener() {
-                @Override
-                public void onResponse(List<Beneficiary> beneficiaries) {
-                    if (!beneficiaries.isEmpty()) {
-                        Beneficiary b = beneficiaries.get(0);
-                        if (b.getFcmToken() != null) {
-                            tokens.add(b.getFcmToken());
-                        }
-                    }
-                    count++;
-                    if (count > idNumbers.size()) {
-                        //send message to tokens ...
-                        if (!tokens.isEmpty()) {
-                            sendToTokens(tokens, claim);
-                        }
-                    }
-                }
-
-                @Override
-                public void onError(String message) {
-                    showError(message);
-                }
-            });
-        }
-    }
-
-    private void sendToTokens(List<String> tokens, Claim claim) {
-        showSnackbar("Sending messages to beneficiaries: ".concat(String.valueOf(tokens.size())), "OK", "yellow");
-        for (String token : tokens) {
-            BeneficiaryClaimMessage message = new BeneficiaryClaimMessage();
-            message.setFcmToken(token);
-            message.setClaim(claim);
-            fbApi.addBeneficiaryClaimMessage(message, new FBApi.FBListener() {
-                @Override
-                public void onResponse(Data data) {
-                    Log.w(TAG, "onResponse: beneficiary message record added to FireBase");
-                }
-
-                @Override
-                public void onError(String message) {
-                    showError(message);
-                }
-            });
-        }
-    }
-
-    public static String getRandomClaimId() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("C");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append("-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        Log.d("ListUtil", "getRandomClaimNumber: ".concat(sb.toString()));
-
-        return sb.toString();
-    }
-
-    private static Random random = new Random(System.currentTimeMillis());
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

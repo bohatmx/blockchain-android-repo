@@ -3,6 +3,7 @@ package com.aftarobot.blockchaintest;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -216,37 +217,39 @@ public class CrudActivity extends AppCompatActivity {
         api.addAuthRemoval(new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.e(TAG, "onResponse: auth removal trigger added");
-                api.removeBeneficiaries(new FBApi.FBListener() {
-                    @Override
-                    public void onResponse(Data data) {
-                        Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
-                        api.removeClients(new FBApi.FBListener() {
-                            @Override
-                            public void onResponse(Data data) {
-                                Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
-                                try {
-                                    showSnackbar("Waiting for 5 seconds ...", "ok", "white");
-                                    Thread.sleep(5000);
-                                    startGrinding();
-
-                                } catch (InterruptedException e) {
-                                    startGrinding();
-                                }
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                showError(message);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
+                Log.e(TAG, "onResponse: +++++++++++++++++++ auth removal trigger added, sleeping for 10 seconds");
+                SystemClock.sleep(10000);
+                startGrinding();
+//                api.removeBeneficiaries(new FBApi.FBListener() {
+//                    @Override
+//                    public void onResponse(Data data) {
+//                        Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
+//                        api.removeClients(new FBApi.FBListener() {
+//                            @Override
+//                            public void onResponse(Data data) {
+//                                Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
+//                                try {
+//                                    showSnackbar("Waiting for 5 seconds ...", "ok", "white");
+//                                    SystemClock.sleep()(5000);
+//                                    startGrinding();
+//
+//                                } catch (InterruptedException e) {
+//                                    startGrinding();
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onError(String message) {
+//                                showError(message);
+//                            }
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onError(String message) {
+//                        showError(message);
+//                    }
+//                });
 
             }
 
@@ -259,6 +262,7 @@ public class CrudActivity extends AppCompatActivity {
 
     }
     private void startGrinding() {
+        Log.w(TAG, "startGrinding: $$$$$$$$$$$$$$$$$$$$$$$$$$ ......." );
         CompaniesUtil.generate(getApplicationContext(), new CompaniesUtil.InsuranceCompanyListener() {
             @Override
             public void onInsuranceCompanysComplete() {

@@ -1,7 +1,11 @@
 package com.aftarobot.hospitalapp;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -417,11 +421,59 @@ public class HospitalNavActivity extends AppCompatActivity
         imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
     }
     private void listen() {
-        IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
-        IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+        IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(new CertReceiver(),filterCert );
 
+
+    }
+    private class CertReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            final DeathCertificate sentDC = (DeathCertificate) m.getSerializableExtra("data");
+            if (sentDC != null) {
+
+                snackbar = Snackbar.make(toolbar, "Certificate Registered: "
+                        .concat(sentDC.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showCert(sentDC);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+
+    }
+
+    private void showCert(final DeathCertificate dc) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                FragmentTransaction ft = fm.beginTransaction();
+                Fragment prev = fm.findFragmentByTag("CERT_DIAG");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+                // Create and show the dialog.
+                final MyDialogFragment fragment = MyDialogFragment.newInstance();
+                fragment.setData(dc);
+                fragment.setListener(new MyDialogFragment.Listener() {
+                    @Override
+                    public void onCloseButtonClicked() {
+                        fragment.dismiss();
+                    }
+                });
+                fragment.show(ft, "CERT_DIAG");
+            }
+        });
 
     }
 

@@ -7,14 +7,12 @@ import java.io.Serializable;
  */
 
 public class DeathCertificate implements Data, Serializable {
-    private String $class;
     private String idNumber;
     private String dateTime;
     private String causeOfDeath;
     private String hospital;
     private String doctor;
-    private String client, hospitalId,
-    doctorId;
+    private String client, hospitalId, doctorId;
 
 
     public String getHospitalId() {
@@ -32,11 +30,6 @@ public class DeathCertificate implements Data, Serializable {
     public void setDoctorId(String doctorId) {
         this.doctorId = doctorId;
     }
-
-    public String getClassz() { return this.$class; }
-
-    public void setClass(String $class) { this.$class = $class; }
-
 
     public String getIdNumber() { return this.idNumber; }
 

@@ -42,10 +42,6 @@
             android:name=".HospitalNavActivity"
             android:label="@string/title_activity_navig"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".NotifActivity"
-            android:label="@string/title_activity_notif"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

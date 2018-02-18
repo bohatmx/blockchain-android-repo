@@ -241,10 +241,8 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.i(TAG, "onResponse: user added OK: ".concat(u.getEmail()));
-                FirebaseMessaging.getInstance().subscribeToTopic("certificates");
-                Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
-                FirebaseMessaging.getInstance().subscribeToTopic("burials");
-                Log.e(TAG, "onResponse: user subscribed to topic: burials" );
+                FirebaseMessaging.getInstance().subscribeToTopic("certificates".concat(hospital.getHospitalId()));
+                Log.e(TAG, "onResponse: user subscribed to topic: certificates".concat(hospital.getHospitalId()) );
 
                 startMain();
             }

@@ -22,6 +22,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Created by aubreymalabie on 1/20/18.
@@ -239,22 +241,26 @@ public class FBApi {
         });
     }
 
-    public void addDeathCert(final DeathCertificate certificate, final FBListener listener) {
+    public void addDeathCertificate(final DeathCertificate certificate, final FBListener listener) {
         DatabaseReference ref = db.getReference(DEATH_CERTS);
-
-        ref.push().setValue(certificate, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError == null) {
-                    Log.i(TAG, "onComplete: certificate added to firebase: "
-                            .concat(certificate.getIdNumber()).concat(" cause:").concat(certificate.getCauseOfDeath()));
-                    listener.onResponse(certificate);
-                } else {
-                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
-                    listener.onError(databaseError.getMessage());
+        Log.e(TAG, "addDeathCertificate: ".concat(GSON.toJson(certificate)));
+        try {
+            ref.push().setValue(certificate, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        Log.i(TAG, "onComplete: beneficiary added to firebase: ".concat(certificate.getIdNumber()));
+                        listener.onResponse(certificate);
+                    } else {
+                        Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                        listener.onError(databaseError.getMessage());
+                    }
                 }
-            }
-        });
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "addDeathCertificate: DISASTER!!!! ",e );
+        }
+
     }
 
     public void addDeathCertRequest(final DeathCertificateRequest request, final FBListener listener) {
@@ -398,4 +404,6 @@ public class FBApi {
             }
         });
     }
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
 }
