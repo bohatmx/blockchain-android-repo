@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class NavActivity extends AppCompatActivity
+public class BeneficiaryNavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     Beneficiary beneficiary;
@@ -58,7 +58,7 @@ public class NavActivity extends AppCompatActivity
     TextView txtCount;
     RecyclerView recyclerView;
 
-    public static final String TAG = NavActivity.class.getSimpleName();
+    public static final String TAG = BeneficiaryNavActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
@@ -385,33 +385,36 @@ public class NavActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            BeneficiaryClaimMessage msg = (BeneficiaryClaimMessage)intent.getSerializableExtra("data");
+            BeneficiaryClaimMessage msg = (BeneficiaryClaimMessage) intent.getSerializableExtra("data");
             showClaim(msg);
 
 
         }
     }
+
     private void showClaim(BeneficiaryClaimMessage msg) {
         String title = "A claim was approved: ".concat(msg.getStringDate());
         showSnackbar(title, "ok", "green");
 
     }
+
     private class FundsReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            BeneficiaryFunds msg = (BeneficiaryFunds)intent.getSerializableExtra("data");
+            BeneficiaryFunds msg = (BeneficiaryFunds) intent.getSerializableExtra("data");
             showFunds(msg);
 
 
         }
     }
+
     private void showFunds(BeneficiaryFunds msg) {
         String title = "Funds were transferred to your account: ".concat(msg.getStringDate());
         showSnackbar(title, "ok", "green");
 
     }
-    /////////////////////////////////////
+
     private class Certceiver extends BroadcastReceiver {
 
         @Override
@@ -422,12 +425,13 @@ public class NavActivity extends AppCompatActivity
 
         }
     }
+
     private void showCert(DeathCertificate msg) {
         String title = "A Death Certicate has been issued: ".concat(msg.getIdNumber());
         showSnackbar(title, "ok", "grey");
 
     }
-    ///////////////////////////////
+
     private class BurialReceiver extends BroadcastReceiver {
 
         @Override
@@ -438,11 +442,13 @@ public class NavActivity extends AppCompatActivity
 
         }
     }
+
     private void showBurial(Burial msg) {
         String title = "The Burial was registered: ".concat(msg.getIdNumber());
         showSnackbar(title, "ok", "grey");
 
     }
+
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
 }
