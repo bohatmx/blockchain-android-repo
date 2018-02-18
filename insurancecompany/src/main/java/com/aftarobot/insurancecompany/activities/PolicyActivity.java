@@ -487,28 +487,7 @@ public class PolicyActivity extends AppCompatActivity {
         showSnack("Funds Transfer arrived: "
                 .concat(transfer.getFundsTransferId()), "ok", "yellow");
 
-        android.app.AlertDialog.Builder x = new android.app.AlertDialog.Builder(this);
-        x.setTitle("Funds Transfer Arrived")
-                .setMessage("A Funds Transfer message has arrived from the Bank. " +
-                        "Do you want to notify the Beneficiary? \n\n".concat(transfer.getFundsTransferId()
-                        ))
-                .setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        underConstruction();
-                    }
-                })
-                .setNegativeButton("no", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
 
-                    }
-                })
-                .show();
-
-    }
-    private void underConstruction() {
-        Toast.makeText(this, "This feature still under construction", Toast.LENGTH_SHORT).show();
     }
 
 }

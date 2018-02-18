@@ -32,8 +32,11 @@ import com.aftarobot.insurancecompany.services.NotifyBeneficiaryFunds;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Bank;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.BeneficiaryThanks;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.ClaimApproval;
@@ -257,9 +260,8 @@ public class ClaimsActivity extends AppCompatActivity {
     }
 
 
-
     private void requestFundsTransfer() {
-        showSnackbar("Requesting Policy ...", "ok","cyan" );
+        showSnackbar("Requesting Policy ...", "ok", "cyan");
         chainListAPI.getPolicy(claim.getPolicyNumber(), new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> policies) {
@@ -577,35 +579,90 @@ public class ClaimsActivity extends AppCompatActivity {
     }
 
     public static final DecimalFormat fmt = new DecimalFormat("###,###,###,###,###,###,###,###,###,###,##0.00");
+
     private void showTransfer(final FundsTransfer transfer) {
 
         Snackbar.make(toolbar, "Funds Transfer arrived: "
                 .concat(fmt.format(transfer.getAmount())), Snackbar.LENGTH_INDEFINITE)
                 .setActionTextColor(Color.parseColor("green"))
-                .setAction("Notify Beneficiary", new View.OnClickListener() {
+                .setAction("Thank Beneficiary", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        NotifyBeneficiaryFunds.notify(getApplicationContext(), transfer, new NotifyBeneficiaryFunds.NotifyListener() {
-                            @Override
-                            public void onNotified() {
-                                Log.e(TAG, "onNotified: beneficiary funds notified" );
-                                showSnackbar("Beneficiary notified on funds transferred", "ok", "green");
-                            }
-
-                            @Override
-                            public void onProgress(String message) {
-                                showSnackbar(message, "ok", "cyan");
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                showError(message);
-                            }
-                        });
+                        thanks(transfer);
                     }
                 }).show();
 
 
+    }
+
+    private FBListApi fbListApi;
+
+    private void thanks(final FundsTransfer fundsTransfer) {
+        fbListApi = new FBListApi();
+        String accountNumber = fundsTransfer.getToAccount().split("#")[1];
+        chainListAPI.getBankAccount(accountNumber, new ChainListAPI.BankAccountListener() {
+            @Override
+            public void onResponse(List<BankAccount> bankAccounts) {
+                if (!bankAccounts.isEmpty()) {
+                    BankAccount bacct = bankAccounts.get(0);
+                    Log.i(TAG, "onResponse: bankAccount: ".concat(GSON.toJson(bacct)));
+                    final String idNumber = bacct.getBeneficiary().split("#")[1];
+                    chainListAPI.getBeneficiary(idNumber, new ChainListAPI.BeneficiaryListener() {
+                        @Override
+                        public void onResponse(List<Beneficiary> beneficiaries) {
+                            if (!beneficiaries.isEmpty()) {
+                                Beneficiary m = beneficiaries.get(0);
+                                fbListApi.getBeneficiaryByIDnumber(idNumber, new FBListApi.BeneficiaryListener() {
+                                    @Override
+                                    public void onResponse(List<Beneficiary> beneficiaries) {
+                                        if (!beneficiaries.isEmpty()) {
+                                            Beneficiary fbBeneficiary = beneficiaries.get(0);
+                                            Log.w(TAG, "onResponse: fbBeneficiary: ".concat(GSON.toJson(fbBeneficiary)) );
+                                            //we have an fcmToken
+                                            BeneficiaryThanks thanks = new BeneficiaryThanks();
+                                            thanks.setFcmToken(fbBeneficiary.getFcmToken());
+                                            thanks.setFundsTransfer(fundsTransfer);
+                                            thanks.setName(fbBeneficiary.getFullName());
+                                            thanks.setDate(new Date().getTime());
+                                            thanks.setMessage("Thank you very much for allowing "
+                                                    .concat(company.getName().concat(" to serve you. We wish you the best of luck and prosperity!")));
+                                            Log.d(TAG, "onResponse: thanks: ".concat(GSON.toJson(thanks)));
+                                            fbApi.addBeneficiaryThanks(thanks, new FBApi.FBListener() {
+                                                @Override
+                                                public void onResponse(Data data) {
+                                                    Log.e(TAG, "onResponse: beneficiary THANKED via Firebase!");
+                                                }
+
+                                                @Override
+                                                public void onError(String message) {
+                                                    showError(message);
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        showError(message);
+                                    }
+                                });
+
+                            }
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            showError(message);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
     }
 
 

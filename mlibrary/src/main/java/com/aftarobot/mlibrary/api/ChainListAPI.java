@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Bank;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -62,6 +63,10 @@ public class ChainListAPI {
     }
     public interface PolicyListener {
         void onResponse(List<Policy> policies);
+        void onError(String message);
+    }
+    public interface BankAccountListener {
+        void onResponse(List<BankAccount> bankAccounts);
         void onError(String message);
     }
     public interface ClaimsListener {
@@ -291,6 +296,35 @@ public class ChainListAPI {
 
             @Override
             public void onFailure(@NonNull Call<Claim> call, @NonNull Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+    public void getBankAccount(String accountNumber, final BankAccountListener listener) {
+        Call<BankAccount> call = apiService.getBankAccount(accountNumber);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<BankAccount>() {
+            @Override
+            public void onResponse(@NonNull Call<BankAccount> call, @NonNull Response<BankAccount> response) {
+                if (response.isSuccessful()) {
+                    BankAccount claim = response.body();
+                    List<BankAccount> list = new ArrayList<>(1);
+                    list.add(claim);
+                    listener.onResponse(list);
+                } else {
+                    try {
+                        Log.w(TAG, "onResponse: ".concat(response.errorBody().string()));
+                        listener.onResponse(new ArrayList<BankAccount>());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BankAccount> call, @NonNull Throwable t) {
                 Log.e(TAG, "onFailure: ", t);
                 listener.onError(NETWORK_ERROR);
             }

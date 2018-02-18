@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.aftarobot.bank.services.FCMMessagingService;
+import com.aftarobot.bank.services.NotifyBeneficiaryFunds;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
@@ -78,7 +79,7 @@ public class BankMainActivity extends AppCompatActivity {
 
     private void getFundsTransferRequests() {
         Log.d(TAG, "getFundsTransferRequests: ############################# bank: "
-        .concat(GSON.toJson(bank)));
+                .concat(GSON.toJson(bank)));
         showSnackbar("Loading funds transfer requests ...", "wait", "yellow");
         chainListAPI.getFundsTransferRequests(bank.getBankId(), new ChainListAPI.FundsTransferRequestListener() {
             @Override
@@ -96,6 +97,7 @@ public class BankMainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void setList() {
         FTRAdapter adapter = new FTRAdapter(requests, new FTRAdapter.FundsTransferRequestListener() {
             @Override
@@ -112,8 +114,8 @@ public class BankMainActivity extends AppCompatActivity {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
         x.setTitle("Funds Transfer Request")
                 .setMessage("Do you want to release funds for this request?\n\n"
-                .concat(request.getFundsTransferRequestId().concat("\n")
-                .concat(df.format(request.getAmount()))))
+                        .concat(request.getFundsTransferRequestId().concat("\n")
+                                .concat(df.format(request.getAmount()))))
                 .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -128,7 +130,9 @@ public class BankMainActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     FBApi fbApi;
+
     private void sendFunds(final FundsTransferRequest request) {
         Log.d(TAG, "sendFunds: request: ".concat(GSON.toJson(request)));
         final FundsTransfer transfer = new FundsTransfer();
@@ -140,11 +144,11 @@ public class BankMainActivity extends AppCompatActivity {
         transfer.setFromAccount(request.getFromAccount());
         transfer.setToAccount(request.getToAccount());
         transfer.setFundsTransferRequest("resource:com.oneconnect.insurenet.FundsTransferRequest#"
-            .concat(request.getFundsTransferRequestId()));
+                .concat(request.getFundsTransferRequestId()));
         transfer.setInsuranceCompany(request.getInsuranceCompany());
         transfer.setClaim(request.getClaim());
         transfer.setFundsTransferId(ListUtil.getRandomTransferId());
-        Log.e(TAG, "sendFunds: transfer: ".concat(GSON.toJson(transfer)) );
+        Log.e(TAG, "sendFunds: transfer: ".concat(GSON.toJson(transfer)));
 
         showSnackbar("Sending the money ...", "ok", "yellow");
         chainDataAPI.transferFunds(transfer, new ChainDataAPI.Listener() {
@@ -157,9 +161,27 @@ public class BankMainActivity extends AppCompatActivity {
                 fbApi.addFundsTransfer(transfer, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.w(TAG, "onResponse: funds transfer added to Firebase: ".concat(GSON.toJson(transfer)) );
+                        Log.w(TAG, "onResponse: funds transfer added to Firebase: ".concat(GSON.toJson(transfer)));
                         requests.remove(request);
                         setList();
+                        NotifyBeneficiaryFunds.notify(getApplicationContext(), transfer, new NotifyBeneficiaryFunds.NotifyListener() {
+                            @Override
+                            public void onNotified() {
+                                Log.e(TAG, "onNotified: beneficiary fund message sent" );
+
+                            }
+
+                            @Override
+                            public void onProgress(String message) {
+                                showSnackbar(message, "ok", "yellow");
+
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                showError(message);
+                            }
+                        });
                     }
 
                     @Override
@@ -182,25 +204,28 @@ public class BankMainActivity extends AppCompatActivity {
         IntentFilter f = new IntentFilter(FCMMessagingService.BROADCAST_FUNDS_TRANSFER_REQUEST);
         LocalBroadcastManager.getInstance(this).registerReceiver(new FundsTransferRequestReceiver(), f);
     }
+
     private class FundsTransferRequestReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.e(TAG, "onReceive: FundsTransferRequestReceiver ###########" );
-            FundsTransferRequest data = (FundsTransferRequest)intent.getSerializableExtra("data");
+            Log.e(TAG, "onReceive: FundsTransferRequestReceiver ###########");
+            FundsTransferRequest data = (FundsTransferRequest) intent.getSerializableExtra("data");
             Log.i(TAG, "FundsTransferRequestReceiver onReceive: "
-            .concat(GSON.toJson(data)));
+                    .concat(GSON.toJson(data)));
             showRequest(data);
         }
     }
+
     private void showRequest(FundsTransferRequest request) {
         if (requests == null) requests = new ArrayList<>();
-        requests.add(0,request);
+        requests.add(0, request);
         setList();
         showSnackbar("Funds Transfer Request arrived: "
                 .concat(request.getFundsTransferRequestId()), "ok", "yellow");
 
     }
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     Snackbar snackbar;
 

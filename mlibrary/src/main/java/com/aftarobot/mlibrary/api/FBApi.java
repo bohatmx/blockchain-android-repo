@@ -6,6 +6,7 @@ import android.util.Log;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.BeneficiaryFunds;
+import com.aftarobot.mlibrary.data.BeneficiaryThanks;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -44,6 +45,7 @@ public class FBApi {
             CLAIMS = "claims",
             BENEFICIARIES = "beneficiaries",
             BENEFICIARY_FUNDS = "beneficiaryFunds",
+            BENEFICIARY_THANKS = "beneficiaryThanks",
             BENNIE_CLAIM_MESSAGES = "beneficiaryClaims",
             POLICIES = "policies",
             AUTH_REMOVALS = "authRemovals",
@@ -115,6 +117,22 @@ public class FBApi {
                 if (databaseError == null) {
                     Log.i(TAG, "onComplete: beneficiary funds added to firebase: ".concat(beneficiaryFunds.getIdNumber()));
                     listener.onResponse(beneficiaryFunds);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
+    public void addBeneficiaryThanks(final BeneficiaryThanks beneficiaryThanks, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARY_THANKS);
+        ref.push().setValue(beneficiaryThanks, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: beneficiary thanks added to firebase: ".concat(beneficiaryThanks.getFundsTransfer().getToAccount()));
+                    listener.onResponse(beneficiaryThanks);
                 } else {
                     Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
                     listener.onError(databaseError.getMessage());

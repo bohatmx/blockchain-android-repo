@@ -13,6 +13,7 @@ import com.aftarobot.beneficiary.NotifActivity;
 import com.aftarobot.beneficiary.R;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.BeneficiaryFunds;
+import com.aftarobot.mlibrary.data.BeneficiaryThanks;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
@@ -34,6 +35,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
             BROADCAST_CERT = "com.aftarobot.BROADCAST_CERT",
             BROADCAST_BENEFICIARY_CLAIM = "com.aftarobot.BROADCAST_BENEFICIARY_CLAIM",
             BROADCAST_BENEFICIARY_FUNDS = "com.aftarobot.BROADCAST_BENEFICIARY_FUNDS",
+            BROADCAST_BENEFICIARY_THANKS = "com.aftarobot.BROADCAST_BENEFICIARY_THANKS",
             BROADCAST_BURIAL = "com.aftarobot.BROADCAST_BURIAL";
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -65,6 +67,11 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_BENEFICIARY_FUNDS, pol);
                 sendNotification(type, "Beneficiary Funds", map.get("json"));
             }
+            if (type.equalsIgnoreCase("BENEFICIARY_THANKS")) {
+                BeneficiaryThanks pol = GSON.fromJson(map.get("json"), BeneficiaryThanks.class);
+                broadcast(BROADCAST_BENEFICIARY_THANKS, pol);
+                sendNotification(type, "Beneficiary Thanks", map.get("json"));
+            }
         }
     }
 
@@ -81,6 +88,9 @@ public class FCMMessagingService extends FirebaseMessagingService {
         }
         if (data instanceof BeneficiaryFunds) {
             m.putExtra("data", (BeneficiaryFunds)data);
+        }
+        if (data instanceof BeneficiaryThanks) {
+            m.putExtra("data", (BeneficiaryThanks)data);
         }
         LocalBroadcastManager lm = LocalBroadcastManager.getInstance(getApplicationContext());
         lm.sendBroadcast(m);

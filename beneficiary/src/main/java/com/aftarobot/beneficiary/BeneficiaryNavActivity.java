@@ -30,6 +30,7 @@ import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.BeneficiaryFunds;
+import com.aftarobot.mlibrary.data.BeneficiaryThanks;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -372,6 +373,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     private void listen() {
         IntentFilter claim = new IntentFilter(FCMMessagingService.BROADCAST_BENEFICIARY_CLAIM);
         IntentFilter funds = new IntentFilter(FCMMessagingService.BROADCAST_BENEFICIARY_FUNDS);
+        IntentFilter thanks = new IntentFilter(FCMMessagingService.BROADCAST_BENEFICIARY_THANKS);
         IntentFilter burial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter cert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
 
@@ -379,6 +381,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).registerReceiver(new FundsReceiver(), funds);
         LocalBroadcastManager.getInstance(this).registerReceiver(new Certceiver(), cert);
         LocalBroadcastManager.getInstance(this).registerReceiver(new BurialReceiver(), burial);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new ThanksReceiver(), thanks);
     }
 
     private class ClaimReceiver extends BroadcastReceiver {
@@ -446,6 +449,21 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     private void showBurial(Burial msg) {
         String title = "The Burial was registered: ".concat(msg.getIdNumber());
         showSnackbar(title, "ok", "grey");
+
+    }
+    private class ThanksReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            BeneficiaryThanks msg = (BeneficiaryThanks) intent.getSerializableExtra("data");
+            showThanks(msg);
+
+
+        }
+    }
+
+    private void showThanks(BeneficiaryThanks msg) {
+        showSnackbar(msg.getMessage(), "ok", "green");
 
     }
 
