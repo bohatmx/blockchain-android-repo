@@ -16,9 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
 
-import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Client;
@@ -28,8 +26,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class StartupActivity extends AppCompatActivity {
@@ -62,8 +63,13 @@ public class StartupActivity extends AppCompatActivity {
     }
 
     private FBApi fbApi;
-    private void login() {
 
+    private void login() {
+        Log.w(TAG, "login: client: ".concat(GSON.toJson(client)) );
+        if (client.getPassword() == null) {
+            showError("Password is null. Not good. Failed.");
+            return;
+        }
         auth.signInWithEmailAndPassword(client.getEmail(), client.getPassword())
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -77,10 +83,10 @@ public class StartupActivity extends AppCompatActivity {
                         Log.i(TAG, "onSuccess: ");
                         //todo update the clients fcmtoken
                         fbApi = new FBApi();
-                        fbApi.updateClientFCMToken(client, new FBApi.FBListener() {
+                        fbApi.updateClientToken(client, new FBApi.FBListener() {
                             @Override
                             public void onResponse(Data data) {
-                                Log.e(TAG, "updateClientFCMToken onResponse: client fcmToken updated" );
+                                Log.e(TAG, "updateClientToken onResponse: client fcmToken updated");
                                 SharedPrefUtil.saveClient(client, getApplicationContext());
                                 startMain();
                             }
@@ -96,18 +102,32 @@ public class StartupActivity extends AppCompatActivity {
     }
 
     private void getClients() {
-        fbListApi.getClients(new FBListApi.ClientListener() {
-            @Override
-            public void onResponse(List<Client> list) {
-                clients = list;
-                setSpinner();
-            }
+        showSnackbar("Loading clients ....", "ok", "cyan");
+        auth.signInAnonymously()
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        fbListApi.getClients(new FBListApi.ClientListener() {
+                            @Override
+                            public void onResponse(List<Client> list) {
+                                clients = list;
+                                setSpinner();
+                                snackbar.dismiss();
+                            }
 
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
+                            @Override
+                            public void onError(String message) {
+                                showError(message);
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        showError("Anonymous Firebase sign in failed");
+                    }
+                });
     }
 
     private Client client;
@@ -115,6 +135,7 @@ public class StartupActivity extends AppCompatActivity {
     private void setSpinner() {
         List<String> list = new ArrayList<>();
         list.add("Select Client");
+        Collections.sort(clients);
         for (Client c : clients) {
             list.add(c.getFullName());
         }
@@ -216,5 +237,5 @@ public class StartupActivity extends AppCompatActivity {
         });
         snackbar.show();
     }
-
+public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }

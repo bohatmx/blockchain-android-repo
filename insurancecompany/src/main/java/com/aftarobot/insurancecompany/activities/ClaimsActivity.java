@@ -1,11 +1,20 @@
 package com.aftarobot.insurancecompany.activities;
 
+import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,18 +28,28 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.adapters.ClaimAdapter;
+import com.aftarobot.insurancecompany.services.FCMMessagingService;
+import com.aftarobot.insurancecompany.services.NotifyBeneficiaryClaim;
+import com.aftarobot.insurancecompany.services.NotifyBeneficiaryFunds;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
+import com.aftarobot.mlibrary.data.BeneficiaryFunds;
+import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.ClaimApproval;
 import com.aftarobot.mlibrary.data.Data;
+import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
+import com.aftarobot.mlibrary.util.MyDialogFragment;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -74,6 +93,8 @@ public class ClaimsActivity extends AppCompatActivity {
         company = SharedPrefUtil.getCompany(this);
         Objects.requireNonNull(getSupportActionBar()).setSubtitle(company.getName());
         getBanks();
+        listen();
+        fm = getFragmentManager();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -191,14 +212,14 @@ public class ClaimsActivity extends AppCompatActivity {
     Snackbar snackbar;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    private void approve(final Claim claim, final boolean approved) {
-
+    private void approve(final Claim c, final boolean approved) {
+        claim = c;
         if (approved) {
             showSnackbar("Submitting claim approval: YES", "ok", "yellow");
         } else {
             showSnackbar("Submitting claim declined: NO", "ok", "red");
         }
-        ClaimApproval claimApproval = getClaimApproval(claim, approved);
+        final ClaimApproval claimApproval = getClaimApproval(claim, approved);
 
         chainDataAPI.processClaimApproval(claimApproval, new ChainDataAPI.Listener() {
             @Override
@@ -207,10 +228,29 @@ public class ClaimsActivity extends AppCompatActivity {
 
                 if (approved) {
                     showSnackbar("Claim Approval processed successfully", "ok", "green");
-                    requestFundsTransfer(claim);
+                    NotifyBeneficiaryClaim.notifyClaimBeneficiary(getApplicationContext(), claim, new NotifyBeneficiaryClaim.NotifyListener() {
+                        @Override
+                        public void onNotified() {
+                            requestFundsTransfer();
+                        }
+
+                        @Override
+                        public void onProgress(String message) {
+                            showSnackbar(message, "ok", "green");
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            showError(message);
+                        }
+                    });
+
+
                 } else {
                     showSnackbar("Claim Declined processed successfully", "ok", "yellow");
                 }
+                claims.remove(claim);
+                setList();
             }
 
             @Override
@@ -220,14 +260,17 @@ public class ClaimsActivity extends AppCompatActivity {
         });
     }
 
-    private void requestFundsTransfer(Claim claim) {
 
+
+    private void requestFundsTransfer() {
+        showSnackbar("Requesting Policy ...", "ok","cyan" );
         chainListAPI.getPolicy(claim.getPolicyNumber(), new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> policies) {
                 if (!policies.isEmpty()) {
                     policy = policies.get(0);
-                    controlBeneficiaries();
+                    index = 0;
+                    processBeneficiary();
                 }
             }
 
@@ -243,42 +286,37 @@ public class ClaimsActivity extends AppCompatActivity {
     int index;
     Policy policy;
 
-    private void controlBeneficiaries() {
+    private void processBeneficiary() {
         if (!policy.getBeneficiaries().isEmpty()) {
             String ben = policy.getBeneficiaries().get(0);
-            processBeneficiary(ben);
-        }
-    }
-
-
-    private void processBeneficiary(String ben) {
-        String[] strings = ben.split("#");
-        String idNumber = strings[1];
-        chainListAPI.getBeneficiary(idNumber, new ChainListAPI.BeneficiaryListener() {
-            @Override
-            public void onResponse(List<Beneficiary> beneficiaries) {
-                if (!beneficiaries.isEmpty()) {
-                    Beneficiary beneficiary = beneficiaries.get(0);
-                    if (beneficiary.getBankAccounts() != null && !beneficiary.getBankAccounts().isEmpty()) {
-                        String acct = beneficiary.getBankAccounts().get(0);
-                        String[] strings1 = acct.split("#");
-                        addFundsTransferRequest(strings1[1]);
+            String[] strings = ben.split("#");
+            String idNumber = strings[1];
+            chainListAPI.getBeneficiary(idNumber, new ChainListAPI.BeneficiaryListener() {
+                @Override
+                public void onResponse(List<Beneficiary> beneficiaries) {
+                    if (!beneficiaries.isEmpty()) {
+                        Beneficiary beneficiary = beneficiaries.get(0);
+                        if (beneficiary.getBankAccounts() != null && !beneficiary.getBankAccounts().isEmpty()) {
+                            String acct = beneficiary.getBankAccounts().get(0);
+                            String[] strings1 = acct.split("#");
+                            addFundsTransferRequest(strings1[1]);
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onError(String message) {
-                showError(message);
-            }
-        });
+                @Override
+                public void onError(String message) {
+                    showError(message);
+                }
+            });
+        }
     }
 
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private void addFundsTransferRequest(String fromAccountNumber) {
-        final FundsTransferRequest ftr = new FundsTransferRequest();
-        ftr.setAmount(policy.getAmount());
+    private void addFundsTransferRequest(String toAccountNumber) {
+        final FundsTransferRequest fundsTransferRequest = new FundsTransferRequest();
+        fundsTransferRequest.setAmount(policy.getAmount());
         String bankId;
         if (bank == null) {
             bankId = "BANK_001";
@@ -286,24 +324,31 @@ public class ClaimsActivity extends AppCompatActivity {
             bankId = bank.getBankId();
         }
 
-        ftr.setBank("resource:com.oneconnect.insurenet.Bank#".concat(bankId));
-        ftr.setClaim("resource:com.oneconnect.insurenet.Claim#".concat(claim.getClaimId()));
-        ftr.setDateTime(sdf.format(new Date()));
-        ftr.setFundsTransferRequestId(ListUtil.getRandomFTRid());
-        ftr.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
+        fundsTransferRequest.setBank("resource:com.oneconnect.insurenet.Bank#".concat(bankId));
+        fundsTransferRequest.setClaim("resource:com.oneconnect.insurenet.Claim#".concat(claim.getClaimId()));
+        fundsTransferRequest.setBankId(bankId);
+        fundsTransferRequest.setInsuranceCompanyId(company.getInsuranceCompanyId());
+        fundsTransferRequest.setDateTime(sdf.format(new Date()));
+        fundsTransferRequest.setFundsTransferRequestId(ListUtil.getRandomFTRid());
+        fundsTransferRequest.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#"
                 .concat(company.getInsuranceCompanyId()));
-        ftr.setToAccount("resource:com.oneconnect.insurenet.BankAccount#"
-                .concat(fromAccountNumber));
-        ftr.setFromAccount("resource:com.oneconnect.insurenet.BankAccount#"
+        fundsTransferRequest.setToAccount("resource:com.oneconnect.insurenet.BankAccount#"
+                .concat(toAccountNumber));
+        fundsTransferRequest.setFromAccount("resource:com.oneconnect.insurenet.BankAccount#"
                 .concat(company.getInsuranceCompanyId()));
 
-        Log.d(TAG, "addFundsTransferRequest: ftr: ".concat(GSON.toJson(ftr)));
+        Log.d(TAG, "addFundsTransferRequest: fundsTransferRequest: ".concat(GSON.toJson(fundsTransferRequest)));
+        if (fundsTransferRequest.getBankId() == null) {
+            throw new RuntimeException("bankId is NULL ########################");
+        } else {
+            Log.w(TAG, "addFundsTransferRequest: bankId: ".concat(fundsTransferRequest.getBankId()));
+        }
         showSnackbar("Requesting funds transfers", "ok", "yellow");
-        chainDataAPI.requestFundsTransfer(ftr, new ChainDataAPI.Listener() {
+        chainDataAPI.requestFundsTransfer(fundsTransferRequest, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
                 showSnackbar("Funds Transfer Request processed", "ok", "green");
-                fbApi.addFundsTransferRequest(ftr, new FBApi.FBListener() {
+                fbApi.addFundsTransferRequest(fundsTransferRequest, new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
                         Log.i(TAG, "onResponse: Funds Transfer Request added to Firebase");
@@ -359,4 +404,212 @@ public class ClaimsActivity extends AppCompatActivity {
     }
 
     public static final String TAG = ClaimsActivity.class.getSimpleName();
+
+    private void listen() {
+        IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
+        IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
+        IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
+        IntentFilter filterFundsTransfer = new IntentFilter(FCMMessagingService.BROADCAST_FUNDS_TRANSFER);
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+
+        ClaimReceiver receiver = new ClaimReceiver();
+        broadcastManager.registerReceiver(receiver, filterClaim);
+
+        CertReceiver receiverC = new CertReceiver();
+        broadcastManager.registerReceiver(receiverC, filterCert);
+
+        BurialReceiver receiverB = new BurialReceiver();
+        broadcastManager.registerReceiver(receiverB, filterBurial);
+
+        FundsTransferReceiver fundsTransferReceiver = new FundsTransferReceiver();
+        broadcastManager.registerReceiver(fundsTransferReceiver, filterFundsTransfer);
+
+    }
+
+    private DeathCertificate sentDC;
+    private Burial sentBurial;
+    private Claim sentClaim;
+
+    private class ClaimReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentClaim = (Claim) m.getSerializableExtra("data");
+            getClaims();
+            if (sentClaim != null) {
+                snackbar = Snackbar.make(toolbar, "Claim Arrived: "
+                        .concat(sentClaim.getClaimId()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showClaim(sentClaim);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+    }
+
+    private class BurialReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentBurial = (Burial) m.getSerializableExtra("data");
+            if (sentBurial != null) {
+
+                snackbar = Snackbar.make(toolbar, "Burial registered: "
+                        .concat(sentBurial.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showBurial(sentBurial);
+                    }
+                });
+                snackbar.show();
+            }
+
+
+        }
+
+    }
+
+    private class CertReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context ctx, Intent m) {
+            sentDC = (DeathCertificate) m.getSerializableExtra("data");
+            if (sentDC != null) {
+
+                snackbar = Snackbar.make(toolbar, "Certificate Registered: "
+                        .concat(sentDC.getIdNumber()), Snackbar.LENGTH_INDEFINITE);
+                snackbar.setActionTextColor(Color.CYAN);
+                snackbar.setAction("Details", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showCert(sentDC);
+                    }
+                });
+                snackbar.show();
+            }
+
+        }
+
+
+    }
+
+    private void showClaim(Claim claim) {
+
+        Intent m = new Intent(this, ClaimsActivity.class);
+        m.putExtra("claim", claim);
+        startActivity(m);
+
+//        FragmentTransaction ft = fm.beginTransaction();
+//        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
+//        if (prev != null) {
+//            ft.remove(prev);
+//        }
+//        ft.addToBackStack(null);
+//        // Create and show the dialog.
+//        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+//        fragment.setData(dc);
+//        fragment.setListener(new MyDialogFragment.Listener() {
+//            @Override
+//            public void onCloseButtonClicked() {
+//                fragment.dismiss();
+//            }
+//        });
+//        fragment.show(ft, "CLAIM_DIAG");
+    }
+
+    android.app.FragmentManager fm;
+
+    private void showBurial(Burial dc) {
+
+
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("BURIAL_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "BURIAL_DIAG");
+    }
+
+    private void showCert(DeathCertificate dc) {
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("CERT_DIAG");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        // Create and show the dialog.
+        final MyDialogFragment fragment = MyDialogFragment.newInstance();
+        fragment.setData(dc);
+        fragment.setListener(new MyDialogFragment.Listener() {
+            @Override
+            public void onCloseButtonClicked() {
+                fragment.dismiss();
+            }
+        });
+        fragment.show(ft, "CERT_DIAG");
+    }
+
+    private class FundsTransferReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "onReceive: FundsTransferReceiver ###########");
+            FundsTransfer data = (FundsTransfer) intent.getSerializableExtra("data");
+            Log.i(TAG, "FundsTransferReceiver onReceive: "
+                    .concat(GSON.toJson(data)));
+            showTransfer(data);
+        }
+    }
+
+    private void showTransfer(final FundsTransfer transfer) {
+
+        Snackbar.make(toolbar, "Funds Transfer arrived: "
+                .concat(transfer.getFundsTransferId()), Snackbar.LENGTH_INDEFINITE)
+                .setActionTextColor(Color.parseColor("green"))
+                .setAction("Notify", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        NotifyBeneficiaryFunds.notifyBeneficiaryFunds(getApplicationContext(), transfer, new NotifyBeneficiaryFunds.NotifyListener() {
+                            @Override
+                            public void onNotified() {
+                                Log.e(TAG, "onNotified: beneficiary funds notified" );
+                                showSnackbar("Beeneficiary funds transfer notified", "ok", "green");
+                            }
+
+                            @Override
+                            public void onProgress(String message) {
+                                showSnackbar(message, "ok", "cyan");
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                showError(message);
+                            }
+                        });
+                    }
+                }).show();
+
+
+    }
+
+
 }

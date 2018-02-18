@@ -267,6 +267,36 @@ public class ChainListAPI {
             }
         });
     }
+    public void getClaim(String id, final ClaimsListener listener) {
+        Call<Claim> call = apiService.getClaim(id);
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<Claim>() {
+            @Override
+            public void onResponse(@NonNull Call<Claim> call, @NonNull Response<Claim> response) {
+                if (response.isSuccessful()) {
+                    Claim claim = response.body();
+                    List<Claim> list = new ArrayList<>(1);
+                    list.add(claim);
+                    listener.onResponse(list);
+                } else {
+                    try {
+                        Log.w(TAG, "onResponse: ".concat(response.errorBody().string()));
+                        listener.onResponse(new ArrayList<Claim>());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Claim> call, @NonNull Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
+
     public void getClients(final ClientListener listener) {
         Call<List<Client>> call = apiService.getClients();
         Log.w(TAG, "calling ... " + call.request().url().url().toString());

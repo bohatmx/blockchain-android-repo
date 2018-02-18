@@ -10,13 +10,15 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.aftarobot.mlibrary.api.FBApi;
@@ -50,8 +52,8 @@ public class LoginActivity extends AppCompatActivity {
     private UserDTO user;
     private List<Beneficiary> beneficiaries;
     private BeneficiaryAdapter adapter;
-    private RecyclerView recyclerView;
-    private TextView txtCount;
+    private Spinner spinner;
+    private Button btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,20 +77,36 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private Beneficiary beneficiary;
     private void setList() {
         Collections.sort(beneficiaries);
-        if (adapter == null) {
-            adapter = new BeneficiaryAdapter(beneficiaries, new BeneficiaryAdapter.BeneficiaryListener() {
-                @Override
-                public void onRequestTapped(Beneficiary beneficiary) {
+        List<String> list = new ArrayList<>();
+        list.add("Select Beneficiary");
+        for (Beneficiary b: beneficiaries) {
+            list.add(b.getFullName());
+        }
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,list);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    beneficiary = null;
+                    btn.setEnabled(false);
+                    btn.setAlpha(0.3f);
+                } else {
+                    beneficiary = beneficiaries.get(position - 1);
+                    btn.setEnabled(true);
+                    btn.setAlpha(1.0f);
                     confirm(beneficiary);
                 }
-            });
-            recyclerView.setAdapter(adapter);
-        } else {
-            adapter.notifyDataSetChanged();
-        }
-        txtCount.setText(String.valueOf(beneficiaries.size()));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
     private void confirm(final Beneficiary beneficiary) {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
@@ -118,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
                         beneficiary.setFcmToken(SharedPrefUtil.getCloudMsgToken(getApplicationContext()));
                         SharedPrefUtil.saveBeneficiary(beneficiary,getApplicationContext());
                         Toast.makeText(getApplicationContext(),"Authentication successful", Toast.LENGTH_LONG).show();
-                        fbApi.updateBeneficiaryFCMToken(beneficiary, new FBApi.FBListener() {
+                        fbApi.updateBeneficiaryToken(beneficiary, new FBApi.FBListener() {
                             @Override
                             public void onResponse(Data data) {
                                 Log.i(TAG, "updateBeneficiaryFCMToken onResponse: ######### Yebo! fcmToken done... moving on ...".concat(GSON.toJson(beneficiary)));
@@ -140,18 +158,15 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
     private void setFields() {
-        recyclerView = findViewById(R.id.recyclerView);
-        txtCount = findViewById(R.id.txtCount);
+        spinner = findViewById(R.id.spinner);
+        btn = findViewById(R.id.btnSignup);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                getBeneficiaries();
             }
         });
-        LinearLayoutManager lm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL,false);
-        recyclerView.setLayoutManager(lm);
 
     }
 

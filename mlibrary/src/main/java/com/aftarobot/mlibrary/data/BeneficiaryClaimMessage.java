@@ -2,7 +2,7 @@ package com.aftarobot.mlibrary.data;
 
 import java.io.Serializable;
 
-public class BeneficiaryClaimMessageDTO   implements Data, Serializable{
+public class BeneficiaryClaimMessage implements Data, Serializable{
     private String fcmToken;
     private Claim claim;
 

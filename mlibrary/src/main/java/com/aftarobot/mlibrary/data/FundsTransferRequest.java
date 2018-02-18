@@ -6,6 +6,15 @@ public class FundsTransferRequest implements Data, Serializable {
     private String fundsTransferRequestId, fromAccount, toAccount, insuranceCompany, bank, claim, bankId;
     private String dateTime;
     private double amount;
+    private String insuranceCompanyId;
+
+    public String getInsuranceCompanyId() {
+        return insuranceCompanyId;
+    }
+
+    public void setInsuranceCompanyId(String insuranceCompanyId) {
+        this.insuranceCompanyId = insuranceCompanyId;
+    }
 
     public String getBankId() {
         return bankId;

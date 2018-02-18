@@ -36,6 +36,7 @@ import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
+import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.ListUtil;
@@ -421,11 +422,12 @@ public class PolicyActivity extends AppCompatActivity {
         IntentFilter filterBurial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
         IntentFilter filterCert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
         IntentFilter filterClaim = new IntentFilter(FCMMessagingService.BROADCAST_CLAIM);
-        IntentFilter filterPolicy = new IntentFilter(FCMMessagingService.BROADCAST_POLICY);
+        IntentFilter filterTransfer = new IntentFilter(FCMMessagingService.BROADCAST_FUNDS_TRANSFER);
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(new ClaimReceiver(), filterClaim);
         broadcastManager.registerReceiver(new BurialReceiver(), filterBurial);
+        broadcastManager.registerReceiver(new FundsTransferReceiver(),filterTransfer );
 
     }
 
@@ -469,4 +471,44 @@ public class PolicyActivity extends AppCompatActivity {
 
         }
     }
+    private class FundsTransferReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "onReceive: FundsTransferReceiver ###########" );
+            FundsTransfer data = (FundsTransfer)intent.getSerializableExtra("data");
+            Log.i(TAG, "FundsTransferReceiver onReceive: "
+                    .concat(GSON.toJson(data)));
+            showTransfer(data);
+        }
+    }
+    private void showTransfer(FundsTransfer transfer) {
+
+        showSnack("Funds Transfer arrived: "
+                .concat(transfer.getFundsTransferId()), "ok", "yellow");
+
+        android.app.AlertDialog.Builder x = new android.app.AlertDialog.Builder(this);
+        x.setTitle("Funds Transfer Arrived")
+                .setMessage("A Funds Transfer message has arrived from the Bank. " +
+                        "Do you want to notify the Beneficiary? \n\n".concat(transfer.getFundsTransferId()
+                        ))
+                .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        underConstruction();
+                    }
+                })
+                .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+
+    }
+    private void underConstruction() {
+        Toast.makeText(this, "This feature still under construction", Toast.LENGTH_SHORT).show();
+    }
+
 }

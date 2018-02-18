@@ -29,8 +29,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@id/appBar"
-        app:layout_anchorGravity="bottom|center"
         android:src="@drawable/ic_refresh_white" />
 
 </android.support.design.widget.CoordinatorLayout>

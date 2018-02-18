@@ -95,7 +95,7 @@ public interface ApiInterface {
     @GET("Beneficiary")
     Call<List<Beneficiary>> getBeneficiaries();
 
-    @GET("Beneficiary/{id}")
+    @GET("Beneficiary/{id}/")
     Call<Beneficiary> getBeneficiary(@Path("id") String id);
 
     @PUT("Beneficiary/{id}/")
@@ -128,8 +128,8 @@ public interface ApiInterface {
     @POST("RegisterPolicy")
     Call<Policy> registerPolicyViaTx(@Body Policy policy);
 
-    @POST("Claim")
-    Call<Claim> registerClaim(@Body Claim claim);
+    @GET("Claim/{id}")
+    Call<Claim> getClaim(@Path("id") String claimId);
 
     @GET("Claim")
     Call<List<Claim>> getClaims();
@@ -183,16 +183,16 @@ public interface ApiInterface {
     @POST("AddDeathCertificateRequest")
     Call<DeathCertificateRequest> addDeathCertificateRequestViaTranx(@Body DeathCertificateRequest deathCertificateRequest);
 
-    @GET("/queries/getClaimByPolicyNumber")
+    @GET("queries/getClaimByPolicyNumber")
     Call<List<Claim>> getClaimsByPolicyNumber(@Query("policyNumber") String policyNumber);
 
-    @GET("/queries/getPolicyByIdNumber")
+    @GET("queries/getPolicyByIdNumber")
     Call<List<Policy>> getPoliciesByIdNumber(@Query("idNumber") String idNumber);
 
-    @GET("/queries/getBankFundsTransferRequests")
+    @GET("queries/getBankFundsTransferRequests")
     Call<List<FundsTransferRequest>> getFundsTransferRequests(@Query("bankId") String bankId);
 
-    @GET("/queries/getInsuranceCompanyFundsTransfers")
+    @GET("queries/getInsuranceCompanyFundsTransfers")
     Call<List<FundsTransfer>> getFundsTransfers(@Query("insuranceCompanyId") String companyId);
 
     @POST("SubmitClaim")

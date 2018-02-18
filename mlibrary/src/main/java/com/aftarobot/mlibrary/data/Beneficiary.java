@@ -55,8 +55,8 @@ public class Beneficiary extends Person implements Data, Serializable, Comparabl
 
     @Override
     public int compareTo(@NonNull Beneficiary o) {
-        String name1 = this.getLastName().concat(this.getLastName());
-        String name2 = o.getLastName().concat(o.getLastName());
+        String name1 = this.getLastName().concat(this.getFirstName());
+        String name2 = o.getLastName().concat(o.getFirstName());
         return name1.compareTo(name2);
     }
 }

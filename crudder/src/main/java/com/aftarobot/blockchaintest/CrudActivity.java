@@ -166,7 +166,7 @@ public class CrudActivity extends AppCompatActivity {
                             showError("There are no banks, cannot go on");
                             return;
                         }
-                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(), numberOfClients, banks.get(0),list, new PolicyUtil.PolicyUtilListener() {
+                        PolicyUtil.generateClientsAndPolicies(getApplicationContext(), numberOfClients, banks.get(0), list, new PolicyUtil.PolicyUtilListener() {
                             @Override
                             public void clientsComplete() {
                                 long end = System.currentTimeMillis();
@@ -212,14 +212,34 @@ public class CrudActivity extends AppCompatActivity {
         fab.setEnabled(false);
         fab.setAlpha(0.3f);
         final FBApi api = new FBApi();
-        api.removeBeneficiaries(new FBApi.FBListener() {
+        start = System.currentTimeMillis();
+        api.addAuthRemoval(new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
-                api.removeClients(new FBApi.FBListener() {
+                Log.e(TAG, "onResponse: auth removal trigger added");
+                api.removeBeneficiaries(new FBApi.FBListener() {
                     @Override
                     public void onResponse(Data data) {
-                        Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
+                        Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
+                        api.removeClients(new FBApi.FBListener() {
+                            @Override
+                            public void onResponse(Data data) {
+                                Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
+                                try {
+                                    showSnackbar("Waiting for 5 seconds ...", "ok", "white");
+                                    Thread.sleep(5000);
+                                    startGrinding();
+
+                                } catch (InterruptedException e) {
+                                    startGrinding();
+                                }
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                showError(message);
+                            }
+                        });
                     }
 
                     @Override
@@ -227,6 +247,7 @@ public class CrudActivity extends AppCompatActivity {
                         showError(message);
                     }
                 });
+
             }
 
             @Override
@@ -234,8 +255,11 @@ public class CrudActivity extends AppCompatActivity {
                 showError(message);
             }
         });
-        start = System.currentTimeMillis();
-        CompaniesUtil.generate(this, new CompaniesUtil.InsuranceCompanyListener() {
+
+
+    }
+    private void startGrinding() {
+        CompaniesUtil.generate(getApplicationContext(), new CompaniesUtil.InsuranceCompanyListener() {
             @Override
             public void onInsuranceCompanysComplete() {
                 HospitalUtil.generate(getApplicationContext(), new HospitalUtil.HospitalListener() {
@@ -285,7 +309,7 @@ public class CrudActivity extends AppCompatActivity {
 
                                             @Override
                                             public void onProgress(Bank doc) {
-                                                showSnackbar("Bank added: ".concat(doc.getName()),"ok","yellow");
+                                                showSnackbar("Bank added: ".concat(doc.getName()), "ok", "yellow");
                                             }
 
                                             @Override
@@ -348,8 +372,6 @@ public class CrudActivity extends AppCompatActivity {
                 showError(message);
             }
         });
-
-
     }
 
     private void updateText(String data) {
@@ -432,6 +454,7 @@ public class CrudActivity extends AppCompatActivity {
     }
 
     private List<Bank> banks = new ArrayList<>();
+
     private void getInsuranceCompanies() {
         Snackbar.make(toolbar, "Getting companies", Snackbar.LENGTH_LONG).show();
 
@@ -450,7 +473,7 @@ public class CrudActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(List<Bank> list) {
                         banks = list;
-                        Log.w(TAG, "onResponse: banks found:".concat(String.valueOf(banks.size())) );
+                        Log.w(TAG, "onResponse: banks found:".concat(String.valueOf(banks.size())));
                     }
 
                     @Override

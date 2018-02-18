@@ -113,7 +113,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
         Notification notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle(title)
                 .setContentText(title)
-                .setSmallIcon(R.drawable.ic_people)
+                .setSmallIcon(R.drawable.users)
                 .setContentIntent(resultPendingIntent)
                 .setAutoCancel(true)
                 .build();

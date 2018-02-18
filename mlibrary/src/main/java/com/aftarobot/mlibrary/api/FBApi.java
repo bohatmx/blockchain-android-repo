@@ -4,7 +4,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aftarobot.mlibrary.data.Beneficiary;
-import com.aftarobot.mlibrary.data.BeneficiaryClaimMessageDTO;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
+import com.aftarobot.mlibrary.data.BeneficiaryFunds;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
@@ -42,8 +43,10 @@ public class FBApi {
             DEATH_CERT_REQUEST = "deathCertRequests",
             CLAIMS = "claims",
             BENEFICIARIES = "beneficiaries",
-            BENNIE_CLAIM_MESSAGES = "beneficiaryClaimMessages",
+            BENEFICIARY_FUNDS = "beneficiaryFunds",
+            BENNIE_CLAIM_MESSAGES = "beneficiaryClaims",
             POLICIES = "policies",
+            AUTH_REMOVALS = "authRemovals",
             BURIALS = "burials";
 
 
@@ -104,8 +107,43 @@ public class FBApi {
             }
         });
     }
+    public void addBeneficiaryFunds(final BeneficiaryFunds beneficiaryFunds, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARY_FUNDS);
+        ref.push().setValue(beneficiaryFunds, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: beneficiary funds added to firebase: ".concat(beneficiaryFunds.getIdNumber()));
+                    listener.onResponse(beneficiaryFunds);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
 
-    public void updateClientFCMToken(final Client client, final FBListener listener) {
+    public void updateBeneficiaryToken(final Beneficiary beneficiary, final FBListener listener) {
+        DatabaseReference ref = db.getReference(BENEFICIARIES)
+                .child(beneficiary.getBeneficiaryId()).child("fcmToken");
+        ref.setValue(beneficiary.getFcmToken())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "onSuccess: Beneficiary token updated");
+                        listener.onResponse(beneficiary);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "onComplete: ERROR: ".concat(e.getMessage()));
+                        listener.onError(e.getMessage());
+                    }
+                });
+
+    }
+    public void updateClientToken(final Client client, final FBListener listener) {
         DatabaseReference ref = db.getReference(CLIENTS)
                 .child(client.getClientId()).child("fcmToken");
         ref.setValue(client.getFcmToken())
@@ -145,7 +183,7 @@ public class FBApi {
 
     }
     public void removeClients(final FBListener listener) {
-        DatabaseReference ref = db.getReference(BENEFICIARIES);
+        DatabaseReference ref = db.getReference(CLIENTS);
         ref.removeValue()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -292,7 +330,7 @@ public class FBApi {
         });
     }
 
-    public void addBeneficiaryClaimMessage(final BeneficiaryClaimMessageDTO message, final FBListener listener) {
+    public void addBeneficiaryClaimMessage(final BeneficiaryClaimMessage message, final FBListener listener) {
         DatabaseReference ref = db.getReference(BENNIE_CLAIM_MESSAGES);
 
         ref.push().setValue(message, new DatabaseReference.CompletionListener() {
@@ -320,6 +358,24 @@ public class FBApi {
                     Log.e(TAG, "onComplete: user deleted: ".concat(user.getEmail()));
                 } else {
                     Log.e(TAG, "onComplete: ".concat(databaseError.getMessage()));
+                }
+            }
+        });
+    }
+
+    public void addAuthRemoval(final FBListener listener) {
+        DatabaseReference ref = db.getReference(AUTH_REMOVALS);
+        String value = "Authenticated user removal trigger";
+
+        ref.push().setValue(value, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: authRemoval trigger added to firebase: ");
+                    listener.onResponse(null);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
                 }
             }
         });

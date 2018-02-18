@@ -47,7 +47,8 @@ public class SignInActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private static final int RC_SIGN_IN = 123;
     private FBApi fbApi;
-private FBListApi fbListApi;
+    private FBListApi fbListApi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,13 +100,14 @@ private FBListApi fbListApi;
         });
         btn.setEnabled(false);
     }
+
     private void setSpinner() {
         List<String> list = new ArrayList<>();
-        for (InsuranceCompany company: companies) {
+        for (InsuranceCompany company : companies) {
             list.add(company.getName());
         }
         list.add(0, "Select Insurance Company");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -118,7 +120,7 @@ private FBListApi fbListApi;
                 btn.setEnabled(true);
                 company = companies.get(position - 1);
                 Log.d(TAG, "onItemSelected: saving company: ".concat(GSON.toJson(company)));
-                SharedPrefUtil.saveCompany(company,getApplicationContext());
+                SharedPrefUtil.saveCompany(company, getApplicationContext());
                 getSupportActionBar().setTitle(company.getName());
                 getSupportActionBar().setSubtitle("Connecting to Blockchain");
             }
@@ -130,6 +132,7 @@ private FBListApi fbListApi;
         });
 
     }
+
     private void checkGooglePlay() {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         switch (status) {
@@ -137,27 +140,28 @@ private FBListApi fbListApi;
                 Log.i(TAG, "checkGooglePlay: ConnectionResult.SUCCESS:");
                 break;
             case ConnectionResult.SERVICE_MISSING:
-                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING " );
+                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_MISSING ");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
             case ConnectionResult.SERVICE_UPDATING:
-                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_UPDATING" );
+                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_UPDATING");
                 break;
             case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED" );
+                Log.w(TAG, "checkGooglePlay: ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
             case ConnectionResult.SERVICE_DISABLED:
-                Log.e(TAG, "checkGooglePlay:ConnectionResult.SERVICE_DISABLED" );
+                Log.e(TAG, "checkGooglePlay:ConnectionResult.SERVICE_DISABLED");
                 break;
             case ConnectionResult.SERVICE_INVALID:
-                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_INVALID " );
+                Log.e(TAG, "checkGooglePlay: ConnectionResult.SERVICE_INVALID ");
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this);
                 break;
 
         }
 
     }
+
     private void startSignUp() {
 
         List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -180,7 +184,7 @@ private FBListApi fbListApi;
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
-            Log.w(TAG, "onActivityResult: IdpResponse: ".concat(GSON.toJson(response)) );
+            Log.w(TAG, "onActivityResult: IdpResponse: ".concat(GSON.toJson(response)));
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -199,6 +203,7 @@ private FBListApi fbListApi;
         startActivity(m);
         finish();
     }
+
     private List<InsuranceCompany> companies;
     private ChainListAPI chainListAPI;
 
@@ -219,12 +224,15 @@ private FBListApi fbListApi;
         });
 
     }
+
     private void showError(String message) {
 
     }
+
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
     private void addUserToFirebase(final FirebaseUser u) {
-       final UserDTO user = new UserDTO();
+        final UserDTO user = new UserDTO();
         user.setCompanyId(company.getInsuranceCompanyId());
         user.setDateRegistered(new Date().getTime());
         user.setEmail(u.getEmail());
@@ -243,12 +251,13 @@ private FBListApi fbListApi;
             public void onResponse(Data data) {
                 Log.i(TAG, "onResponse: user added OK: ".concat(user.getEmail()));
                 FirebaseMessaging.getInstance().subscribeToTopic("certificates");
-                Log.e(TAG, "onResponse: user subscribed to topic: certificates" );
+                Log.e(TAG, "onResponse: user subscribed to topic: certificates");
                 FirebaseMessaging.getInstance().subscribeToTopic("burials");
-                Log.e(TAG, "onResponse: user subscribed to topic: burials" );
-                FirebaseMessaging.getInstance().subscribeToTopic("fundTransfers".concat(company.getInsuranceCompanyId()));
-                Log.e(TAG, "onResponse: user subscribed to topic: fundTransfers".concat(company.getInsuranceCompanyId()) );
+                Log.e(TAG, "onResponse: user subscribed to topic: burials");
                 if (company != null) {
+                    FirebaseMessaging.getInstance().subscribeToTopic("fundTransfers".concat(
+                            company.getInsuranceCompanyId()));
+                    Log.e(TAG, "onResponse: user subscribed to topic: fundTransfers".concat(company.getInsuranceCompanyId()));
                     FirebaseMessaging.getInstance().subscribeToTopic("claims".concat(company.getInsuranceCompanyId()));
                     Log.e(TAG, "onResponse: user subscribed to topic: claims" + company.getInsuranceCompanyId());
                 } else {

@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.aftarobot.bank.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.FundsTransfer;
@@ -76,10 +77,13 @@ public class BankMainActivity extends AppCompatActivity {
     }
 
     private void getFundsTransferRequests() {
+        Log.d(TAG, "getFundsTransferRequests: ############################# bank: "
+        .concat(GSON.toJson(bank)));
         showSnackbar("Loading funds transfer requests ...", "wait", "yellow");
         chainListAPI.getFundsTransferRequests(bank.getBankId(), new ChainListAPI.FundsTransferRequestListener() {
             @Override
             public void onResponse(List<FundsTransferRequest> list) {
+                Log.i(TAG, "onResponse: getFundsTransferRequests: " + list.size());
                 Snackbar.make(toolbar, "Funds Transfer Requests found: "
                         .concat(String.valueOf(list.size())), Snackbar.LENGTH_LONG).show();
                 requests = list;
@@ -124,15 +128,23 @@ public class BankMainActivity extends AppCompatActivity {
                 })
                 .show();
     }
+    FBApi fbApi;
     private void sendFunds(final FundsTransferRequest request) {
-        FundsTransfer transfer = new FundsTransfer();
+        Log.d(TAG, "sendFunds: request: ".concat(GSON.toJson(request)));
+        final FundsTransfer transfer = new FundsTransfer();
         transfer.setAmount(request.getAmount());
         transfer.setBank(request.getBank());
+        transfer.setBankId(request.getBankId());
+        transfer.setInsuranceCompanyId(request.getInsuranceCompanyId());
         transfer.setDateTime(sdf.format(new Date()));
         transfer.setFromAccount(request.getFromAccount());
         transfer.setToAccount(request.getToAccount());
-        transfer.setBankId(request.getBankId());
+        transfer.setFundsTransferRequest("resource:com.oneconnect.insurenet.FundsTransferRequest#"
+            .concat(request.getFundsTransferRequestId()));
+        transfer.setInsuranceCompany(request.getInsuranceCompany());
+        transfer.setClaim(request.getClaim());
         transfer.setFundsTransferId(ListUtil.getRandomTransferId());
+        Log.e(TAG, "sendFunds: transfer: ".concat(GSON.toJson(transfer)) );
 
         showSnackbar("Sending the money ...", "ok", "yellow");
         chainDataAPI.transferFunds(transfer, new ChainDataAPI.Listener() {
@@ -141,6 +153,21 @@ public class BankMainActivity extends AppCompatActivity {
                 Log.i(TAG, "onResponse: ");
                 showSnackbar("Funds transferred: "
                         .concat(df.format(request.getAmount())), "ok", "green");
+                fbApi = new FBApi();
+                fbApi.addFundsTransfer(transfer, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.w(TAG, "onResponse: funds transfer added to Firebase: ".concat(GSON.toJson(transfer)) );
+                        requests.remove(request);
+                        setList();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
+
             }
 
             @Override

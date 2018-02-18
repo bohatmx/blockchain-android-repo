@@ -32,7 +32,7 @@ import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
-import com.aftarobot.mlibrary.data.BeneficiaryClaimMessageDTO;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
@@ -356,7 +356,7 @@ public class HomeAffairsActivity extends AppCompatActivity
     private void sendToTokens(List<String> tokens, Claim claim) {
         showSnackbar("Sending messages to beneficiaries: ".concat(String.valueOf(tokens.size())), "OK", "yellow");
         for (String token : tokens) {
-            BeneficiaryClaimMessageDTO message = new BeneficiaryClaimMessageDTO();
+            BeneficiaryClaimMessage message = new BeneficiaryClaimMessage();
             message.setFcmToken(token);
             message.setClaim(claim);
             fbApi.addBeneficiaryClaimMessage(message, new FBApi.FBListener() {

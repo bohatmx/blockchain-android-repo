@@ -34,12 +34,13 @@ import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class NavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    Beneficiary beneficiary, chainBeneficiary;
+    Beneficiary beneficiary;
     Toolbar toolbar;
     List<Policy> policies = new ArrayList<>();
     ChainListAPI chainListAPI;
@@ -57,41 +58,68 @@ public class NavActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         recyclerView = findViewById(R.id.recyclerView);
         txtCount = findViewById(R.id.txtCount);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         beneficiary = SharedPrefUtil.getBeneficiary(this);
-        Log.e(TAG, "onCreate: beneficiary: ".concat(GSON.toJson(beneficiary)) );
-        getSupportActionBar().setTitle("Beneficiary Services");
+        Log.e(TAG, "onCreate: beneficiary: ".concat(GSON.toJson(beneficiary)));
+        if (beneficiary == null) {
+            throw new RuntimeException("Beneficiary from prefs is null");
+        }
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Beneficiary Services");
         getSupportActionBar().setSubtitle(beneficiary.getFullName());
 
         chainListAPI = new ChainListAPI(this);
         setup();
         index = 0;
-        controlPolicies();
+        getChainBeneficiary();
     }
 
+    Beneficiary chainBeneficiary;
     int index;
 
+    private void getChainBeneficiary() {
+        showSnackbar("Loading beneficiary policies", "ok", "yellow");
+        chainListAPI.getBeneficiary(beneficiary.getIdNumber(), new ChainListAPI.BeneficiaryListener() {
+            @Override
+            public void onResponse(List<Beneficiary> beneficiaries) {
+                snackbar.dismiss();
+                if (!beneficiaries.isEmpty()) {
+                    chainBeneficiary = beneficiaries.get(0);
+                    index = 0;
+                    controlPolicies();
+                } else {
+                    showError("Beneficiary not found for policies");
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+
     private void controlPolicies() {
-        if (beneficiary.getPolicies() != null) {
-            if (index < beneficiary.getPolicies().size()) {
-                String[] strings = beneficiary.getPolicies().get(index).split("#");
+        if (chainBeneficiary.getPolicies() != null) {
+            if (index < chainBeneficiary.getPolicies().size()) {
+                String[] strings = chainBeneficiary.getPolicies().get(index).split("#");
                 getPolicy(strings[1]);
             } else {
                 setList();
                 showSnackbar("Found details for ".concat(String.valueOf(
-                        beneficiary.getPolicies().size()).concat(" policies")),"Ok","green");
+                        chainBeneficiary.getPolicies().size()).concat(" policies")), "Ok", "green");
             }
         } else {
             showError("Beneficiary has no policies");
         }
     }
+
     List<PolicyBag> bags;
     PolicySummaryAdapter adapter;
 
     private void setList() {
         bags = new ArrayList<>();
         Set<String> mset = map.keySet();
-        for (String policyNumber: mset) {
+        for (String policyNumber : mset) {
             PolicyBag bag = map.get(policyNumber);
             bags.add(bag);
         }
@@ -106,10 +134,12 @@ public class NavActivity extends AppCompatActivity
         } else {
             adapter.notifyDataSetChanged();
         }
-        txtCount.setText(String.valueOf(beneficiary.getPolicies().size()));
+        txtCount.setText(String.valueOf(chainBeneficiary.getPolicies().size()));
 
     }
+
     Claim claim;
+
     private void checkClaim(final PolicyBag bag) {
         chainListAPI.getClaims(new ChainListAPI.ClaimsListener() {
             @Override
@@ -117,7 +147,7 @@ public class NavActivity extends AppCompatActivity
                 if (!claims.isEmpty()) {
                     boolean isFound = false;
 
-                    for (Claim c: claims) {
+                    for (Claim c : claims) {
                         String[] strings = c.getPolicy().split("#");
                         String policyNum = strings[1];
                         if (policyNum.equalsIgnoreCase(bag.getPolicy().getPolicyNumber())) {
@@ -128,11 +158,11 @@ public class NavActivity extends AppCompatActivity
                     if (isFound) {
                         onClaimFound(claim);
                     } else {
-                        showSnackbar("No Claims found for ".concat(bag.getPolicy().getPolicyNumber()),"close", "cyan");
+                        showSnackbar("No Claims found for ".concat(bag.getPolicy().getPolicyNumber()), "close", "cyan");
                     }
 
                 } else {
-                    showSnackbar("No Claims found on the Blockhain","close", "cyan");
+                    showSnackbar("No Claims found on the Blockhain", "close", "cyan");
                 }
             }
 
@@ -142,11 +172,12 @@ public class NavActivity extends AppCompatActivity
             }
         });
     }
+
     private void onClaimFound(Claim claim) {
         AlertDialog.Builder x = new AlertDialog.Builder(this);
         x.setTitle("Claim Found")
                 .setMessage("A claim against this Policy has been registered.\n\n"
-                .concat(claim.getClaimId()).concat("\n").concat(claim.getDateTime()))
+                        .concat(claim.getClaimId()).concat("\n").concat(claim.getDateTime()))
                 .setPositiveButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -154,17 +185,18 @@ public class NavActivity extends AppCompatActivity
                     }
                 })
                 .show();
-        showSnackbar("Claim found: ".concat(claim.getClaimId()),"OK","green");
+        showSnackbar("Claim found: ".concat(claim.getClaimId()), "OK", "green");
 
     }
+
     private void getPolicy(String policyNumber) {
-        showSnackbar("Getting policy details: ".concat(policyNumber), "OK","yellow");
+        showSnackbar("Getting policy details: ".concat(policyNumber), "OK", "yellow");
         chainListAPI.getPolicy(policyNumber, new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> list) {
                 if (!list.isEmpty()) {
                     policies.add(list.get(0));
-                    Log.w(TAG, "onResponse: policy found: ".concat(GSON.toJson(list.get(0))) );
+                    Log.w(TAG, "onResponse: policy found: ".concat(GSON.toJson(list.get(0))));
                     getClientAndCompany(list.get(0));
                 }
 
@@ -176,6 +208,7 @@ public class NavActivity extends AppCompatActivity
             }
         });
     }
+
     private void getClientAndCompany(final Policy policy) {
         String[] strings = policy.getInsuranceCompany().split("#");
         final String companyID = strings[1];
@@ -187,15 +220,15 @@ public class NavActivity extends AppCompatActivity
             public void onResponse(List<Client> clients) {
                 if (!clients.isEmpty()) {
                     final Client client = clients.get(0);
-                    Log.w(TAG, "onResponse: client found: ".concat(GSON.toJson(client)) );
+                    Log.w(TAG, "onResponse: client found: ".concat(GSON.toJson(client)));
                     chainListAPI.getInsuranceCompany(companyID, new ChainListAPI.CompanyListener() {
                         @Override
                         public void onResponse(List<InsuranceCompany> companies) {
                             if (!companies.isEmpty()) {
                                 InsuranceCompany x = companies.get(0);
-                                Log.e(TAG, "onResponse: company found: ".concat(GSON.toJson(x)) );
-                                PolicyBag bag = new PolicyBag(policy,client,x);
-                                map.put(policy.getPolicyNumber(),bag);
+                                Log.e(TAG, "onResponse: company found: ".concat(GSON.toJson(x)));
+                                PolicyBag bag = new PolicyBag(policy, client, x);
+                                map.put(policy.getPolicyNumber(), bag);
                             }
                             index++;
                             controlPolicies();
@@ -218,7 +251,8 @@ public class NavActivity extends AppCompatActivity
         });
 
     }
-    private HashMap<String,PolicyBag> map = new HashMap<>();
+
+    private HashMap<String, PolicyBag> map = new HashMap<>();
 
     private void setup() {
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -296,6 +330,7 @@ public class NavActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     Snackbar snackbar;
 
     private void showSnackbar(String message, String action, String color) {
@@ -309,6 +344,7 @@ public class NavActivity extends AppCompatActivity
         });
         snackbar.show();
     }
+
     private void showError(String message) {
         snackbar = Snackbar.make(toolbar, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.parseColor("red"));

@@ -30,12 +30,16 @@ import android.widget.Toast;
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.api.FBListApi;
+import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.BeneficiaryFunds;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
+import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.FundsTransfer;
-import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.MyDialogFragment;
@@ -45,7 +49,6 @@ import com.google.gson.GsonBuilder;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +68,8 @@ public class CompanyNavActivity extends AppCompatActivity
     private Claim claim;
     private MyDialogFragment dialogFragment;
     private FragmentManager fm;
+    FBListApi fbListApi;
+    FBApi fbApi;
 
     public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm");
     public static final String TAG = CompanyNavActivity.class.getSimpleName();
@@ -81,6 +86,8 @@ public class CompanyNavActivity extends AppCompatActivity
         certificate = (DeathCertificate) getIntent().getSerializableExtra("cert");
         burial = (Burial) getIntent().getSerializableExtra("burial");
         claim = (Claim) getIntent().getSerializableExtra("claim");
+        fbListApi = new FBListApi();
+        fbApi = new FBApi();
 
 
         setup();
@@ -506,38 +513,117 @@ public class CompanyNavActivity extends AppCompatActivity
             FundsTransfer data = (FundsTransfer)intent.getSerializableExtra("data");
             Log.i(TAG, "FundsTransferReceiver onReceive: "
                     .concat(GSON.toJson(data)));
-            showRequest(data);
+            showTransfer(data);
         }
     }
-    private void showRequest(FundsTransfer transfer) {
+    private void showTransfer(final FundsTransfer transfer) {
 
-        showSnack("Funds Transfer arrived: "
-                .concat(transfer.getFundsTransferId()), "ok", "yellow");
-
-        AlertDialog.Builder x = new AlertDialog.Builder(this);
-        x.setTitle("Funds Transfer Arrived")
-                .setMessage("A Funds Transfer message has arrived from the Bank. " +
-                        "Do you want to notify the Beneficiary? \n\n".concat(transfer.getFundsTransferId()
-                        ))
-                .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+        Snackbar.make(toolbar,"Funds Transfer arrived: "
+                .concat(transfer.getFundsTransferId()), Snackbar.LENGTH_INDEFINITE)
+                .setActionTextColor(Color.parseColor("green"))
+                .setAction("Notify", new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        underConstruction();
+                    public void onClick(View v) {
+                        notifyBeneficiary(transfer);
                     }
-                })
-                .setNegativeButton("no", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                })
-                .show();
+                }).show();
 
 
 
     }
-    private void underConstruction() {
-        Toast.makeText(this, "This feature still under construction", Toast.LENGTH_SHORT).show();
+    private FundsTransfer fundsTransfer;
+    private Policy policy;
+
+    private void notifyBeneficiary(final FundsTransfer transfer) {
+        fundsTransfer = transfer;
+        final String claimId = transfer.getClaim().split("#")[1];
+        showSnack("Finding claim: ".concat(claimId), "ok", "yellow");
+        fbListApi = new FBListApi();
+        fbApi = new FBApi();
+        chainListAPI.getClaim(claimId, new ChainListAPI.ClaimsListener() {
+            @Override
+            public void onResponse(List<Claim> claims) {
+                Log.e(TAG, "getClaim onResponse: ####################### claimId ".concat(claimId) );
+                if (!claims.isEmpty()) {
+                    Claim c = claims.get(0);
+                    Log.d(TAG, "onResponse: found claim: ".concat(GSON.toJson(c)));
+                    final String policyNumber = c.getPolicyNumber();
+                    showSnack("Finding policy: ".concat(policyNumber), "ok", "yellow");
+                    chainListAPI.getPolicy(policyNumber, new ChainListAPI.PolicyListener() {
+                        @Override
+                        public void onResponse(List<Policy> policies) {
+                            if (!policies.isEmpty()) {
+                                policy = policies.get(0);
+                                if (!policy.getBeneficiaries().isEmpty()) {
+                                    showSnack("Sending funds message to "
+                                            .concat(String.valueOf(policy.getBeneficiaries().size())), "ok", "green");
+                                    index = 0;
+                                    controlBennies();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            showError(message);
+                        }
+                    });
+                } else {
+                    showError("### Claim not found: ".concat(claimId));
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+    int index;
+    private void controlBennies() {
+        if (index < policy.getBeneficiaries().size()) {
+            final String idNumber = policy.getBeneficiaries().get(index).split("#")[1];
+            sendBeneficiaryMessage(idNumber);
+        } else {
+            Log.i(TAG, "controlBennies: all messages sent OK");
+        }
+    }
+    private void sendBeneficiaryMessage(String idNumber) {
+        fbListApi.getBeneficiaryByIDnumber(idNumber,
+                new FBListApi.BeneficiaryListener() {
+                    @Override
+                    public void onResponse(List<Beneficiary> beneficiaries) {
+
+                        if (!beneficiaries.isEmpty()) {
+                            for (final Beneficiary ben: beneficiaries) {
+                                BeneficiaryFunds funds = new BeneficiaryFunds();
+                                funds.setIdNumber(ben.getIdNumber());
+                                funds.setFcmToken(ben.getFcmToken());
+                                funds.setFundsTransfer(fundsTransfer);
+                                fbApi.addBeneficiaryFunds(funds, new FBApi.FBListener() {
+                                    @Override
+                                    public void onResponse(Data data) {
+                                        showSnack("Funds message sent to: "
+                                                .concat(ben.getFullName()), "ok","green" );
+                                        Log.i(TAG, "addBeneficiaryFunds onResponse: funds added to Firebase");
+                                        index++;
+                                        controlBennies();
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        showError(message);
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
     }
 
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

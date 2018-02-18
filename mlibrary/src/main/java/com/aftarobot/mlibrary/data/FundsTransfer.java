@@ -4,8 +4,10 @@ import java.io.Serializable;
 
 public class FundsTransfer implements Data, Serializable {
     private String fundsTransferId, fundsTransferRequest, fromAccount, toAccount,
-            insuranceCompany, bank, bankId, insuranceCompanyId;
+            insuranceCompany, bank, claim;
     private String dateTime;
+    private String bankId;
+    private String insuranceCompanyId;
     private double amount;
 
     public String getBankId() {
@@ -22,6 +24,14 @@ public class FundsTransfer implements Data, Serializable {
 
     public void setInsuranceCompanyId(String insuranceCompanyId) {
         this.insuranceCompanyId = insuranceCompanyId;
+    }
+
+    public String getClaim() {
+        return claim;
+    }
+
+    public void setClaim(String claim) {
+        this.claim = claim;
     }
 
     public String getFundsTransferId() {
