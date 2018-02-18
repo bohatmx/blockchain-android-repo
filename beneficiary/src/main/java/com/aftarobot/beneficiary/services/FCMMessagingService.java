@@ -11,6 +11,8 @@ import android.util.Log;
 
 import com.aftarobot.beneficiary.NotifActivity;
 import com.aftarobot.beneficiary.R;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
+import com.aftarobot.mlibrary.data.BeneficiaryFunds;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
@@ -36,9 +38,8 @@ public class FCMMessagingService extends FirebaseMessagingService {
     public static final String TAG = FCMMessagingService.class.getSimpleName();
     public static final String
             BROADCAST_CERT = "com.aftarobot.BROADCAST_CERT",
-            BROADCAST_USER = "com.aftarobot.BROADCAST_USER",
-            BROADCAST_CLAIM = "com.aftarobot.BROADCAST_CLAIM",
-            BROADCAST_POLICY = "com.aftarobot.BROADCAST_POLICY",
+            BROADCAST_BENEFICIARY_CLAIM = "com.aftarobot.BROADCAST_BENEFICIARY_CLAIM",
+            BROADCAST_BENEFICIARY_FUNDS = "com.aftarobot.BROADCAST_BENEFICIARY_FUNDS",
             BROADCAST_BURIAL = "com.aftarobot.BROADCAST_BURIAL";
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -49,17 +50,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 Log.d(TAG, "onMessageReceived: name: " + s + " value: " + map.get(s));
             }
             String type = map.get("messageType");
-            if (type.equalsIgnoreCase("USER")) {
-                UserDTO user = GSON.fromJson(map.get("json"), UserDTO.class);
-                broadcast(BROADCAST_USER, user);
-                sendNotification(type, "Welcome to Blockchain", map.get("json"));
-            }
-            if (type.equalsIgnoreCase("CLAIM")) {
-                Claim claim = GSON.fromJson(map.get("json"), Claim.class);
-                broadcast(BROADCAST_CLAIM, claim);
-                sendNotification(type, "Claim Registered", map.get("json"));
 
-            }
             if (type.equalsIgnoreCase("CERT")) {
                 DeathCertificate dc = GSON.fromJson(map.get("json"), DeathCertificate.class);
                 broadcast(BROADCAST_CERT, dc);
@@ -70,10 +61,15 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_BURIAL, burial);
                 sendNotification(type, "Burial Registered", map.get("json"));
             }
-            if (type.equalsIgnoreCase("POLICY")) {
-                Policy pol = GSON.fromJson(map.get("json"), Policy.class);
-                broadcast(BROADCAST_USER, pol);
-                sendNotification(type, "Policy Registered", map.get("json"));
+            if (type.equalsIgnoreCase("BENEFICIARY_CLAIM")) {
+                BeneficiaryClaimMessage pol = GSON.fromJson(map.get("json"), BeneficiaryClaimMessage.class);
+                broadcast(BROADCAST_BENEFICIARY_CLAIM, pol);
+                sendNotification(type, "Beneficiary Claim", map.get("json"));
+            }
+            if (type.equalsIgnoreCase("BENEFICIARY_FUNDS")) {
+                BeneficiaryFunds pol = GSON.fromJson(map.get("json"), BeneficiaryFunds.class);
+                broadcast(BROADCAST_BENEFICIARY_FUNDS, pol);
+                sendNotification(type, "Beneficiary Funds", map.get("json"));
             }
         }
     }
@@ -86,11 +82,11 @@ public class FCMMessagingService extends FirebaseMessagingService {
         if (data instanceof Burial) {
             m.putExtra("data", (Burial)data);
         }
-        if (data instanceof Claim) {
-            m.putExtra("data", (Claim)data);
+        if (data instanceof BeneficiaryClaimMessage) {
+            m.putExtra("data", (BeneficiaryClaimMessage)data);
         }
-        if (data instanceof Policy) {
-            m.putExtra("data", (Policy)data);
+        if (data instanceof BeneficiaryFunds) {
+            m.putExtra("data", (BeneficiaryFunds)data);
         }
         LocalBroadcastManager lm = LocalBroadcastManager.getInstance(getApplicationContext());
         lm.sendBroadcast(m);

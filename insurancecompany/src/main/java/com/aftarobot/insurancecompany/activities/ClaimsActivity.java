@@ -1,11 +1,9 @@
 package com.aftarobot.insurancecompany.activities;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -34,11 +32,8 @@ import com.aftarobot.insurancecompany.services.NotifyBeneficiaryFunds;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
-import com.aftarobot.mlibrary.api.FBListApi;
 import com.aftarobot.mlibrary.data.Bank;
 import com.aftarobot.mlibrary.data.Beneficiary;
-import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
-import com.aftarobot.mlibrary.data.BeneficiaryFunds;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.ClaimApproval;
@@ -54,6 +49,7 @@ import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -227,8 +223,8 @@ public class ClaimsActivity extends AppCompatActivity {
                 Log.i(TAG, "onResponse: claim submission done. Yay!");
 
                 if (approved) {
-                    showSnackbar("Claim Approval processed successfully", "ok", "green");
-                    NotifyBeneficiaryClaim.notifyClaimBeneficiary(getApplicationContext(), claim, new NotifyBeneficiaryClaim.NotifyListener() {
+                    showSnackbar("Claim Approval processed. Starting beneficiary notification", "ok", "yellow");
+                    NotifyBeneficiaryClaim.notify(getApplicationContext(), claim, new NotifyBeneficiaryClaim.NotifyListener() {
                         @Override
                         public void onNotified() {
                             requestFundsTransfer();
@@ -343,7 +339,7 @@ public class ClaimsActivity extends AppCompatActivity {
         } else {
             Log.w(TAG, "addFundsTransferRequest: bankId: ".concat(fundsTransferRequest.getBankId()));
         }
-        showSnackbar("Requesting funds transfers", "ok", "yellow");
+        showSnackbar("Requesting funds transfers", "ok", "white");
         chainDataAPI.requestFundsTransfer(fundsTransferRequest, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
@@ -580,19 +576,20 @@ public class ClaimsActivity extends AppCompatActivity {
         }
     }
 
+    public static final DecimalFormat fmt = new DecimalFormat("###,###,###,###,###,###,###,###,###,###,##0.00");
     private void showTransfer(final FundsTransfer transfer) {
 
         Snackbar.make(toolbar, "Funds Transfer arrived: "
-                .concat(transfer.getFundsTransferId()), Snackbar.LENGTH_INDEFINITE)
+                .concat(fmt.format(transfer.getAmount())), Snackbar.LENGTH_INDEFINITE)
                 .setActionTextColor(Color.parseColor("green"))
-                .setAction("Notify", new View.OnClickListener() {
+                .setAction("Notify Beneficiary", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        NotifyBeneficiaryFunds.notifyBeneficiaryFunds(getApplicationContext(), transfer, new NotifyBeneficiaryFunds.NotifyListener() {
+                        NotifyBeneficiaryFunds.notify(getApplicationContext(), transfer, new NotifyBeneficiaryFunds.NotifyListener() {
                             @Override
                             public void onNotified() {
                                 Log.e(TAG, "onNotified: beneficiary funds notified" );
-                                showSnackbar("Beeneficiary funds transfer notified", "ok", "green");
+                                showSnackbar("Beneficiary notified on funds transferred", "ok", "green");
                             }
 
                             @Override

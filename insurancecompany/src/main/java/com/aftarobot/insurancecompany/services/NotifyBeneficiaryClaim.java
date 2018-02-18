@@ -14,17 +14,18 @@ import com.aftarobot.mlibrary.data.Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Date;
 import java.util.List;
 
 public class NotifyBeneficiaryClaim {
     public static final String TAG = NotifyBeneficiaryClaim.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    static Policy policy;
-    static NotifyListener mListener;
-    static Claim claim;
-    static FBApi fbApi;
-    static FBListApi fbListApi;
-    static ChainListAPI chainListAPI;
+    private static Policy policy;
+    private static NotifyListener mListener;
+    private static Claim claim;
+    private static FBApi fbApi;
+    private static FBListApi fbListApi;
+    private static ChainListAPI chainListAPI;
 
     public interface NotifyListener {
         void onNotified();
@@ -34,23 +35,23 @@ public class NotifyBeneficiaryClaim {
         void onError(String message);
     }
 
-    static int index;
+    private static int index;
 
-    public static void notifyClaimBeneficiary(Context context, final Claim c, final NotifyListener listener) {
+    public static void notify(Context context, final Claim c, final NotifyListener listener) {
         claim = c;
         mListener = listener;
         fbListApi = new FBListApi();
         fbApi = new FBApi();
         chainListAPI = new ChainListAPI(context);
+        listener.onProgress("Loading Claim details ...");
         chainListAPI.getClaim(c.getClaimId(), new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> claims) {
-                Log.e(TAG, "getClaim onResponse: ####################### claimId ".concat(claim.getClaimId()));
                 if (!claims.isEmpty()) {
                     Claim c = claims.get(0);
                     Log.d(TAG, "onResponse: found claim: ".concat(GSON.toJson(c)));
                     final String policyNumber = c.getPolicyNumber();
-                    listener.onProgress("Finding policy: ".concat(policyNumber));
+                    listener.onProgress("Finding required policy: ".concat(policyNumber));
                     chainListAPI.getPolicy(policyNumber, new ChainListAPI.PolicyListener() {
                         @Override
                         public void onResponse(List<Policy> policies) {
@@ -102,15 +103,17 @@ public class NotifyBeneficiaryClaim {
 
                         if (!beneficiaries.isEmpty()) {
                             for (final Beneficiary ben : beneficiaries) {
-                                BeneficiaryClaimMessage funds = new BeneficiaryClaimMessage();
-                                funds.setFcmToken(ben.getFcmToken());
-                                funds.setClaim(claim);
-                                fbApi.addBeneficiaryClaimMessage(funds, new FBApi.FBListener() {
+                                BeneficiaryClaimMessage claimMessage = new BeneficiaryClaimMessage();
+                                claimMessage.setFcmToken(ben.getFcmToken());
+                                claimMessage.setDate(new Date().getTime());
+                                claimMessage.setClaim(claim);
+                                Log.d(TAG, "onResponse: BeneficiaryClaimMessage ".concat(GSON.toJson(claimMessage)));
+                                fbApi.addBeneficiaryClaimMessage(claimMessage, new FBApi.FBListener() {
                                     @Override
                                     public void onResponse(Data data) {
                                         mListener.onProgress("Claim message sent to: "
                                                 .concat(ben.getFullName()));
-                                        Log.i(TAG, "addBeneficiaryClaimMessage onResponse: funds added to Firebase");
+                                        Log.i(TAG, "addBeneficiaryClaimMessage onResponse: claimMessage added to Firebase");
                                         index++;
                                         controlClaimBennies();
                                     }

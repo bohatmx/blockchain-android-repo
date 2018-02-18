@@ -16,6 +16,7 @@ import com.aftarobot.mlibrary.data.Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Date;
 import java.util.List;
 
 public class NotifyBeneficiaryFunds {
@@ -38,7 +39,7 @@ public class NotifyBeneficiaryFunds {
 
     private static int index;
 
-    public static void notifyBeneficiaryFunds(Context context, final FundsTransfer transfer, final NotifyListener listener) {
+    public static void notify(Context context, final FundsTransfer transfer, final NotifyListener listener) {
         fundsTransfer = transfer;
         mListener = listener;
         chainListAPI = new ChainListAPI(context);
@@ -108,6 +109,7 @@ public class NotifyBeneficiaryFunds {
                                 BeneficiaryFunds funds = new BeneficiaryFunds();
                                 funds.setIdNumber(ben.getIdNumber());
                                 funds.setFcmToken(ben.getFcmToken());
+                                funds.setDate(new Date().getTime());
                                 funds.setFundsTransfer(fundsTransfer);
                                 fbApi.addBeneficiaryFunds(funds, new FBApi.FBListener() {
                                     @Override

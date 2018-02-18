@@ -1,11 +1,16 @@
 package com.aftarobot.beneficiary;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -20,10 +25,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.aftarobot.beneficiary.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Beneficiary;
+import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
+import com.aftarobot.mlibrary.data.BeneficiaryFunds;
+import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
+import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.util.PolicyBag;
@@ -31,6 +41,7 @@ import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +82,7 @@ public class NavActivity extends AppCompatActivity
         setup();
         index = 0;
         getChainBeneficiary();
+        listen();
     }
 
     Beneficiary chainBeneficiary;
@@ -356,5 +368,81 @@ public class NavActivity extends AppCompatActivity
         });
         snackbar.show();
     }
+
+    private void listen() {
+        IntentFilter claim = new IntentFilter(FCMMessagingService.BROADCAST_BENEFICIARY_CLAIM);
+        IntentFilter funds = new IntentFilter(FCMMessagingService.BROADCAST_BENEFICIARY_FUNDS);
+        IntentFilter burial = new IntentFilter(FCMMessagingService.BROADCAST_BURIAL);
+        IntentFilter cert = new IntentFilter(FCMMessagingService.BROADCAST_CERT);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(new ClaimReceiver(), claim);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new FundsReceiver(), funds);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new Certceiver(), cert);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new BurialReceiver(), burial);
+    }
+
+    private class ClaimReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            BeneficiaryClaimMessage msg = (BeneficiaryClaimMessage)intent.getSerializableExtra("data");
+            showClaim(msg);
+
+
+        }
+    }
+    private void showClaim(BeneficiaryClaimMessage msg) {
+        String title = "A claim was approved: ".concat(msg.getStringDate());
+        showSnackbar(title, "ok", "green");
+
+    }
+    private class FundsReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            BeneficiaryFunds msg = (BeneficiaryFunds)intent.getSerializableExtra("data");
+            showFunds(msg);
+
+
+        }
+    }
+    private void showFunds(BeneficiaryFunds msg) {
+        String title = "Funds were transferred to your account: ".concat(msg.getStringDate());
+        showSnackbar(title, "ok", "green");
+
+    }
+    /////////////////////////////////////
+    private class Certceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            DeathCertificate msg = (DeathCertificate) intent.getSerializableExtra("data");
+            showCert(msg);
+
+
+        }
+    }
+    private void showCert(DeathCertificate msg) {
+        String title = "A Death Certicate has been issued: ".concat(msg.getIdNumber());
+        showSnackbar(title, "ok", "grey");
+
+    }
+    ///////////////////////////////
+    private class BurialReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Burial msg = (Burial) intent.getSerializableExtra("data");
+            showBurial(msg);
+
+
+        }
+    }
+    private void showBurial(Burial msg) {
+        String title = "The Burial was registered: ".concat(msg.getIdNumber());
+        showSnackbar(title, "ok", "grey");
+
+    }
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
 }
