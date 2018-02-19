@@ -66,7 +66,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     ChainListAPI chainListAPI;
     TextView txtCount;
     RecyclerView recyclerView;
-    ImageButton icon;
+    ImageView icon;
 
     public static final String TAG = BeneficiaryNavActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -81,7 +81,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         icon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                logOut();
+
             }
         });
         recyclerView = findViewById(R.id.recyclerView);
@@ -104,16 +104,6 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         getChainBeneficiary();
         listen();
     }
-
-//
-//    private void logOut() {
-//        FirebaseAuth.getInstance().signOut();
-//        SharedPrefUtil.saveBeneficiary(null, this);
-//        Intent m = new Intent(this, LoginActivity.class);
-//        startActivity(m);
-//        finish();
-//    }
-
     Beneficiary chainBeneficiary;
     int index;
 
