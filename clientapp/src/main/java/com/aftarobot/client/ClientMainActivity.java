@@ -118,7 +118,7 @@ public class ClientMainActivity extends AppCompatActivity
     private void startClaim(final Policy policy) {
         showSnackbar("Starting claims process ...", "ok", "yellow");
         Claim claim = new Claim();
-        claim.setClaimId(ListUtil.getRandomClaimId());
+        claim.setClaimId(policy.getPolicyNumber());
         claim.setAmount(policy.getAmount());
         claim.setApproved(false);
         claim.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));

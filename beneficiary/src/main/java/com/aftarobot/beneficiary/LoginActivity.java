@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -62,11 +63,14 @@ public class LoginActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getCurrentUser() != null) {
-            Log.i(TAG, "onCreate: user already authenticated by Firebase. cool!");
-            startMain();
-            return;
+        if (SharedPrefUtil.getBeneficiary(this) != null) {
+            if (mAuth.getCurrentUser() != null && SharedPrefUtil.getBeneficiary(this) != null) {
+                Log.i(TAG, "onCreate: user already authenticated by Firebase. cool!");
+                startMain();
+                return;
+            }
         }
+
         fbApi = new FBApi();
         fbListApi = new FBListApi();
 
@@ -138,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
                         fbApi.updateBeneficiaryToken(beneficiary, new FBApi.FBListener() {
                             @Override
                             public void onResponse(Data data) {
+                                FirebaseMessaging.getInstance().subscribeToTopic("certificates");
                                 Log.i(TAG, "updateBeneficiaryFCMToken onResponse: ######### Yebo! fcmToken done... moving on ...".concat(GSON.toJson(beneficiary)));
                             }
 

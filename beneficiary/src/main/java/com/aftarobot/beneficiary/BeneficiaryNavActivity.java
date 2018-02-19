@@ -23,10 +23,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.aftarobot.beneficiary.services.FCMMessagingService;
+import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
+import com.aftarobot.mlibrary.api.FBApi;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.BeneficiaryFunds;
@@ -34,16 +38,20 @@ import com.aftarobot.mlibrary.data.BeneficiaryThanks;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
+import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.util.ListUtil;
 import com.aftarobot.mlibrary.util.PolicyBag;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +66,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     ChainListAPI chainListAPI;
     TextView txtCount;
     RecyclerView recyclerView;
+    ImageButton icon;
 
     public static final String TAG = BeneficiaryNavActivity.class.getSimpleName();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -68,13 +77,23 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         setContentView(R.layout.activity_nav);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        icon = findViewById(R.id.icon1);
+        icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                logOut();
+            }
+        });
         recyclerView = findViewById(R.id.recyclerView);
         txtCount = findViewById(R.id.txtCount);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         beneficiary = SharedPrefUtil.getBeneficiary(this);
         Log.e(TAG, "onCreate: beneficiary: ".concat(GSON.toJson(beneficiary)));
         if (beneficiary == null) {
-            throw new RuntimeException("Beneficiary from prefs is null");
+            Intent m = new Intent(this,LoginActivity.class);
+            startActivity(m);
+            finish();
+            return;
         }
         Objects.requireNonNull(getSupportActionBar()).setTitle("Beneficiary Services");
         getSupportActionBar().setSubtitle(beneficiary.getFullName());
@@ -85,6 +104,15 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         getChainBeneficiary();
         listen();
     }
+
+//
+//    private void logOut() {
+//        FirebaseAuth.getInstance().signOut();
+//        SharedPrefUtil.saveBeneficiary(null, this);
+//        Intent m = new Intent(this, LoginActivity.class);
+//        startActivity(m);
+//        finish();
+//    }
 
     Beneficiary chainBeneficiary;
     int index;
@@ -430,11 +458,115 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     }
 
     private void showCert(DeathCertificate msg) {
+        //check if this is your cert -
+        chainListAPI.getClient(msg.getIdNumber(), new ChainListAPI.ClientListener() {
+            @Override
+            public void onResponse(List<Client> clients) {
+                if (!clients.isEmpty()) {
+                    Client c = clients.get(0);
+                    processPolicies(c);
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+
+            }
+        });
         String title = "A Death Certicate has been issued: ".concat(msg.getIdNumber());
         showSnackbar(title, "ok", "grey");
 
     }
 
+    private void processPolicies(Client client) {
+        if (client.getPolicies() != null && !client.getPolicies().isEmpty()) {
+            String policyNumber = client.getPolicies().get(0).split("#")[1];
+            chainListAPI.getPolicy(policyNumber, new ChainListAPI.PolicyListener() {
+                @Override
+                public void onResponse(List<Policy> policies) {
+                    if (!policies.isEmpty()) {
+                        Policy policy = policies.get(0);
+                        boolean isFound = false;
+                        for (String s: policy.getBeneficiaries()) {
+                            if (beneficiary.getIdNumber().equalsIgnoreCase(s.split("#")[1])) {
+                                isFound = true;
+                                break;
+                            }
+                        }
+                        if (isFound) {
+                            makeClaim(policy);
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(String message) {
+
+                }
+            });
+        }
+    }
+    Policy policy;
+    private void makeClaim(final Policy policy) {
+        this.policy = policy;
+        AlertDialog.Builder x = new AlertDialog.Builder(this);
+        x.setTitle("Make a Claim")
+                .setMessage(("A death certificate has been issued and a policy including you " +
+                        "as a Beneficiary is on record. Do you want to register a claim?\n\n")
+                .concat("Policy Number: ".concat(policy.getPolicyNumber())))
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        registerClaim(policy);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+
+    }
+    private void registerClaim(Policy policy) {
+        showSnackbar("Registering claim on the blockchain", "ok", "yellow");
+        claim = new Claim();
+        String[] strings = policy.getInsuranceCompany().split("#");
+        claim.setCompanyId(strings[1]);
+        claim.setDateTime(sdf.format(new Date()));
+        claim.setClaimId(policy.getPolicyNumber());
+        claim.setAmount(policy.getAmount());
+        claim.setApproved(false);
+        claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
+        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
+        claim.setPolicyNumber(policy.getPolicyNumber());
+        ChainDataAPI chainDataAPI = new ChainDataAPI(this);
+        final FBApi fbApi = new FBApi();
+        chainDataAPI.submitClaim(claim, new ChainDataAPI.Listener() {
+            @Override
+            public void onResponse(Data data) {
+                final Claim x = (Claim) data;
+                showSnackbar("Claim registered: ".concat(x.getClaimId()), "OK", "green");
+                fbApi.addClaim(x, new FBApi.FBListener() {
+                    @Override
+                    public void onResponse(Data data) {
+                        Log.e(TAG, "onResponse: claim added to FB".concat(GSON.toJson(x)));
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showError(message);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
     private class BurialReceiver extends BroadcastReceiver {
 
         @Override

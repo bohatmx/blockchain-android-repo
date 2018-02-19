@@ -295,7 +295,7 @@ public class PolicyActivity extends AppCompatActivity {
         String[] strings = policy.getInsuranceCompany().split("#");
         claim.setCompanyId(strings[1]);
         claim.setDateTime(sdf.format(new Date()));
-        claim.setClaimId(ListUtil.getRandomClaimId());
+        claim.setClaimId(policy.getPolicyNumber());
         claim.setAmount(policy.getAmount());
         claim.setApproved(false);
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));

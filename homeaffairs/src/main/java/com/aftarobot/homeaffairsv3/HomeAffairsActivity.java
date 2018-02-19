@@ -1,4 +1,4 @@
-package com.aftarobot.homeaffairs;
+package com.aftarobot.homeaffairsv3;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,19 +26,15 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aftarobot.homeaffairs.services.FCMMessagingService;
+import com.aftarobot.homeaffairsv3.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
-import com.aftarobot.mlibrary.api.FBListApi;
-import com.aftarobot.mlibrary.data.Beneficiary;
-import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.Claim;
-import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
-import com.aftarobot.mlibrary.data.Policy;
+import com.aftarobot.mlibrary.util.ListUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -47,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class HomeAffairsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -207,6 +202,7 @@ public class HomeAffairsActivity extends AppCompatActivity
                     @Override
                     public void onResponse(Data data) {
                         Log.e(TAG, "onResponse: certificate added to Firebase: ".concat(chainCert.getIdNumber()));
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -228,6 +224,9 @@ public class HomeAffairsActivity extends AppCompatActivity
                 showError(message);
             }
         });
+    }
+    private void findPolicyAndSendMessage(DeathCertificate dc) {
+
     }
     @Override
     public void onBackPressed() {

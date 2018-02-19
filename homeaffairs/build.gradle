@@ -6,7 +6,7 @@ android {
 
 
     defaultConfig {
-        applicationId "com.aftarobot.homeaffairs"
+        applicationId "com.aftarobot.homeaffairsv3"
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1

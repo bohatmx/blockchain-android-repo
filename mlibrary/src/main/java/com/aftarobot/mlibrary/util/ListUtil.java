@@ -85,18 +85,6 @@ public class ListUtil {
 
         return sb.toString();
     }
-    public static String getRandomCompanyId() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSCO-");
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-        sb.append(random.nextInt(9));
-
-        Log.d("ListUtil", "getRandomCompanyId: ".concat(sb.toString()));
-
-        return sb.toString();
-    }
     public static String getRandomPolicyNumber() {
         StringBuilder sb = new StringBuilder();
         sb.append("P");
@@ -120,8 +108,7 @@ public class ListUtil {
         return sb.toString();
     }
     public static String getRandomDescription() {
-        int i = random.nextInt(types.length - 1);
-        return types[i];
+        return "Life Insurance Cover";
     }
     public static String getRandomClaimId() {
 

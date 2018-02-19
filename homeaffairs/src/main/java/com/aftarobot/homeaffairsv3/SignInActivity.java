@@ -1,4 +1,4 @@
-package com.aftarobot.homeaffairs;
+package com.aftarobot.homeaffairsv3;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -74,21 +74,6 @@ public class SignInActivity extends AppCompatActivity {
     private void setFields() {
 
     }
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Log.i(TAG, "This device is not supported.");
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 675;
     private void checkGooglePlay() {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         switch (status) {

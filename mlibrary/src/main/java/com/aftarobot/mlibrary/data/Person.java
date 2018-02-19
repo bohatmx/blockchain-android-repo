@@ -20,6 +20,9 @@ public abstract class Person {
     public String getFullName() {
         return firstName.concat(" ").concat(lastName);
     }
+    public void setFullName() {
+
+    }
     public void setClass(String $class) { this.$class = $class; }
 
     public String getEmail() { return this.email; }
@@ -49,4 +52,5 @@ public abstract class Person {
     public String getCellPhone() { return this.cellPhone; }
 
     public void setCellPhone(String cellPhone) { this.cellPhone = cellPhone; }
+
 }

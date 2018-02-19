@@ -1,4 +1,4 @@
-package com.aftarobot.homeaffairs;
+package com.aftarobot.homeaffairsv3;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;

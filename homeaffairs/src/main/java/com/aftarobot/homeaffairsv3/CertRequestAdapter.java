@@ -1,4 +1,4 @@
-package com.aftarobot.homeaffairs;
+package com.aftarobot.homeaffairsv3;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;

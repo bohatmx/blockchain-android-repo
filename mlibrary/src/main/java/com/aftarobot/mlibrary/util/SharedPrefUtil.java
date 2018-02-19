@@ -25,7 +25,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("token", token);
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveCloudMsgToken: " + token);
     }
 
@@ -43,7 +43,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("bank", GSON.toJson(user));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveBank: " + user.getName());
     }
 
@@ -61,7 +61,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("user", GSON.toJson(user));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveUser: " + user.getEmail());
     }
 
@@ -79,7 +79,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("company", GSON.toJson(company));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveCompany: " + company.getName());
     }
 
@@ -97,7 +97,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("hospital", GSON.toJson(hospital));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveHospital: " + hospital.getName());
     }
 
@@ -115,7 +115,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("parlour", GSON.toJson(parlour));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveParlour: " + parlour.getName());
     }
 
@@ -133,8 +133,14 @@ public class SharedPrefUtil {
     public static void saveBeneficiary(Beneficiary user, Context ctx) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
+        if (user == null) {
+            ed.remove("bennie");
+            ed.apply();
+            Log.e(TAG, "saveBeneficiary: removed beneficiary from SharedPreferences" );
+            return;
+        }
         ed.putString("bennie", GSON.toJson(user));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveBeneficiary: " + user.getFullName());
     }
 
@@ -155,7 +161,7 @@ public class SharedPrefUtil {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("client", GSON.toJson(user));
-        ed.commit();
+        ed.apply();
         Log.i(TAG, "saveClient: " + user.getEmail());
     }
 

@@ -249,7 +249,7 @@ public class FBApi {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError == null) {
-                        Log.i(TAG, "onComplete: beneficiary added to firebase: ".concat(certificate.getIdNumber()));
+                        Log.i(TAG, "onComplete: certificate added to firebase: ".concat(certificate.getIdNumber()));
                         listener.onResponse(certificate);
                     } else {
                         Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));

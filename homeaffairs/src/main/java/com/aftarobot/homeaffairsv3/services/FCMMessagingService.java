@@ -1,4 +1,4 @@
-package com.aftarobot.homeaffairs.services;
+package com.aftarobot.homeaffairsv3.services;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.aftarobot.homeaffairs.HomeAffairsActivity;
-import com.aftarobot.homeaffairs.R;
+import com.aftarobot.homeaffairsv3.HomeAffairsActivity;
+import com.aftarobot.homeaffairsv3.R;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
