@@ -16,4 +16,5 @@
     <string name="title_activity_claims">ClaimsActivity</string>
     <string name="title_activity_clients">ClientsActivity</string>
     <string name="title_activity_notif">NotifActivity</string>
+    <string name="title_activity_historian">HistorianActivity</string>
 </resources>

@@ -2,15 +2,7 @@
 echo Starting Blockchain Demo Build ....................
 echo ##############################
 
-./gradlew clean
-./gradlew :crudder:build
-./gradlew :hospitalapp:build
-./gradlew :homeaffairs:build
-./gradlew :beneficiary:build
-./gradlew :parlourapp:build
-./gradlew :bank:build
-./gradlew :clientapp:build
-./gradlew :insurancecompany:build
+gradle clean && gradle build
 
 echo Blockchain Demo Build hopefuly successfully completed
 echo #####################################################

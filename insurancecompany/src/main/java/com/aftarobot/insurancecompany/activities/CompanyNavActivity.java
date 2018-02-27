@@ -68,6 +68,7 @@ public class CompanyNavActivity extends AppCompatActivity
     private Claim claim;
     private MyDialogFragment dialogFragment;
     private FragmentManager fm;
+    DrawerLayout drawer;
     FBListApi fbListApi;
     FBApi fbApi;
 
@@ -148,7 +149,7 @@ public class CompanyNavActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -201,7 +202,7 @@ public class CompanyNavActivity extends AppCompatActivity
     }
 
     private void getClaims() {
-        chainListAPI.getCompanyClaims(company.getInsuranceCompanyId(),new ChainListAPI.ClaimsListener() {
+        chainListAPI.getCompanyClaims(company.getInsuranceCompanyId(), new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> list) {
                 claims = list;
@@ -224,7 +225,7 @@ public class CompanyNavActivity extends AppCompatActivity
         x.append("resource:com.oneconnect.insurenet.InsuranceCompany#");
         x.append(company.getInsuranceCompanyId());
 
-        chainListAPI.getCompanyClients(x.toString(),new ChainListAPI.ClientListener() {
+        chainListAPI.getCompanyClients(x.toString(), new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
@@ -327,21 +328,13 @@ public class CompanyNavActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        switch (id) {
+            case R.id.nav_trans:
+                Intent m = new Intent(this, HistorianActivity.class);
+                startActivity(m);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -445,7 +438,7 @@ public class CompanyNavActivity extends AppCompatActivity
 
     private void showClaim(Claim claim) {
 
-        Intent m = new Intent(this,ClaimsActivity.class);
+        Intent m = new Intent(this, ClaimsActivity.class);
         m.putExtra("claim", claim);
         startActivity(m);
 
@@ -505,20 +498,22 @@ public class CompanyNavActivity extends AppCompatActivity
         });
         fragment.show(ft, "CERT_DIAG");
     }
+
     private class FundsTransferReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.e(TAG, "onReceive: FundsTransferReceiver ###########" );
-            FundsTransfer data = (FundsTransfer)intent.getSerializableExtra("data");
+            Log.e(TAG, "onReceive: FundsTransferReceiver ###########");
+            FundsTransfer data = (FundsTransfer) intent.getSerializableExtra("data");
             Log.i(TAG, "FundsTransferReceiver onReceive: "
                     .concat(GSON.toJson(data)));
             showTransfer(data);
         }
     }
+
     private void showTransfer(final FundsTransfer transfer) {
 
-        Snackbar.make(toolbar,"Funds Transfer arrived: "
+        Snackbar.make(toolbar, "Funds Transfer arrived: "
                 .concat(transfer.getFundsTransferId()), Snackbar.LENGTH_INDEFINITE)
                 .setActionTextColor(Color.parseColor("green"))
                 .setAction("Notify", new View.OnClickListener() {
@@ -529,8 +524,8 @@ public class CompanyNavActivity extends AppCompatActivity
                 }).show();
 
 
-
     }
+
     private FundsTransfer fundsTransfer;
     private Policy policy;
 
@@ -543,7 +538,7 @@ public class CompanyNavActivity extends AppCompatActivity
         chainListAPI.getClaim(claimId, new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> claims) {
-                Log.e(TAG, "getClaim onResponse: ####################### claimId ".concat(claimId) );
+                Log.e(TAG, "getClaim onResponse: ####################### type ".concat(claimId));
                 if (!claims.isEmpty()) {
                     Claim c = claims.get(0);
                     Log.d(TAG, "onResponse: found claim: ".concat(GSON.toJson(c)));
@@ -579,7 +574,9 @@ public class CompanyNavActivity extends AppCompatActivity
             }
         });
     }
+
     int index;
+
     private void controlBennies() {
         if (index < policy.getBeneficiaries().size()) {
             final String idNumber = policy.getBeneficiaries().get(index).split("#")[1];
@@ -588,6 +585,7 @@ public class CompanyNavActivity extends AppCompatActivity
             Log.i(TAG, "controlBennies: all messages sent OK");
         }
     }
+
     private void sendBeneficiaryMessage(String idNumber) {
         fbListApi.getBeneficiaryByIDnumber(idNumber,
                 new FBListApi.BeneficiaryListener() {
@@ -595,7 +593,7 @@ public class CompanyNavActivity extends AppCompatActivity
                     public void onResponse(List<Beneficiary> beneficiaries) {
 
                         if (!beneficiaries.isEmpty()) {
-                            for (final Beneficiary ben: beneficiaries) {
+                            for (final Beneficiary ben : beneficiaries) {
                                 BeneficiaryFunds funds = new BeneficiaryFunds();
                                 funds.setIdNumber(ben.getIdNumber());
                                 funds.setFcmToken(ben.getFcmToken());
@@ -604,7 +602,7 @@ public class CompanyNavActivity extends AppCompatActivity
                                     @Override
                                     public void onResponse(Data data) {
                                         showSnack("Funds message sent to: "
-                                                .concat(ben.getFullName()), "ok","green" );
+                                                .concat(ben.getFullName()), "ok", "green");
                                         Log.i(TAG, "addBeneficiaryFunds onResponse: funds added to Firebase");
                                         index++;
                                         controlBennies();

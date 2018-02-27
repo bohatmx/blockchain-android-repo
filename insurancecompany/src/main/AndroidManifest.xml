@@ -44,33 +44,38 @@
             android:name=".activities.CompanyNavActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.PolicyActivity"
             android:label="@string/title_activity_policy"
-            android:windowSoftInputMode="stateAlwaysHidden"
             android:parentActivityName=".activities.CompanyNavActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.ClaimsActivity"
             android:label="@string/title_activity_claims"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:screenOrientation="portrait"
             android:parentActivityName=".activities.CompanyNavActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.ClientsActivity"
             android:label="@string/title_activity_clients"
             android:parentActivityName=".activities.CompanyNavActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.NotifActivity"
             android:label="@string/title_activity_notif"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".activities.HistorianActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".activities.CompanyNavActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 

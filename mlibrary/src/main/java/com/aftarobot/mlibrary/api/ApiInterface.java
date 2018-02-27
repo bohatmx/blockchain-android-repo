@@ -158,10 +158,10 @@ public interface ApiInterface {
     @GET("Burial")
     Call<List<Burial>> getBurials();
 
-    @GET("/system/historian")
+    @GET("system/historian")
     Call<List<HistorianRecord>> getHistorianRecords();
 
-    @GET("/system/identities")
+    @GET("system/identities")
     Call<List<Identity>> getIdentities();
 
     @POST("RegisterDeathCertificate")

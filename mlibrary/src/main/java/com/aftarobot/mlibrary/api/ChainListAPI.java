@@ -15,6 +15,7 @@ import com.aftarobot.mlibrary.data.Doctor;
 import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.FuneralParlour;
+import com.aftarobot.mlibrary.data.HistorianRecord;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
@@ -97,7 +98,32 @@ public class ChainListAPI {
         void onResponse(List<Bank> banks);
         void onError(String message);
     }
+    public interface HistorianListener {
+        void onResponse(List<HistorianRecord> records);
+        void onError(String message);
+    }
+    public void getHistorianRecords(final HistorianListener listener) {
+        Call<List<HistorianRecord>> call = apiService.getHistorianRecords();
+        Log.w(TAG, "calling ... " + call.request().url().url().toString());
+        call.enqueue(new Callback<List<HistorianRecord>>() {
+            @Override
+            public void onResponse(Call<List<HistorianRecord>> call, Response<List<HistorianRecord>> response) {
+                if (response.isSuccessful()) {
+                    List<HistorianRecord> list = response.body();
+                    listener.onResponse(list);
+                } else {
+                    Log.w(TAG, "onResponse: getHistorianRecords not found ".concat(GSON.toJson(response)));
+                    listener.onResponse(new ArrayList<HistorianRecord>());
+                }
+            }
 
+            @Override
+            public void onFailure(Call<List<HistorianRecord>> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                listener.onError(NETWORK_ERROR);
+            }
+        });
+    }
     public void getFundsTransferRequests(String id, final FundsTransferRequestListener listener) {
         Call<List<FundsTransferRequest>> call = apiService.getFundsTransferRequests(id);
         Log.w(TAG, "calling ... " + call.request().url().url().toString());

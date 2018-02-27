@@ -20,8 +20,9 @@ public class CheckNet {
         if (ssid == null) {
             //throw new RuntimeException("Network name check failed");
             Log.e("CheckNet", "Network name check failed ---- WTF?" );
+        } else {
+            Log.e("CheckNet", "check: network:  ".concat(ssid));
         }
-        Log.e("CheckNet", "check: network:  ".concat(ssid) );
         return ssid;
     }
 }

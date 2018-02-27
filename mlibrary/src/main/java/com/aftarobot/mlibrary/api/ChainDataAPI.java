@@ -29,7 +29,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -656,25 +658,29 @@ public class ChainDataAPI {
     public void addInsuranceCompany(final InsuranceCompany company, final Listener listener) {
         Call<InsuranceCompany> call = apiService.registerInsuranceCompany(company);
         Log.d(TAG, "addInsuranceCompany: ".concat(call.request().url().url().toString()));
-        call.enqueue(new Callback<InsuranceCompany>() {
-            @Override
-            public void onResponse(Call<InsuranceCompany> call, Response<InsuranceCompany> response) {
-                if (response.isSuccessful()) {
-                    Log.i(TAG, "Insurance company added: ".concat(company.getName()));
-                    listener.onResponse(response.body());
-                } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
-                    listener.onError(context.getString(R.string.company_add_failled));
+        try {
+            call.enqueue(new Callback<InsuranceCompany>() {
+                @Override
+                public void onResponse(Call<InsuranceCompany> call, Response<InsuranceCompany> response) {
+                    if (response.isSuccessful()) {
+                        Log.i(TAG, "Insurance company added: ".concat(company.getName()));
+                        listener.onResponse(response.body());
+                    } else {
+                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                        listener.onError(context.getString(R.string.company_add_failled));
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<InsuranceCompany> call, Throwable t) {
-                Log.e(TAG, "onFailure: ", t);
-                listener.onError(context.getString(R.string.company_add_failled));
+                @Override
+                public void onFailure(Call<InsuranceCompany> call, Throwable t) {
+                    Log.e(TAG, "onFailure: ", t);
+                    listener.onError(context.getString(R.string.company_add_failled));
 
-            }
-        });
+                }
+            });
+        } catch (Exception e) {
+            Log.d(TAG, "addInsuranceCompany: ",e);
+        }
     }
     public void addBankAccount(final BankAccount bankAccount, final Listener listener) {
         Call<BankAccount> call = apiService.addBankAccount(bankAccount);

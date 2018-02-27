@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -44,6 +45,7 @@ public class SignInActivity extends AppCompatActivity {
     private List<FuneralParlour> parlours;
     private ChainListAPI chainListAPI;
     private Snackbar snackbar;
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +72,7 @@ public class SignInActivity extends AppCompatActivity {
 
 
     private void setFields() {
+        fab = findViewById(R.id.fab);
         spinner = findViewById(R.id.spinner);
         btn = findViewById(R.id.btnStart);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -83,6 +86,12 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
         btn.setEnabled(false);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getParlours();
+            }
+        });
     }
 
     private void setSpinner() {
@@ -171,10 +180,12 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void getParlours() {
+        showSnackbar("Loading parlours ...","ok","cyan");
         chainListAPI.getFuneralParlours(new ChainListAPI.ParlourListener() {
             @Override
             public void onResponse(List<FuneralParlour> list) {
                 parlours = list;
+                snackbar.dismiss();
                 Collections.sort(parlours);
                 Log.w(TAG, "onResponse: funeral parlours found on blockchain: " + list.size());
                 setSpinner();

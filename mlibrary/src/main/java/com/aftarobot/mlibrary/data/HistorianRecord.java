@@ -1,22 +1,32 @@
 package com.aftarobot.mlibrary.data;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
-public class HistorianRecord implements Data, Serializable{
+public class HistorianRecord implements Data, Serializable, Comparable<HistorianRecord>{
 
     private String $class,transactionInvoked, identityUsed;
     private String transactionId, transactionType, participantInvoking;
-    private ArrayList<String> eventsEmitted;
-    private Date transactionTimestamp;
+    private List<Object> eventsEmitted;
+    private String transactionTimestamp;
     public String getClassz() { return this.$class; }
 
-    public Date getTransactionTimestamp() {
+    public List<Object> getEventsEmitted() {
+        return eventsEmitted;
+    }
+
+    public void setEventsEmitted(List<Object> eventsEmitted) {
+        this.eventsEmitted = eventsEmitted;
+    }
+
+    public String getTransactionTimestamp() {
         return transactionTimestamp;
     }
 
-    public void setTransactionTimestamp(Date transactionTimestamp) {
+    public void setTransactionTimestamp(String transactionTimestamp) {
         this.transactionTimestamp = transactionTimestamp;
     }
 
@@ -63,11 +73,9 @@ public class HistorianRecord implements Data, Serializable{
         this.participantInvoking = participantInvoking;
     }
 
-    public ArrayList<String> getEventsEmitted() {
-        return eventsEmitted;
-    }
 
-    public void setEventsEmitted(ArrayList<String> eventsEmitted) {
-        this.eventsEmitted = eventsEmitted;
+    @Override
+    public int compareTo(@NonNull HistorianRecord o) {
+        return this.transactionTimestamp.compareTo(o.transactionTimestamp) * -1;
     }
 }

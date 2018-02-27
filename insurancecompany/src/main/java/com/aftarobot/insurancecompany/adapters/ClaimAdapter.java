@@ -112,6 +112,7 @@ public class ClaimAdapter extends RecyclerView.Adapter<ClaimAdapter.ClaimViewHol
             policyNumber = itemView.findViewById(R.id.txtPolicyNumber);
             date = itemView.findViewById(R.id.txtDate);
             layout = itemView.findViewById(R.id.layout0);
+            claimId.setVisibility(View.GONE);
         }
 
     }

@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/bank/bank.iml" filepath="$PROJECT_DIR$/bank/bank.iml" />
       <module fileurl="file://$PROJECT_DIR$/beneficiary/beneficiary.iml" filepath="$PROJECT_DIR$/beneficiary/beneficiary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/blockchain-test.iml" filepath="$PROJECT_DIR$/blockchain-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/blockchain-android-repo.iml" filepath="$PROJECT_DIR$/blockchain-android-repo.iml" />
       <module fileurl="file://$PROJECT_DIR$/clientapp/clientapp.iml" filepath="$PROJECT_DIR$/clientapp/clientapp.iml" />
       <module fileurl="file://$PROJECT_DIR$/crudder/crudder.iml" filepath="$PROJECT_DIR$/crudder/crudder.iml" />
       <module fileurl="file://$PROJECT_DIR$/homeaffairs/homeaffairs.iml" filepath="$PROJECT_DIR$/homeaffairs/homeaffairs.iml" />

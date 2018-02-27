@@ -51,7 +51,7 @@ public class NotifyBeneficiaryFunds {
         chainListAPI.getClaim(claimId, new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> claims) {
-                Log.e(TAG, "getClaim onResponse: ####################### claimId ".concat(claimId));
+                Log.e(TAG, "getClaim onResponse: ####################### type ".concat(claimId));
                 if (!claims.isEmpty()) {
                     Claim c = claims.get(0);
                     Log.d(TAG, "onResponse: %%%%%%%%% found claim: ".concat(GSON.toJson(c)));

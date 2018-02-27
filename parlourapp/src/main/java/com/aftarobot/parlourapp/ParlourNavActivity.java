@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
@@ -66,6 +67,7 @@ public class ParlourNavActivity extends AppCompatActivity
     private FragmentManager fm;
     private Burial burial;
     private Claim claim;
+    private FloatingActionButton fab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,11 +120,12 @@ public class ParlourNavActivity extends AppCompatActivity
     }
 
     private void getDeathCerts() {
-
+        showSnack("Loading death certificates ...","ok","yellow");
         chainListAPI.getDeathCertificates(new ChainListAPI.DeathCertListener() {
             @Override
             public void onResponse(List<DeathCertificate> list) {
                 certificates = list;
+                snackbar.dismiss();
                 Log.i(TAG, "onResponse: getDeathCertificates: " + list.size());
                 setAuto();
             }
@@ -238,6 +241,7 @@ public class ParlourNavActivity extends AppCompatActivity
         });
     }
     private void setup() {
+        fab = findViewById(R.id.fab);
         auto = findViewById(R.id.auto);
         btn = findViewById(R.id.btnBurial);
         txtName = findViewById(R.id.txtName);
@@ -246,6 +250,12 @@ public class ParlourNavActivity extends AppCompatActivity
         btn.setAlpha(0.3f);
         btn.setEnabled(false);
 
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getDeathCerts();
+            }
+        });
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

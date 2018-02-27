@@ -135,7 +135,13 @@ public class ClaimsActivity extends AppCompatActivity {
         chainListAPI.getCompanyClaims(company.getInsuranceCompanyId(), new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> list) {
-                claims = list;
+
+                claims = new ArrayList<>();
+                for (Claim c: list) {
+                    if (!c.isApproved()) {
+                        claims.add(c);
+                    }
+                }
                 setList();
             }
 

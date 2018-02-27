@@ -54,12 +54,14 @@ public class LoginActivity extends AppCompatActivity {
     private BeneficiaryAdapter adapter;
     private Spinner spinner;
     private Button btn;
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         toolbar = findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
@@ -164,7 +166,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setFields() {
         spinner = findViewById(R.id.spinner);
         btn = findViewById(R.id.btnSignup);
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

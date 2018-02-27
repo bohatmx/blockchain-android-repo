@@ -1,14 +1,8 @@
 #!/bin/bash 
 echo Starting Blockchain Debug uninstalls ....................
-echo ###################################
+echo =======================================================================
 
-./gradlew :crudder:uninstallDebug
-./gradlew :hospitalapp:uninstallDebug
-./gradlew :parlourapp:uninstallDebug
-./gradlew :insurancecompany:uninstallDebug
-./gradlew :homeaffairs:uninstallDebug
-./gradlew :beneficiary:uninstallDebug
-./gradlew :bank:uninstallDebug
-./gradlew :clientapp:uninstallDebug
+gradle uninstallDebug
+
 echo Blockchain Debug uninstalls hopefuly successfully completed
-echo #####################################################
+echo ===============================================================
