@@ -4,20 +4,20 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.aftarobot.mlibrary.api.ChainDataAPI;
@@ -25,13 +25,20 @@ import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.Data;
+import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
-import com.aftarobot.mlibrary.util.ListUtil;
+import com.aftarobot.mlibrary.util.PolicyBag;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 public class ClientMainActivity extends AppCompatActivity
@@ -65,12 +72,19 @@ public class ClientMainActivity extends AppCompatActivity
     }
 
     private void getPolicies() {
+        showSnackbar("Loading policies ...", "ok", "cyan");
+        fab.setAlpha(0.3f);
+        fab.setEnabled(false);
         chainListAPI.getPoliciesByClientId(client.getIdNumber(), new ChainListAPI.PolicyListener() {
             @Override
             public void onResponse(List<Policy> list) {
                 Log.i(TAG, "onResponse: found policies: " + list.size());
+                showSnackbar("Found policies: " + list.size() + ", getting details ...", "ok", "green");
+                fab.setAlpha(1.0f);
+                fab.setEnabled(true);
                 policies = list;
-                setList();
+                index = 0;
+                controlPolicies();
             }
 
             @Override
@@ -80,16 +94,16 @@ public class ClientMainActivity extends AppCompatActivity
         });
     }
 
-    PolicyAdapter adapter;
-
     private void setList() {
-        adapter = new PolicyAdapter(policies, new PolicyAdapter.PolicyListener() {
+        Log.d(TAG, "setList: .....................bags : ".concat(GSON.toJson(bags)));
+        policySummaryAdapter = new PolicySummaryAdapter(bags, new PolicySummaryAdapter.PolicyBagListener() {
             @Override
-            public void onPolicyTapped(Policy policy) {
-                confirm(policy);
+            public void onClaimCheck(PolicyBag bag) {
+                confirm(bag.getPolicy());
             }
         });
-        recyclerView.setAdapter(adapter);
+
+        recyclerView.setAdapter(policySummaryAdapter);
         txtCount.setText(String.valueOf(policies.size()));
     }
 
@@ -143,7 +157,7 @@ public class ClientMainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -173,7 +187,6 @@ public class ClientMainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -246,7 +259,74 @@ public class ClientMainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
 
+    int index;
+
+    private void controlPolicies() {
+        Log.d(TAG, "controlPolicies: index " + index + " policies: " + policies.size());
+        if (index < policies.size()) {
+            getClientAndCompany(policies.get(index));
+        } else {
+            bags = new ArrayList<>();
+            for (Map.Entry<String, PolicyBag> entry: map.entrySet()) {
+                bags.add(entry.getValue());
+            }
+            setList();
+            showSnackbar("Found details for ".concat(String.valueOf(
+                    policies.size()).concat(" policies")), "Ok", "green");
+        }
+    }
+
+    List<PolicyBag> bags;
+    PolicySummaryAdapter policySummaryAdapter;
+
+    private void getClientAndCompany(final Policy policy) {
+        Log.w(TAG, "getClientAndCompany: policy: ".concat(GSON.toJson(policy)) );
+        String[] strings = policy.getInsuranceCompany().split("#");
+        final String companyID = strings[1];
+        String[] strings2 = policy.getClient().split("#");
+        final String clientID = strings2[1];
+
+        showSnackbar("Loading policy details","ok","cyan");
+        chainListAPI.getClient(clientID, new ChainListAPI.ClientListener() {
+            @Override
+            public void onResponse(List<Client> clients) {
+                if (!clients.isEmpty()) {
+                    final Client client = clients.get(0);
+                    Log.w(TAG, "onResponse: client found: ".concat(GSON.toJson(client)));
+                    chainListAPI.getInsuranceCompany(companyID, new ChainListAPI.CompanyListener() {
+                        @Override
+                        public void onResponse(List<InsuranceCompany> companies) {
+                            if (!companies.isEmpty()) {
+                                InsuranceCompany insuranceCompany = companies.get(0);
+                                Log.e(TAG, "onResponse: company found: ".concat(GSON.toJson(insuranceCompany)));
+                                PolicyBag bag = new PolicyBag(policy, client, insuranceCompany);
+                                map.put(policy.getPolicyNumber(), bag);
+                            }
+                            index++;
+                            controlPolicies();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            showError(message);
+                            index++;
+                            controlPolicies();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+
+    }
+
+    private HashMap<String, PolicyBag> map = new HashMap<>();
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 }

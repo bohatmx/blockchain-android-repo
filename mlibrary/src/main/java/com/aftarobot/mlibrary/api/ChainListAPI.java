@@ -693,7 +693,7 @@ public class ChainListAPI {
     }
 
     public void getPoliciesByClientId(String idNumber, final PolicyListener listener) {
-        Call<List<Policy>> call = apiService.getPolicies();
+        Call<List<Policy>> call = apiService.getPoliciesByIdNumber(idNumber);
         Log.w(TAG, "calling ... " + call.request().url().url().toString());
         call.enqueue(new Callback<List<Policy>>() {
             @Override

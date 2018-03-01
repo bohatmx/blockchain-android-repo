@@ -113,6 +113,8 @@ public class StartupActivity extends AppCompatActivity {
                                 clients = list;
                                 setSpinner();
                                 snackbar.dismiss();
+                                fab.setAlpha(1.0f);
+                                fab.setEnabled(true);
                             }
 
                             @Override
@@ -198,6 +200,8 @@ public class StartupActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                fab.setAlpha(0.3f);
+                fab.setEnabled(false);
                 getClients();
             }
         });

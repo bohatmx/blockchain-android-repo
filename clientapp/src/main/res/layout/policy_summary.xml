@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/fab_margin"
+    android:layout_marginRight="@dimen/fab_margin"
+    android:layout_marginTop="8dp"
+    app:cardElevation="4dp">
+    <RelativeLayout
+        android:id="@+id/layout"
+        android:padding="@dimen/fab_margin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/icon1"
+            android:src="@drawable/ic_clipboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/companyName"
+            android:text="CompanyName"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/companyAddress"
+            android:text="Company AddressName"
+            android:layout_below="@id/companyName"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RelativeLayout
+            android:id="@+id/layout0"
+            android:layout_below="@id/companyAddress"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/label0"
+                android:text="Policy:"
+                android:textStyle="bold"
+                android:minWidth="40dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/policyNumber"
+                android:text="93837383637"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/blue_700"
+                android:layout_toRightOf="@id/label0"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/layout1"
+            android:layout_below="@id/layout0"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/label1"
+                android:text="Value:"
+                android:textStyle="bold"
+                android:minWidth="40dp"
+
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/policyValue"
+                android:text="R5,999,000.00"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/teal_800"
+                android:layout_toRightOf="@id/label1"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <TextView
+            android:id="@+id/description"
+            android:text="Policy Description"
+            android:textStyle="bold"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_below="@id/layout1"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/client"
+            android:text="Client Name Here"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:textColor="@color/grey_500"
+            android:layout_below="@id/description"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/clientId"
+            android:text="ID Number here"
+            android:textColor="@color/grey_500"
+            android:layout_below="@id/client"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btnCheckClaim"
+            android:layout_below="@id/clientId"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/pink_600"
+            android:text="Check if Claim in Progress"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+
+</android.support.v7.widget.CardView>
