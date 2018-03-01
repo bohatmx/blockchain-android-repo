@@ -1,12 +1,10 @@
 package com.aftarobot.insurancecompany.activities;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -25,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aftarobot.insurancecompany.R;
 import com.aftarobot.insurancecompany.services.FCMMessagingService;
@@ -93,7 +90,7 @@ public class CompanyNavActivity extends AppCompatActivity
 
         setup();
         listen();
-        getClients();
+        getClaims();
 
         checkMessage();
     }
@@ -135,16 +132,16 @@ public class CompanyNavActivity extends AppCompatActivity
 
     }
 
+    FloatingActionButton fab;
     private void setup() {
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 showSnack("Refreshing Dashboard ...", "ok", "yellow");
-                getClients();
                 getClaims();
-                getPolicies();
+
 
             }
         });
@@ -202,6 +199,8 @@ public class CompanyNavActivity extends AppCompatActivity
     }
 
     private void getClaims() {
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         chainListAPI.getCompanyClaims(company.getInsuranceCompanyId(), new ChainListAPI.ClaimsListener() {
             @Override
             public void onResponse(List<Claim> list) {
@@ -209,6 +208,7 @@ public class CompanyNavActivity extends AppCompatActivity
                 Log.w(TAG, "onResponse: claims found on blockchain: " + list.size());
                 txtClaims.setText(df.format(claims.size()));
                 txtDate.setText(sdf.format(new Date()));
+                Snackbar.make(toolbar, "Claims refreshed", Snackbar.LENGTH_LONG).show();
                 getPolicies();
 
             }
@@ -232,7 +232,9 @@ public class CompanyNavActivity extends AppCompatActivity
                 Log.w(TAG, "onResponse: clients found on blockchain: " + list.size());
                 txtClients.setText(df.format(clients.size()));
                 txtDate.setText(sdf.format(new Date()));
-                getClaims();
+                fab.setEnabled(true);
+                fab.setAlpha(1.0f);
+                Snackbar.make(toolbar, "Clients refreshed", Snackbar.LENGTH_LONG).show();
 
             }
 
@@ -253,13 +255,15 @@ public class CompanyNavActivity extends AppCompatActivity
                         + company.getInsuranceCompanyId());
                 policies = list;
                 txtPolicies.setText(df.format(policies.size()));
+
+                getClients();
                 Log.w(TAG, "getCompanyPolicies: company policies found on blockchain: " + policies.size());
-                Snackbar.make(toolbar, "Dashboard refreshed", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(toolbar, "Policies refreshed", Snackbar.LENGTH_LONG).show();
             }
 
             @Override
             public void onError(String message) {
-
+                showError(message);
             }
         });
     }
@@ -322,7 +326,6 @@ public class CompanyNavActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -441,23 +444,6 @@ public class CompanyNavActivity extends AppCompatActivity
         Intent m = new Intent(this, ClaimsActivity.class);
         m.putExtra("claim", claim);
         startActivity(m);
-
-//        FragmentTransaction ft = fm.beginTransaction();
-//        Fragment prev = fm.findFragmentByTag("CLAIM_DIAG");
-//        if (prev != null) {
-//            ft.remove(prev);
-//        }
-//        ft.addToBackStack(null);
-//        // Create and show the dialog.
-//        final MyDialogFragment fragment = MyDialogFragment.newInstance();
-//        fragment.setData(dc);
-//        fragment.setListener(new MyDialogFragment.Listener() {
-//            @Override
-//            public void onCloseButtonClicked() {
-//                fragment.dismiss();
-//            }
-//        });
-//        fragment.show(ft, "CLAIM_DIAG");
     }
 
     private void showBurial(Burial dc) {

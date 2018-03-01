@@ -30,17 +30,14 @@ import com.aftarobot.homeaffairsv3.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
-import com.aftarobot.mlibrary.data.Claim;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
-import com.aftarobot.mlibrary.util.ListUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -86,12 +83,13 @@ public class HomeAffairsActivity extends AppCompatActivity
 
     }
 
+    FloatingActionButton fab;
     private void setup() {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         txtCount = findViewById(R.id.txtCount);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,10 +109,14 @@ public class HomeAffairsActivity extends AppCompatActivity
 
     private void getCertRequests() {
         showSnackbar("Loading certificate requests ...", "wait", "yellow");
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         chainListAPI.getDeathCertificateRequests(new ChainListAPI.DeathCertRequestListener() {
             @Override
             public void onResponse(List<DeathCertificateRequest> list) {
                 snackbar.dismiss();
+                fab.setEnabled(true);
+                fab.setAlpha(1.0f);
                 requests = new ArrayList<>();
                 for (DeathCertificateRequest x : list) {
                     if (!x.isIssued()) {
@@ -189,9 +191,13 @@ public class HomeAffairsActivity extends AppCompatActivity
         }
 
         showSnackbar("Issuing Death Certificate ...", "Wait", "yellow");
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         chainDataAPI.registerDeathCertificate(certificate, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
+                fab.setEnabled(true);
+                fab.setAlpha(1.0f);
                 final DeathCertificate chainCert = (DeathCertificate) data;
                 Log.i(TAG, "issueCertificate done: ".concat(GSON.toJson(chainCert)));
                 requests.remove(request);
@@ -225,9 +231,7 @@ public class HomeAffairsActivity extends AppCompatActivity
             }
         });
     }
-    private void findPolicyAndSendMessage(DeathCertificate dc) {
 
-    }
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'zmobile3-key'
             keyPassword 'kktiger3'
-            storeFile file('/Users/aubreymalabie/zmobile3-key.keystore')
+            storeFile file('/Users/mac/Documents/zmobile3-key.keystore')
             storePassword 'kktiger3'
         }
     }
@@ -77,6 +77,15 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:4.27.0'
     // Required only if Twitter login support is required
     implementation('com.twitter.sdk.android:twitter-core:3.0.0@aar') { transitive = true }
+    testImplementation "org.robolectric:robolectric:3.7.1"
+
+    android {
+        testOptions {
+            unitTests {
+                includeAndroidResources = true
+            }
+        }
+    }
 
 }
 

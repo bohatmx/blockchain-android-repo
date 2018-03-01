@@ -123,9 +123,10 @@ public class HospitalNavActivity extends AppCompatActivity
             dialogFragment.show(fm,"mydiagfragment");
         }
     }
+    FloatingActionButton fab;
 
     private void setup() {
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         txtName = findViewById(R.id.name);
         txtId = findViewById(R.id.idNumber);
         auto = findViewById(R.id.auto);
@@ -145,6 +146,8 @@ public class HospitalNavActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                fab.setEnabled(false);
+                fab.setAlpha(0.3f);
                 getClients();
                 Snackbar.make(view, "Refreshing clients", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
@@ -237,11 +240,15 @@ public class HospitalNavActivity extends AppCompatActivity
 
     private void getClients() {
         showSnack("Getting client list ...","wait","yellow");
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         chainListAPI.getClients(new ChainListAPI.ClientListener() {
             @Override
             public void onResponse(List<Client> list) {
                 clients = list;
                 snackbar.dismiss();
+                fab.setEnabled(true);
+                fab.setAlpha(1.0f);
                 if (clients.isEmpty()) {
                     showError("There are no patients found, do something!");
                     auto.setVisibility(View.GONE);

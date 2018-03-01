@@ -42,9 +42,6 @@
             android:name="com.aftarobot.homeaffairsv3.HomeAffairsActivity"
             android:label="@string/title_activity_nav"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name="com.aftarobot.homeaffairsv3.NotifActivity"
-            android:label="@string/title_activity_notif"/>
     </application>
 
 </manifest>

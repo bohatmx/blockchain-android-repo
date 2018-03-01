@@ -72,12 +72,16 @@ public class HistorianActivity extends AppCompatActivity
         getHistorianRecords();
     }
     private void getHistorianRecords() {
+        fab.setEnabled(false);
+        fab.setAlpha(0.3f);
         showSnackbar("Loading Transaction Records ...","ok","cyan");
         chainListAPI.getHistorianRecords(new ChainListAPI.HistorianListener() {
             @Override
             public void onResponse(List<HistorianRecord> list) {
                 records = list;
                 snackbar.dismiss();
+                fab.setEnabled(true);
+                fab.setAlpha(1.0f);
                 Log.i(TAG, "getHistorianRecords onResponse: ".concat(GSON.toJson(records)));
                 setList();
             }

@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'zmobile3-key'
+            keyPassword 'kktiger3'
+            storeFile file('/Users/mac/Documents/zmobile3-key.keystore')
+            storePassword 'kktiger3'
+        }
+    }
     compileSdkVersion 27
 
 

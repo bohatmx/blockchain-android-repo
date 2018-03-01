@@ -31,6 +31,7 @@ import com.aftarobot.beneficiary.services.FCMMessagingService;
 import com.aftarobot.mlibrary.api.ChainDataAPI;
 import com.aftarobot.mlibrary.api.ChainListAPI;
 import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.data.BankAccount;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.BeneficiaryClaimMessage;
 import com.aftarobot.mlibrary.data.BeneficiaryFunds;
@@ -49,6 +50,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,7 +92,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         beneficiary = SharedPrefUtil.getBeneficiary(this);
         Log.e(TAG, "onCreate: beneficiary: ".concat(GSON.toJson(beneficiary)));
         if (beneficiary == null) {
-            Intent m = new Intent(this,LoginActivity.class);
+            Intent m = new Intent(this, LoginActivity.class);
             startActivity(m);
             finish();
             return;
@@ -104,6 +106,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         getChainBeneficiary();
         listen();
     }
+
     Beneficiary chainBeneficiary;
     int index;
 
@@ -277,7 +280,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
 
             @Override
             public void onError(String message) {
-
+                showError(message);
             }
         });
 
@@ -331,11 +334,42 @@ public class BeneficiaryNavActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            getBankAccount();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    BankAccount bankAccount;
+
+    private void getBankAccount() {
+        if (chainBeneficiary == null) {
+            getChainBeneficiary();
+            return;
+        }
+        showSnackbar("Loading bank account", "ok", "cyan");
+        String accountNumber = chainBeneficiary.getBankAccounts().get(0).split("#")[1];
+        chainListAPI.getBankAccount(accountNumber, new ChainListAPI.BankAccountListener() {
+            @Override
+            public void onResponse(List<BankAccount> bankAccounts) {
+                if (!bankAccounts.isEmpty()) {
+                    bankAccount = bankAccounts.get(0);
+                    showSnackbar("Bank Account Balance: ".concat(df.format(bankAccount.getBalance())),
+                            "ok", "green");
+                } else {
+
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+
+            }
+        });
+    }
+
+    public static final DecimalFormat df = new DecimalFormat("###,###,###,###,###,###,###,###,###,##0.00");
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -477,7 +511,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
                     if (!policies.isEmpty()) {
                         Policy policy = policies.get(0);
                         boolean isFound = false;
-                        for (String s: policy.getBeneficiaries()) {
+                        for (String s : policy.getBeneficiaries()) {
                             if (beneficiary.getIdNumber().equalsIgnoreCase(s.split("#")[1])) {
                                 isFound = true;
                                 break;
@@ -496,14 +530,16 @@ public class BeneficiaryNavActivity extends AppCompatActivity
             });
         }
     }
+
     Policy policy;
+
     private void makeClaim(final Policy policy) {
         this.policy = policy;
         AlertDialog.Builder x = new AlertDialog.Builder(this);
         x.setTitle("Make a Claim")
                 .setMessage(("A death certificate has been issued and a policy including you " +
                         "as a Beneficiary is on record. Do you want to register a claim?\n\n")
-                .concat("Policy Number: ".concat(policy.getPolicyNumber())))
+                        .concat("Policy Number: ".concat(policy.getPolicyNumber())))
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -519,6 +555,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
                 .show();
 
     }
+
     private void registerClaim(Policy policy) {
         showSnackbar("Registering claim on the blockchain", "ok", "yellow");
         claim = new Claim();
@@ -557,6 +594,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
             }
         });
     }
+
     private class BurialReceiver extends BroadcastReceiver {
 
         @Override
@@ -573,6 +611,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         showSnackbar(title, "ok", "grey");
 
     }
+
     private class ThanksReceiver extends BroadcastReceiver {
 
         @Override
