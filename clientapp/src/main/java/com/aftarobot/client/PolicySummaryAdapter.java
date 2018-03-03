@@ -58,7 +58,7 @@ public class PolicySummaryAdapter extends RecyclerView.Adapter<PolicySummaryAdap
             }
         });
 
-
+        animateIn(holder.layout);
     }
 
     private void animateIn(View view) {
