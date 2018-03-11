@@ -10,7 +10,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.aftarobot.bank.BankMainActivity;
-
 import com.aftarobot.bank.R;
 import com.aftarobot.mlibrary.data.Burial;
 import com.aftarobot.mlibrary.data.Claim;
@@ -19,6 +18,7 @@ import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.util.PlaySound;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
@@ -85,6 +85,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_FUNDS_TRANSFER_REQUEST, pol);
                 sendNotification(type, "Funds Transfer Request", map.get("json"));
             }
+            PlaySound.play(getApplicationContext());
         }
 
     }

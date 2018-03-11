@@ -18,6 +18,7 @@ import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.util.PlaySound;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
@@ -84,6 +85,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_FUNDS_TRANSFER, pol);
                 sendNotification(type, "Funds Transfer", map.get("json"));
             }
+            PlaySound.play(getApplicationContext());
         }
 
     }

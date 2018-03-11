@@ -77,6 +77,7 @@ public class HospitalNavActivity extends AppCompatActivity
         setContentView(R.layout.activity_navig);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setup();
 
         certificate= (DeathCertificate) getIntent().getSerializableExtra("cert");
         burial= (Burial) getIntent().getSerializableExtra("burial");
@@ -91,7 +92,7 @@ public class HospitalNavActivity extends AppCompatActivity
         listen();
         getClients();
 
-        setup();
+
         getSupportActionBar().setTitle("Death Certificate Requests");
         getSupportActionBar().setSubtitle(hospital.getName());
         checkMessage();

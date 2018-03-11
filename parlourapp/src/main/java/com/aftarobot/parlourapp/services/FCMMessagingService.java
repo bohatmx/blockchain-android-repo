@@ -15,6 +15,7 @@ import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.util.PlaySound;
 import com.aftarobot.parlourapp.NotifActivity;
 import com.aftarobot.parlourapp.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -75,6 +76,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_USER, pol);
                 sendNotification(type, "Policy Registered", map.get("json"));
             }
+            PlaySound.play(getApplicationContext());
         }
     }
 

@@ -12,6 +12,7 @@ import com.aftarobot.hospitalapp.HospitalNavActivity;
 import com.aftarobot.hospitalapp.R;
 import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
+import com.aftarobot.mlibrary.util.PlaySound;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
@@ -40,6 +41,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
                 broadcast(BROADCAST_CERT, dc);
                 sendNotification(type, "Death Certificate Issued", map.get("json"));
             }
+            PlaySound.play(getApplicationContext());
         }
     }
 

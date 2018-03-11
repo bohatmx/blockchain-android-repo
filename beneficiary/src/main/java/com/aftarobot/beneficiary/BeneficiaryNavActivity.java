@@ -23,7 +23,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,7 +42,6 @@ import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.Policy;
-import com.aftarobot.mlibrary.util.ListUtil;
 import com.aftarobot.mlibrary.util.PolicyBag;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.google.firebase.auth.FirebaseAuth;
@@ -79,16 +77,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         setContentView(R.layout.activity_nav);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        icon = findViewById(R.id.icon1);
-        icon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-            }
-        });
-        recyclerView = findViewById(R.id.recyclerView);
-        txtCount = findViewById(R.id.txtCount);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         beneficiary = SharedPrefUtil.getBeneficiary(this);
         Log.e(TAG, "onCreate: beneficiary: ".concat(GSON.toJson(beneficiary)));
         if (beneficiary == null) {
@@ -110,6 +99,12 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     Beneficiary chainBeneficiary;
     int index;
 
+    private void startNewApp() {
+        FirebaseAuth.getInstance().signOut();
+        Intent m = new Intent(this, LoginActivity.class);
+        startActivity(m);
+
+    }
     private void getChainBeneficiary() {
         showSnackbar("Loading beneficiary policies", "ok", "yellow");
         chainListAPI.getBeneficiary(beneficiary.getIdNumber(), new ChainListAPI.BeneficiaryListener() {
@@ -289,12 +284,22 @@ public class BeneficiaryNavActivity extends AppCompatActivity
     private HashMap<String, PolicyBag> map = new HashMap<>();
 
     private void setup() {
+        icon = findViewById(R.id.icon1);
+        icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startNewApp();
+            }
+        });
+        recyclerView = findViewById(R.id.recyclerView);
+        txtCount = findViewById(R.id.txtCount);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                getBankAccount();
             }
         });
 
@@ -310,7 +315,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -464,12 +469,48 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         }
     }
 
-    private void showFunds(BeneficiaryFunds msg) {
+    private void showFunds(final BeneficiaryFunds msg) {
         String title = "Funds were transferred to your account: ".concat(msg.getStringDate());
-        showSnackbar(title, "ok", "green");
+        snackbar = Snackbar.make(toolbar, title, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setActionTextColor(Color.parseColor("cyan"));
+        snackbar.setAction("Account", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String accountNumber = msg.getFundsTransfer().getToAccount().split("#")[1];
+                getBankAccount(accountNumber);
+            }
+        });
+        snackbar.show();
 
     }
 
+    private void getBankAccount(String accountNumber) {
+        showSnackbar("Loading bank account balance","ok","yellow");
+
+        chainListAPI.getBankAccount(accountNumber, new ChainListAPI.BankAccountListener() {
+            @Override
+            public void onResponse(List<BankAccount> bankAccounts) {
+                if (!bankAccounts.isEmpty()) {
+                    BankAccount acct = bankAccounts.get(0);
+                    showBankAccount(acct);
+
+                } else {
+                    showError("Bank account not found");
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showError(message);
+            }
+        });
+    }
+    private void showBankAccount(BankAccount account) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Account: ").append(account.getAccountNumber());
+        sb.append(" Balance: R").append(df.format(account.getBalance()));
+        showSnackbar(sb.toString(),"ok","green");
+    }
     private class Certceiver extends BroadcastReceiver {
 
         @Override
