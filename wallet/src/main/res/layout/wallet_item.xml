@@ -29,7 +29,7 @@
             <TextView
                 android:id="@+id/txtName"
                 android:text="Wallet Owners Name"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"

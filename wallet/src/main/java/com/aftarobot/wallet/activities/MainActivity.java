@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity
 
     int[] themes = {
             R.style.AftaRobotTheme, R.style.CommuterTheme,
-            R.style.DriverTheme, R.style.MarshalTheme,
+            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
             R.style.OwnerTheme, R.style.RouteBuilderTheme,
             R.style.AssocBuilderTheme, R.style.BeaconTheme
     };
@@ -93,6 +93,9 @@ public class MainActivity extends AppCompatActivity
                 break;
             case 7:
                 theme.applyStyle(themes[7], true);
+                break;
+            case 8:
+                theme.applyStyle(themes[8], true);
                 break;
         }
 

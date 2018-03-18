@@ -72,8 +72,9 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.WalletListActivity"
-            android:label="@string/title_activity_wallet_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:parentActivityName=".activities.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

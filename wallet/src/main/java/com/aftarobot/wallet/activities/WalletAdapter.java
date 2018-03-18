@@ -86,6 +86,7 @@ public class WalletAdapter extends RecyclerView.Adapter<WalletAdapter.WalletView
             }
         });
 
+        animateIn(holder.image);
 
 
     }
@@ -96,6 +97,27 @@ public class WalletAdapter extends RecyclerView.Adapter<WalletAdapter.WalletView
         ObjectAnimator an = ObjectAnimator.ofFloat(view, "scaleY", 0.5f, 1.0f);
         an.setDuration(300);
         an.setInterpolator(new AccelerateDecelerateInterpolator());
+        an.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
         an.start();
     }
 

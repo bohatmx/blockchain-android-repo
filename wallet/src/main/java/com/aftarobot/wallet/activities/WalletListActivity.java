@@ -1,11 +1,17 @@
 package com.aftarobot.wallet.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +31,7 @@ import com.aftarobot.mlibrary.data.Payment;
 import com.aftarobot.mlibrary.data.Wallet;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
 import com.aftarobot.wallet.R;
+import com.aftarobot.wallet.services.FCMMessagingService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -48,6 +55,7 @@ public class WalletListActivity extends AppCompatActivity {
         wallet = SharedPrefUtil.getWallet(this);
         getSupportActionBar().setTitle("Wallet Contacts");
         getSupportActionBar().setSubtitle(wallet.getName());
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         recyclerView = findViewById(R.id.recyclerView);
@@ -59,6 +67,7 @@ public class WalletListActivity extends AppCompatActivity {
             }
         });
 
+        listen();
         getWallets();
     }
 
@@ -144,6 +153,7 @@ public class WalletListActivity extends AppCompatActivity {
         adapter = new WalletAdapter(wallets, this, new WalletAdapter.WalletListener() {
             @Override
             public void onWalletTapped(Wallet wallet) {
+                Log.e(TAG, "onWalletTapped: ".concat(GSON.toJson(wallet)) );
                 showPaymentDialog(wallet);
             }
         });
@@ -191,6 +201,89 @@ public class WalletListActivity extends AppCompatActivity {
             }
         });
         snackbar.show();
+    }
+
+    int[] themes = {
+            R.style.AftaRobotTheme, R.style.CommuterTheme,
+            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
+            R.style.OwnerTheme, R.style.RouteBuilderTheme,
+            R.style.AssocBuilderTheme, R.style.BeaconTheme
+    };
+
+    int themeIndex;
+
+    @Override
+    public Resources.Theme getTheme() {
+        Resources.Theme theme = super.getTheme();
+        themeIndex = SharedPrefUtil.getThemeIndex(this);
+        switch (themeIndex) {
+            case 0:
+                theme.applyStyle(themes[0], true);
+                break;
+            case 1:
+                theme.applyStyle(themes[1], true);
+                break;
+            case 2:
+                theme.applyStyle(themes[2], true);
+                break;
+            case 3:
+                theme.applyStyle(themes[3], true);
+                break;
+            case 4:
+                theme.applyStyle(themes[4], true);
+                break;
+            case 5:
+                theme.applyStyle(themes[5], true);
+                break;
+            case 6:
+                theme.applyStyle(themes[6], true);
+                break;
+            case 7:
+                theme.applyStyle(themes[7], true);
+                break;
+            case 8:
+                theme.applyStyle(themes[8], true);
+                break;
+
+        }
+
+
+        // you could also use a switch if you have many themes that could apply
+        return theme;
+    }
+    private void listen() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new PaymentReceiver(),
+                new IntentFilter(FCMMessagingService.BROADCAST_PAYMENT_DONE));
+
+    }
+
+    private class PaymentReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.w(TAG, "onReceive: PaymentReceiver ;;;;;;;;;;;;;;;;;;;;;;" );
+            Payment p = (Payment) intent.getSerializableExtra("data");
+            Log.i(TAG, "onReceive: payment: ".concat(GSON.toJson(p)));
+            String token = SharedPrefUtil.getCloudMsgToken(getApplicationContext());
+            StringBuilder sb = new StringBuilder();
+
+            if (p.getToFCMToken().equalsIgnoreCase(token)) {
+                p.setReceiving(true);
+                sb.append("Payment has been received: ");
+            }
+            if (p.getFromFCMToken().equalsIgnoreCase(token)) {
+                p.setReceiving(false);
+                sb.append("Payment has been processed and receiver notified: ");
+            }
+            String amount;
+            if (p != null) {
+                amount = p.getAmount();
+            } else {
+                amount = "Unknown";
+            }
+            showSnackIndefinite(sb.toString().concat(amount), "ok", "green");
+        }
     }
 
 }

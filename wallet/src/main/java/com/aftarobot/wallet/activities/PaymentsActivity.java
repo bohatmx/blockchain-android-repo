@@ -61,7 +61,7 @@ public class PaymentsActivity extends AppCompatActivity {
     List<Payment> payments;
     int[] themes = {
             R.style.AftaRobotTheme, R.style.CommuterTheme,
-            R.style.DriverTheme, R.style.MarshalTheme,
+            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
             R.style.OwnerTheme, R.style.RouteBuilderTheme,
             R.style.AssocBuilderTheme, R.style.BeaconTheme
     };
@@ -95,6 +95,9 @@ public class PaymentsActivity extends AppCompatActivity {
                 break;
             case 7:
                 theme.applyStyle(themes[7], true);
+                break;
+            case 8:
+                theme.applyStyle(themes[8], true);
                 break;
         }
 
@@ -135,6 +138,7 @@ public class PaymentsActivity extends AppCompatActivity {
             }
         });
         auto = findViewById(R.id.auto);
+        layout = findViewById(R.id.layout2);
         editMoney = findViewById(R.id.editMoney);
         btnSendMoney = findViewById(R.id.btnSendMoney);
         txtCount = findViewById(R.id.txtCount);
@@ -144,6 +148,18 @@ public class PaymentsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 confirm();
+            }
+        });
+        txtCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (layout.getVisibility() == View.VISIBLE) {
+                    layout.setVisibility(View.GONE);
+                    btnSendMoney.setVisibility(View.GONE);
+                } else {
+                    layout.setVisibility(View.VISIBLE);
+                    btnSendMoney.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -378,6 +394,7 @@ public class PaymentsActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(auto.getWindowToken(), 0);
     }
 
+    View layout;
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 }
