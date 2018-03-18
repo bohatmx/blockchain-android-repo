@@ -77,7 +77,7 @@
             android:layout_height="wrap_content">
             <TextView
                 android:id="@+id/label2"
-                android:text="@string/clients"
+                android:text="@string/payments"
                 android:textSize="24sp"
                 android:layout_centerVertical="true"
                 android:textStyle="bold"
@@ -85,7 +85,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
-                android:id="@+id/clients"
+                android:id="@+id/payments"
                 android:text="000"
                 android:textSize="52sp"
                 android:textStyle="bold"

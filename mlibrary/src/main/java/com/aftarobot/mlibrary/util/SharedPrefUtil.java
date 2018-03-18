@@ -12,6 +12,7 @@ import com.aftarobot.mlibrary.data.FuneralParlour;
 import com.aftarobot.mlibrary.data.Hospital;
 import com.aftarobot.mlibrary.data.InsuranceCompany;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.data.Wallet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -35,6 +36,37 @@ public class SharedPrefUtil {
         String token = sp.getString("token", null);
         if (token != null) {
             Log.w(TAG, "getCloudMsgToken: " + token);
+        }
+        return token;
+    }
+    public static void saveThemeIndex(int index, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putInt("themeIndex", index);
+        ed.apply();
+        Log.i(TAG, "saveThemeIndex: " + index);
+    }
+
+    public static int getThemeIndex(Context ctx) {
+        if (ctx == null) return 0;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        int token = sp.getInt("themeIndex", 0);
+        return token;
+    }
+    public static void saveAccountNumber(String token, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("accountNumber", token);
+        ed.apply();
+        Log.i(TAG, "saveAccountNumber: " + token);
+    }
+
+    public static String getAccountNumber(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String token = sp.getString("accountNumber", null);
+        if (token != null) {
+            Log.w(TAG, "getAccountNumber: " + token);
         }
         return token;
     }
@@ -72,6 +104,24 @@ public class SharedPrefUtil {
         UserDTO u = GSON.fromJson(json,UserDTO.class);
         if (u != null) {
             Log.w(TAG, "getUser: " + u.getEmail());
+        }
+        return u;
+    }
+    public static void saveWallet(Wallet wallet, Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putString("wallet", GSON.toJson(wallet));
+        ed.apply();
+        Log.i(TAG, "saveWallet: " + wallet.getEmail());
+    }
+
+    public static Wallet getWallet(Context ctx) {
+        if (ctx == null) return null;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String json = sp.getString("wallet", null);
+        Wallet u = GSON.fromJson(json,Wallet.class);
+        if (u != null) {
+            Log.w(TAG, "getWallet: " + u.getEmail());
         }
         return u;
     }

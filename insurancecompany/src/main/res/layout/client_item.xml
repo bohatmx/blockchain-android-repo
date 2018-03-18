@@ -22,7 +22,7 @@
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/name"
-            android:text="@string/clients"
+            android:text="@string/payments"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_toRightOf="@id/image"

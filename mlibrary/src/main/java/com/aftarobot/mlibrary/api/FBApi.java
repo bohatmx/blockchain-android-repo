@@ -15,8 +15,10 @@ import com.aftarobot.mlibrary.data.DeathCertificate;
 import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.FundsTransferRequest;
+import com.aftarobot.mlibrary.data.Payment;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.data.Wallet;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseError;
@@ -50,6 +52,8 @@ public class FBApi {
             BENEFICIARY_THANKS = "beneficiaryThanks",
             BENNIE_CLAIM_MESSAGES = "beneficiaryClaims",
             POLICIES = "policies",
+            PAYMENTS = "payments",
+            WALLETS = "wallets",
             AUTH_REMOVALS = "authRemovals",
             BURIALS = "burials";
 
@@ -96,6 +100,36 @@ public class FBApi {
         });
     }
 
+    public void addWallet(final Wallet wallet, final FBListener listener) {
+        DatabaseReference ref = db.getReference(WALLETS);
+        ref.push().setValue(wallet, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: addWallet, added to firebase: ".concat(wallet.getEmail()));
+                    listener.onResponse(wallet);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+    public void addPayment(final Payment message, final FBListener listener) {
+        DatabaseReference ref = db.getReference(PAYMENTS);
+        ref.push().setValue(message, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: addPayment, added to firebase: ".concat(message.getSourceAccount()));
+                    listener.onResponse(message);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
     public void addBeneficiary(final Beneficiary beneficiary, final FBListener listener) {
         DatabaseReference ref = db.getReference(BENEFICIARIES);
         ref.push().setValue(beneficiary, new DatabaseReference.CompletionListener() {

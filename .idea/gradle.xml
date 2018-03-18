@@ -17,6 +17,7 @@
             <option value="$PROJECT_DIR$/insurancecompany" />
             <option value="$PROJECT_DIR$/mlibrary" />
             <option value="$PROJECT_DIR$/parlourapp" />
+            <option value="$PROJECT_DIR$/wallet" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

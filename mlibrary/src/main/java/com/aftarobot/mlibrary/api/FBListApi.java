@@ -5,6 +5,7 @@ import android.util.Log;
 import com.aftarobot.mlibrary.data.Beneficiary;
 import com.aftarobot.mlibrary.data.Client;
 import com.aftarobot.mlibrary.data.UserDTO;
+import com.aftarobot.mlibrary.data.Wallet;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +36,10 @@ public class FBListApi {
     }
     public interface ClientListener {
         void onResponse(List<Client> clients);
+        void onError(String message);
+    }
+    public interface WalletListener {
+        void onResponse(List<Wallet> clients);
         void onError(String message);
     }
 
@@ -109,6 +114,30 @@ public class FBListApi {
             }
         });
     }
+    public void getWallets(final WalletListener listener) {
+        DatabaseReference ref = db.getReference(FBApi.WALLETS);
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "getWallets onDataChange: dataSnapshot:\n" + dataSnapshot.getChildrenCount());
+                List<Wallet> wallets = new ArrayList<>();
+                for (DataSnapshot shot: dataSnapshot.getChildren()) {
+                    Wallet u = shot.getValue(Wallet.class);
+                    u.setWalletID(shot.getKey());
+                    wallets.add(u);
+                }
+
+                listener.onResponse(wallets);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(databaseError.getMessage());
+            }
+        });
+    }
+
     public void getBeneficiaries(final BeneficiaryListener listener) {
         DatabaseReference ref = db.getReference(FBApi.BENEFICIARIES);
 

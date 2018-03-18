@@ -12,6 +12,7 @@
       <module fileurl="file://$PROJECT_DIR$/insurancecompany/insurancecompany.iml" filepath="$PROJECT_DIR$/insurancecompany/insurancecompany.iml" />
       <module fileurl="file://$PROJECT_DIR$/mlibrary/mlibrary.iml" filepath="$PROJECT_DIR$/mlibrary/mlibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/parlourapp/parlourapp.iml" filepath="$PROJECT_DIR$/parlourapp/parlourapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wallet/wallet.iml" filepath="$PROJECT_DIR$/wallet/wallet.iml" />
     </modules>
   </component>
 </project>
