@@ -53,20 +53,20 @@ public class SharedPrefUtil {
         int token = sp.getInt("themeIndex", 0);
         return token;
     }
-    public static void saveAccountNumber(String token, Context ctx) {
+    public static void saveSecret(String token, Context ctx) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor ed = sp.edit();
-        ed.putString("accountNumber", token);
+        ed.putString("secret", token);
         ed.apply();
-        Log.i(TAG, "saveAccountNumber: " + token);
+        Log.i(TAG, "saveSecret: " + token);
     }
 
-    public static String getAccountNumber(Context ctx) {
+    public static String getSecret(Context ctx) {
         if (ctx == null) return null;
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
-        String token = sp.getString("accountNumber", null);
+        String token = sp.getString("secret", null);
         if (token != null) {
-            Log.w(TAG, "getAccountNumber: " + token);
+            Log.w(TAG, "getSecret: " + token);
         }
         return token;
     }

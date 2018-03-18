@@ -1,12 +1,14 @@
 package com.aftarobot.mlibrary.data;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class Wallet implements Data, Serializable {
+public class Wallet implements Data, Serializable, Comparable<Wallet> {
     private String walletID, accountID, seed,
             sourceAccountID, sourceSeed = "SDZGFXWT5PHQZ6U6KHMBFFQ346I34B4LB7N524DHY4A22XHEEKHNKXCJ",
             fcmToken, name, email, uid, sequenceNumber, stringDate;
@@ -126,5 +128,10 @@ public class Wallet implements Data, Serializable {
     public void setDate(long date) {
         this.date = date;
         this.stringDate = sdf.format(new Date(date));
+    }
+
+    @Override
+    public int compareTo(@NonNull Wallet o) {
+        return this.name.compareTo(o.name);
     }
 }

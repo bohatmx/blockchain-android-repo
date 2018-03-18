@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity
     private void changeToManualAccount() {
         final String publicKey = "GAIHVSEZQ4KVPJTM2CPBZSIBLBPKPZG5U6JFGQIE76TYSNXQME5GKBXO",
                 secretKey = "SB57MDG3AGK3S76KLXYHEVFHQBGFX75UBV7N2KO4HYAI3TMIES5BOBS5";
+        SharedPrefUtil.saveSecret(secretKey,this);
         wallet = SharedPrefUtil.getWallet(this);
         if (wallet != null) {
             wallet.setAccountID(publicKey);
@@ -412,6 +413,9 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_profile:
                 m = new Intent(this, PhotoTakerActivity.class);
+                break;
+            case R.id.nav_wallets:
+                m = new Intent(this, WalletListActivity.class);
                 break;
         }
 

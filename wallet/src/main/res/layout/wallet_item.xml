@@ -17,8 +17,8 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/image"
             android:src="@drawable/back15"
-            android:layout_width="36dp"
-            android:layout_height="36dp" />
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
 
         <RelativeLayout
             android:id="@+id/layout1"

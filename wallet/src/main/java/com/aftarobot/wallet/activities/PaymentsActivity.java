@@ -185,7 +185,7 @@ public class PaymentsActivity extends AppCompatActivity {
         p.setDestinationAccount(selectedWallet.getAccountID());
         p.setSourceAccount(wallet.getAccountID());
         p.setAmount(editMoney.getText().toString());
-        p.setSeed(wallet.getSeed());
+        p.setSeed(SharedPrefUtil.getSecret(this));
         p.setMemo("Joy, absolutely!");
         api.addPayment(p, new FBApi.FBListener() {
             @Override

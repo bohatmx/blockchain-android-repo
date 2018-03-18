@@ -3,6 +3,7 @@ package com.aftarobot.wallet.activities;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -57,12 +58,18 @@ public class WalletAdapter extends RecyclerView.Adapter<WalletAdapter.WalletView
         final Wallet p = payments.get(position);
         holder.account.setText(p.getAccountID());
         holder.name.setText(p.getName());
-
+        Drawable drawable = ContextCompat.getDrawable(context,R.drawable.back5);
+        drawable.setAlpha(3);
         if (p.getPhotos() != null && !p.getPhotos().isEmpty()) {
             Photo px = p.getPhotos().get(p.getPhotos().size() - 1);
-            Glide.with(context).load(Uri.parse(px.getUrl())).into(holder.image);
+            if (px != null && px.getUrl() != null) {
+                Glide.with(context).load(Uri.parse(px.getUrl())).into(holder.image);
+            } else {
+                Glide.with(context).load(drawable).into(holder.image);
+            }
         } else {
-            Glide.with(context).load(ContextCompat.getDrawable(context,R.drawable.back5));
+
+            Glide.with(context).load(drawable).into(holder.image);
         }
 
 
