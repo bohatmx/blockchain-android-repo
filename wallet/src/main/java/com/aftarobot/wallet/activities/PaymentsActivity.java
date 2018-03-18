@@ -121,12 +121,17 @@ public class PaymentsActivity extends AppCompatActivity {
         stellarAPI = new StellarAPI();
         listApi = new FBListApi();
 
+        setup();
+
+        getWallets();
+    }
+
+    private void setup() {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                getAccountPayments();
             }
         });
         auto = findViewById(R.id.auto);
@@ -141,10 +146,6 @@ public class PaymentsActivity extends AppCompatActivity {
                 confirm();
             }
         });
-//        btnSendMoney.setEnabled(false);
-//        btnSendMoney.setAlpha(0.3f);
-
-        getWallets();
     }
 
     private void confirm() {
@@ -209,8 +210,7 @@ public class PaymentsActivity extends AppCompatActivity {
         stellarAPI.getAccountPayments(wallet.getAccountID(), map, new StellarAPI.PaymentsListener() {
             @Override
             public void onResponse(PaymentsResponse response) {
-                showSnack("Got our good selves ACCOUNT payments: "
-                        + response.getEmbedded().getRecords().size(), "oh", "green");
+                showSnack("Payment transactions found ", "oh", "green");
                 Log.i(TAG, "onResponse: account payments returned: " + GSON.toJson(response));
                 if (response.getEmbedded() != null) {
                     List<Record> list  = response.getEmbedded().getRecords();

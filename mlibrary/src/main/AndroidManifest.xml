@@ -3,4 +3,16 @@
     package="com.aftarobot.mlibrary">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application>
+        <activity
+            android:name=".PhotoTakerActivity"
+            android:label="@string/title_activity_photo_taker"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".PhotoService"
+            android:exported="false"></service>
+    </application>
+
 </manifest>

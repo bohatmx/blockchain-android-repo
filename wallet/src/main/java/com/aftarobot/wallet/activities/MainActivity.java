@@ -22,6 +22,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.aftarobot.mlibrary.PhotoTakerActivity;
+import com.aftarobot.mlibrary.api.FBApi;
+import com.aftarobot.mlibrary.data.Data;
 import com.aftarobot.mlibrary.data.Payment;
 import com.aftarobot.mlibrary.data.Wallet;
 import com.aftarobot.mlibrary.util.SharedPrefUtil;
@@ -41,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -109,9 +113,52 @@ public class MainActivity extends AppCompatActivity
 
         setup();
         listen();
-        if (wallet != null) {
+        if (wallet != null && wallet.getAccountID() != null) {
+            Log.i(TAG, "onCreate: wallet: ".concat(GSON.toJson(wallet)));
             getSupportActionBar().setSubtitle(wallet.getName());
             getAccount(true);
+
+        }
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeToManualAccount();
+            }
+        });
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        wallet = SharedPrefUtil.getWallet(this);
+        if (wallet != null && wallet.getAccountID() != null) {
+            Objects.requireNonNull(getSupportActionBar()).setSubtitle(wallet.getName());
+            getAccount(true);
+
+        }
+    }
+    private void changeToManualAccount() {
+        final String publicKey = "GAIHVSEZQ4KVPJTM2CPBZSIBLBPKPZG5U6JFGQIE76TYSNXQME5GKBXO",
+                secretKey = "SB57MDG3AGK3S76KLXYHEVFHQBGFX75UBV7N2KO4HYAI3TMIES5BOBS5";
+        wallet = SharedPrefUtil.getWallet(this);
+        if (wallet != null) {
+            wallet.setAccountID(publicKey);
+            Log.e(TAG, "changeToManualAccount: wallet, check walletID: ".concat(GSON.toJson(wallet)) );
+            FBApi api = new FBApi();
+            api.updateWallet(wallet, new FBApi.FBListener() {
+                @Override
+                public void onResponse(Data data) {
+                    wallet.setSeed(secretKey);
+                    SharedPrefUtil.saveWallet(wallet, getApplicationContext());
+                    restartMe();
+                }
+
+                @Override
+                public void onError(String message) {
+                    showError(message);
+                }
+            });
 
         }
 
@@ -241,17 +288,7 @@ public class MainActivity extends AppCompatActivity
                 showSnack("Payment transactions found ", "oh", "green");
                 Log.i(TAG, "onResponse: account payments returned: " + GSON.toJson(response));
                 if (response.getEmbedded() != null) {
-                    List<Record> list = response.getEmbedded().getRecords();
-                    Record record = list.get(0);
-                    txtLastDate.setText(sdf.format(record.getCreatedAt()));
-                    txtAmount.setText(record.getAmount());
-                    txtType.setText(record.getType().toUpperCase());
-                    card2.setAlpha(1.0f);
-                    if (record.getFrom().equalsIgnoreCase(wallet.getAccountID())) {
-                        txtAmount.setTextColor(Color.parseColor("red"));
-                    } else {
-                        txtAmount.setTextColor(Color.parseColor("black"));
-                    }
+                    setRecordFields(response);
 
                 }
             }
@@ -261,6 +298,28 @@ public class MainActivity extends AppCompatActivity
                 showError(message);
             }
         });
+    }
+
+    private void setRecordFields(PaymentsResponse response) {
+        List<Record> list = response.getEmbedded().getRecords();
+        Record record = null;
+        for (Record m : list) {
+            if (m.getFrom() != null) {
+                record = m;
+                break;
+            }
+        }
+        if (record != null) {
+            txtLastDate.setText(sdf.format(record.getCreatedAt()));
+            txtAmount.setText(record.getAmount());
+            txtType.setText(record.getType().toUpperCase());
+            card2.setAlpha(1.0f);
+            if (record.getFrom().equalsIgnoreCase(wallet.getAccountID())) {
+                txtAmount.setTextColor(Color.parseColor("red"));
+            } else {
+                txtAmount.setTextColor(Color.parseColor("black"));
+            }
+        }
     }
 
     private Snackbar snackbar;
@@ -319,15 +378,19 @@ public class MainActivity extends AppCompatActivity
             }
             SharedPrefUtil.saveThemeIndex(index, this);
 
-            Intent i = new Intent(this, MainActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
-            finish();
-            startActivity(i);
+            restartMe();
 
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void restartMe() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        finish();
+        startActivity(i);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -346,6 +409,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_trades:
                 break;
             case R.id.nav_manage:
+                break;
+            case R.id.nav_profile:
+                m = new Intent(this, PhotoTakerActivity.class);
                 break;
         }
 
@@ -402,11 +468,17 @@ public class MainActivity extends AppCompatActivity
             wallet = (Wallet) intent.getSerializableExtra("data");
             Log.e(TAG, "WalletReceiver onReceive: wallet: ".concat(GSON.toJson(wallet)));
             showSnack("Wallet created OK on the blockchain", "ok", "green");
+            if (wallet != null) {
+                update();
+            }
             getAccount(false);
 
         }
     }
 
+    private void update() {
+        getSupportActionBar().setSubtitle(wallet.getName());
+    }
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 }

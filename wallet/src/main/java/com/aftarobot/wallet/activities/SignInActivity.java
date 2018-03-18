@@ -137,7 +137,9 @@ public class SignInActivity extends AppCompatActivity {
 
     public static final String
             ACCOUNT_ID = "GDG52NAT4NG7ULJK6WALKEU3UBSKGUL533M5NQPIPHTTQGFHRFYUF2MT",
-            SECRET = "SDZGFXWT5PHQZ6U6KHMBFFQ346I34B4LB7N524DHY4A22XHEEKHNKXCJ";
+            SECRET = "SDZGFXWT5PHQZ6U6KHMBFFQ346I34B4LB7N524DHY4A22XHEEKHNKXCJ",
+            SPARE_ACCOUNT_ID = "GAIHVSEZQ4KVPJTM2CPBZSIBLBPKPZG5U6JFGQIE76TYSNXQME5GKBXO",
+            SPARE_SECRET = "SB57MDG3AGK3S76KLXYHEVFHQBGFX75UBV7N2KO4HYAI3TMIES5BOBS5"; //in case I need the lumens
 
     private Account account;
     private StellarAPI stellarAPI = new StellarAPI();
@@ -183,6 +185,9 @@ public class SignInActivity extends AppCompatActivity {
         api.addWallet(w, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
+                Wallet wallet = (Wallet)data;
+                Log.i(TAG, "onResponse: wallet, check for id's: ".concat(GSON.toJson(wallet)));
+                SharedPrefUtil.saveWallet(wallet,getApplicationContext());
                 startMain();
             }
 

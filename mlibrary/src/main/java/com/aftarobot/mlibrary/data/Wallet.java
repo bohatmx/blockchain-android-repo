@@ -3,6 +3,7 @@ package com.aftarobot.mlibrary.data;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class Wallet implements Data, Serializable {
@@ -11,7 +12,16 @@ public class Wallet implements Data, Serializable {
             fcmToken, name, email, uid, sequenceNumber, stringDate;
     private long date;
     private boolean debug;
+    private HashMap<String, Photo> photos;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+
+    public HashMap<String, Photo> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(HashMap<String, Photo> photos) {
+        this.photos = photos;
+    }
 
     public String getSequenceNumber() {
         return sequenceNumber;

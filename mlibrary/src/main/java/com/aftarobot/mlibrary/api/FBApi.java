@@ -16,6 +16,7 @@ import com.aftarobot.mlibrary.data.DeathCertificateRequest;
 import com.aftarobot.mlibrary.data.FundsTransfer;
 import com.aftarobot.mlibrary.data.FundsTransferRequest;
 import com.aftarobot.mlibrary.data.Payment;
+import com.aftarobot.mlibrary.data.Photo;
 import com.aftarobot.mlibrary.data.Policy;
 import com.aftarobot.mlibrary.data.UserDTO;
 import com.aftarobot.mlibrary.data.Wallet;
@@ -44,6 +45,7 @@ public class FBApi {
             FUNDS_TRANSFER_REQUESTS = "fundsTransferRequests",
             FUNDS_TRANSFERS = "fundsTransfers",
             USERS = "users",
+            PHOTOS = "photos",
             DEATH_CERTS = "certificates",
             DEATH_CERT_REQUEST = "deathCertRequests",
             CLAIMS = "claims",
@@ -100,6 +102,26 @@ public class FBApi {
         });
     }
 
+    public void addPhoto(final Photo photo, final FBListener listener) {
+        DatabaseReference ref = db.getReference(WALLETS)
+                .child(photo.getWalletID())
+                .child(PHOTOS);
+
+        ref.push().setValue(photo, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: addPhoto, added to firebase wallet: ");
+                    photo.setPhotoID(databaseReference.getKey());
+                    listener.onResponse(photo);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
     public void addWallet(final Wallet wallet, final FBListener listener) {
         DatabaseReference ref = db.getReference(WALLETS);
         ref.push().setValue(wallet, new DatabaseReference.CompletionListener() {
@@ -107,6 +129,7 @@ public class FBApi {
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
                     Log.i(TAG, "onComplete: addWallet, added to firebase: ".concat(wallet.getEmail()));
+                    wallet.setWalletID(databaseReference.getKey());
                     listener.onResponse(wallet);
                 } else {
                     Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
@@ -115,6 +138,25 @@ public class FBApi {
             }
         });
     }
+
+    public void updateWallet(final Wallet wallet, final FBListener listener) {
+        wallet.setSeed(null);
+        DatabaseReference ref = db.getReference(WALLETS)
+                .child(wallet.getWalletID());
+        ref.setValue(wallet, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    Log.i(TAG, "onComplete: updateWallet, updated on firebase: ".concat(wallet.getEmail()));
+                    listener.onResponse(wallet);
+                } else {
+                    Log.e(TAG, "onComplete: ERROR: ".concat(databaseError.getMessage()));
+                    listener.onError(databaseError.getMessage());
+                }
+            }
+        });
+    }
+
     public void addPayment(final Payment message, final FBListener listener) {
         DatabaseReference ref = db.getReference(PAYMENTS);
         ref.push().setValue(message, new DatabaseReference.CompletionListener() {
@@ -130,6 +172,7 @@ public class FBApi {
             }
         });
     }
+
     public void addBeneficiary(final Beneficiary beneficiary, final FBListener listener) {
         DatabaseReference ref = db.getReference(BENEFICIARIES);
         ref.push().setValue(beneficiary, new DatabaseReference.CompletionListener() {
@@ -145,6 +188,7 @@ public class FBApi {
             }
         });
     }
+
     public void addBeneficiaryFunds(final BeneficiaryFunds beneficiaryFunds, final FBListener listener) {
         DatabaseReference ref = db.getReference(BENEFICIARY_FUNDS);
         ref.push().setValue(beneficiaryFunds, new DatabaseReference.CompletionListener() {
@@ -197,6 +241,7 @@ public class FBApi {
                 });
 
     }
+
     public void updateClientToken(final Client client, final FBListener listener) {
         DatabaseReference ref = db.getReference(CLIENTS)
                 .child(client.getClientId()).child("fcmToken");
@@ -217,6 +262,7 @@ public class FBApi {
                 });
 
     }
+
     public void removeBeneficiaries(final FBListener listener) {
         DatabaseReference ref = db.getReference(BENEFICIARIES);
         ref.removeValue()
@@ -236,6 +282,7 @@ public class FBApi {
                 });
 
     }
+
     public void removeClients(final FBListener listener) {
         DatabaseReference ref = db.getReference(CLIENTS);
         ref.removeValue()
@@ -292,7 +339,7 @@ public class FBApi {
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, "addDeathCertificate: DISASTER!!!! ",e );
+            Log.e(TAG, "addDeathCertificate: DISASTER!!!! ", e);
         }
 
     }
@@ -438,6 +485,7 @@ public class FBApi {
             }
         });
     }
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 }

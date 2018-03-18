@@ -88,6 +88,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
             }
             if (type.equalsIgnoreCase("WALLET")) {
                 Wallet pol = GSON.fromJson(map.get("json"), Wallet.class);
+                Log.i(TAG, "onMessageReceived: wallet from function: ".concat(GSON.toJson(pol)));
                 SharedPrefUtil.saveWallet(pol,getApplicationContext());
                 broadcast(BROADCAST_WALLET, pol);
                 sendNotification(type, "Wallet created OK", map.get("json"));

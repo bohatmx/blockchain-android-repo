@@ -6,6 +6,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
     <style name="AftaRobotTheme" parent="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="colorPrimary">@color/teal_500</item>
@@ -80,11 +81,13 @@
         <item name="android:textColor">@color/blue_700</item>
         <item name="android:textStyle">bold</item>
     </style>
+
     <style name="MediumRedText">
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/red_600</item>
         <item name="android:textStyle">bold</item>
     </style>
+
     <style name="SmallText">
         <item name="android:textSize">14sp</item>
     </style>

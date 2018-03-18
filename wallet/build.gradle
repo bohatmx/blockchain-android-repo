@@ -70,6 +70,10 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
     implementation 'com.squareup.okhttp:okhttp-urlconnection:2.7.2'
     implementation 'com.squareup.okhttp:okhttp:2.7.2'
+    implementation 'de.hdodenhof:circleimageview:2.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
+
+
     // Required only if Facebook login support is required
 //    implementation 'com.facebook.android:facebook-android-sdk:4.27.0'
     // Required only if Twitter login support is required

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardElevation="4dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginRight="@dimen/fab_margin"
+    android:layout_marginLeft="@dimen/fab_margin"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:padding="@dimen/fab_margin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/image"
+            android:src="@drawable/back15"
+            android:layout_width="36dp"
+            android:layout_height="36dp" />
+
+        <RelativeLayout
+            android:id="@+id/layout1"
+            android:layout_toRightOf="@id/image"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/txtName"
+                android:text="Wallet Owners Name"
+                android:textSize="20sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/txtAccount"
+                android:text="HKSDFHLFHkbjJHOUEYTJ8DMCNBDLHEILSH  SOZHDJ"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp"
+                android:layout_below="@id/txtName"
+                android:textColor="@color/grey_500"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
