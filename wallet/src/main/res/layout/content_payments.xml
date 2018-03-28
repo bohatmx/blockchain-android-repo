@@ -50,6 +50,7 @@
 
             <RelativeLayout
                 android:id="@+id/layout2"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/layout1">
@@ -85,6 +86,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:visibility="gone"
                 android:layout_below="@id/layout2"
                 android:text="Send Money" />
 

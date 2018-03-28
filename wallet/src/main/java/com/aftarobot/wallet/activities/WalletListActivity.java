@@ -204,8 +204,9 @@ public class WalletListActivity extends AppCompatActivity {
     }
 
     int[] themes = {
+            R.style.DriverTheme,
             R.style.AftaRobotTheme, R.style.CommuterTheme,
-            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
+            R.style.MarshalTheme, R.style.AdminTheme,
             R.style.OwnerTheme, R.style.RouteBuilderTheme,
             R.style.AssocBuilderTheme, R.style.BeaconTheme
     };

@@ -98,15 +98,27 @@
                 android:text="May be a Payment"
                 android:layout_below="@id/txtLastTitle"
                 android:textSize="14sp"
-                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_marginTop="8dp"
                 android:textColor="@color/blue_400"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/txtAccount"
+                android:text="HGFUHKHSSKHLFJHLSKJHKJHKJHSSKJHSFJBFSKJBFJSJBFKSJBFSKJBHDFBDJH"
+                android:layout_below="@id/txtType"
+                android:textSize="14sp"
+                android:layout_marginLeft="@dimen/mm_24"
+                android:layout_marginRight="@dimen/mm_24"
+                android:layout_marginBottom="@dimen/fab_margin"
+                android:layout_marginTop="@dimen/mm_8"
+                android:textColor="@color/grey_500"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <RelativeLayout
                 android:id="@+id/layout2"
-                android:layout_marginTop="@dimen/fab_margin"
-                android:layout_below="@id/txtType"
+                android:layout_marginTop="8dp"
+                android:layout_below="@id/txtAccount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <TextView

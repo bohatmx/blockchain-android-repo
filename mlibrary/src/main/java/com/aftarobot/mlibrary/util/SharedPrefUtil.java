@@ -58,7 +58,7 @@ public class SharedPrefUtil {
         SharedPreferences.Editor ed = sp.edit();
         ed.putString("secret", token);
         ed.apply();
-        Log.i(TAG, "saveSecret: " + token);
+        Log.i(TAG, "saveSecret #######################################\n: " + token);
     }
 
     public static String getSecret(Context ctx) {

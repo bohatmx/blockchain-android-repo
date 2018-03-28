@@ -9,8 +9,9 @@
 
     <style name="AftaRobotTheme" parent="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
-        <item name="colorPrimary">@color/blue_gray_500</item>
-        <item name="colorPrimaryDark">@color/teal_800</item>
+        <item name="colorPrimary">@color/red_500</item>
+        <item name="colorPrimaryDark">@color/red_800</item>
+        <item name="colorAccent">@color/teal_500</item>
         <item name="android:windowActionBarOverlay">true</item>
     </style>
 
@@ -49,20 +50,20 @@
     <style name="PatrollerTheme" parent="AftaRobotTheme">
         <item name="colorPrimary">@color/indigo_300</item>
         <item name="colorPrimaryDark">@color/indigo_500</item>
-        <item name="colorAccent">@color/orange_600</item>
+        <item name="colorAccent">@color/orange_800</item>
     </style>
 
     <style name="AssocBuilderTheme" parent="AftaRobotTheme">
-        <item name="colorPrimary">@color/purple_400</item>
-        <item name="colorPrimaryDark">@color/purple_700</item>
-        <item name="colorAccent">@color/amber_500</item>
+        <item name="colorPrimary">@color/indigo_400</item>
+        <item name="colorPrimaryDark">@color/indigo_500</item>
+        <item name="colorAccent">@color/pink_700</item>
     </style>
 
 
     <style name="AdminTheme" parent="AftaRobotTheme">
-        <item name="colorPrimary">@color/brown_500</item>
-        <item name="colorPrimaryDark">@color/brown_700</item>
-        <item name="colorAccent">@color/teal_400</item>
+        <item name="colorPrimary">@color/brown_400</item>
+        <item name="colorPrimaryDark">@color/brown_600</item>
+        <item name="colorAccent">@color/orange_700</item>
     </style>
 
     <style name="CommuterTheme" parent="AftaRobotTheme">

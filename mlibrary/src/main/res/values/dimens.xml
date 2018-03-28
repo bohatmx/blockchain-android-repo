@@ -1,3 +1,9 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="mm_16">16dp</dimen>
+    <dimen name="mm_8">8dp</dimen>
+    <dimen name="mm_4">4dp</dimen>
+    <dimen name="mm_24">24dp</dimen>
+    <dimen name="mm_36">36dp</dimen>
+
 </resources>

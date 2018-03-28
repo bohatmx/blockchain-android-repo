@@ -35,6 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Random;
 
 public class SignInActivity extends AppCompatActivity {
@@ -57,13 +58,12 @@ public class SignInActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                signIn();
             }
         });
 
         if (auth.getCurrentUser() != null) {
-            Log.w(TAG, "onCreate: user already authenticated");
+            Log.w(TAG, "onCreate: user already authenticated: ".concat(auth.getCurrentUser().getEmail()));
             startMain();
             return;
         }
@@ -86,7 +86,7 @@ public class SignInActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         Log.i(TAG, "onSuccess: authenticated anon: ".concat(authResult.getUser().getUid()));
-                        getSponsorAccount(authResult);
+                        addWallet();
 
                     }
                 })
@@ -144,32 +144,32 @@ public class SignInActivity extends AppCompatActivity {
     private Account account;
     private StellarAPI stellarAPI = new StellarAPI();
 
-    private void getSponsorAccount(final AuthResult authResult) {
-        showSnack("Loading account details ...", "ok", "cyan");
-        stellarAPI.getAccount(ACCOUNT_ID,
-                new StellarAPI.AccountListener() {
-                    @Override
-                    public void onResponse(Account acc) {
-                        account = acc;
-                        addWallet();
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        showError(message);
-                    }
-                });
-    }
+//    private void getSponsorAccount(final AuthResult authResult) {
+//        showSnack("Loading account details ...", "ok", "cyan");
+//        stellarAPI.getAccount(SPARE_ACCOUNT_ID,
+//                new StellarAPI.AccountListener() {
+//                    @Override
+//                    public void onResponse(Account acc) {
+//                        account = acc;
+//                        addWallet();
+//                    }
+//
+//                    @Override
+//                    public void onError(String message) {
+//                        showError(message);
+//                    }
+//                });
+//    }
 
     private void addWallet() {
         FirebaseUser user = auth.getCurrentUser();
         Log.i(TAG, "addWallet, user: ".concat(GSON.toJson(user)));
         Wallet w = new Wallet();
-        w.setSequenceNumber(account.getSequence());
-        w.setSourceSeed(SECRET);
-        w.setSourceAccountID(ACCOUNT_ID);
+        //w.setSequenceNumber("NOT_NEEDED_ANYMORE");
+        w.setSourceSeed(SPARE_SECRET);
+        //w.setSourceAccountID(SPARE_ACCOUNT_ID);
         w.setDate(new Date().getTime());
-        w.setUid(user.getUid());
+        w.setUid(Objects.requireNonNull(user).getUid());
         w.setFcmToken(SharedPrefUtil.getCloudMsgToken(this));
         if (user.getEmail() != null) {
             w.setEmail(user.getEmail());
@@ -177,9 +177,13 @@ public class SignInActivity extends AppCompatActivity {
             w.setEmail(getRandomEmail());
         }
         w.setDebug(BuildConfig.DEBUG);
-        w.setName(getRandomName());
+        if (user.getDisplayName() != null) {
+            w.setName(user.getDisplayName());
+        } else {
+            w.setName(getRandomName());
+        }
 
-        Log.e(TAG, "addWallet: ".concat(GSON.toJson(w)));
+        Log.e(TAG, "############## addWallet to Firebase: ".concat(GSON.toJson(w)));
         showSnack("Creating your wallet ...", "ok", "yellow");
         FBApi api = new FBApi();
         api.addWallet(w, new FBApi.FBListener() {
@@ -187,7 +191,6 @@ public class SignInActivity extends AppCompatActivity {
             public void onResponse(Data data) {
                 Wallet wallet = (Wallet)data;
                 Log.i(TAG, "onResponse: wallet, check for id's: ".concat(GSON.toJson(wallet)));
-                SharedPrefUtil.saveWallet(wallet,getApplicationContext());
                 startMain();
             }
 

@@ -54,12 +54,13 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     Wallet wallet;
     View card1, card2;
-    TextView txtDate, txtLastDate, txtBalance, txtAmount, txtType;
+    TextView txtDate, txtLastDate, txtBalance, txtAmount, txtType, txtAcct;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm", Locale.getDefault());
 
     int[] themes = {
+            R.style.DriverTheme,
             R.style.AftaRobotTheme, R.style.CommuterTheme,
-            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
+            R.style.MarshalTheme, R.style.AdminTheme,
             R.style.OwnerTheme, R.style.RouteBuilderTheme,
             R.style.AssocBuilderTheme, R.style.BeaconTheme
     };
@@ -141,14 +142,16 @@ public class MainActivity extends AppCompatActivity
 
         }
     }
+
     private void changeToManualAccount() {
         final String publicKey = "GAIHVSEZQ4KVPJTM2CPBZSIBLBPKPZG5U6JFGQIE76TYSNXQME5GKBXO",
                 secretKey = "SB57MDG3AGK3S76KLXYHEVFHQBGFX75UBV7N2KO4HYAI3TMIES5BOBS5";
-        SharedPrefUtil.saveSecret(secretKey,this);
+
+        SharedPrefUtil.saveSecret(secretKey, this);
         wallet = SharedPrefUtil.getWallet(this);
         if (wallet != null) {
             wallet.setAccountID(publicKey);
-            Log.e(TAG, "changeToManualAccount: wallet, check walletID: ".concat(GSON.toJson(wallet)) );
+            Log.e(TAG, "changeToManualAccount: wallet, check walletID: ".concat(GSON.toJson(wallet)));
             FBApi api = new FBApi();
             api.updateWallet(wallet, new FBApi.FBListener() {
                 @Override
@@ -169,6 +172,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setup() {
+        txtAcct = findViewById(R.id.txtAccount);
         txtAmount = findViewById(R.id.txtLastAmount);
         txtBalance = findViewById(R.id.txtBalance);
         txtDate = findViewById(R.id.txtDate);
@@ -317,6 +321,7 @@ public class MainActivity extends AppCompatActivity
             txtLastDate.setText(sdf.format(record.getCreatedAt()));
             txtAmount.setText(record.getAmount());
             txtType.setText(record.getType().toUpperCase());
+            txtAcct.setText(record.getTo());
             card2.setAlpha(1.0f);
             if (record.getFrom().equalsIgnoreCase(wallet.getAccountID())) {
                 txtAmount.setTextColor(Color.parseColor("red"));
@@ -377,13 +382,11 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             int index = SharedPrefUtil.getThemeIndex(this);
             index++;
-            if (index > 7) {
+            if (index > 8) {
                 index = 0;
             }
             SharedPrefUtil.saveThemeIndex(index, this);
-
             restartMe();
-
             return true;
         }
 
@@ -486,6 +489,7 @@ public class MainActivity extends AppCompatActivity
     private void update() {
         getSupportActionBar().setSubtitle(wallet.getName());
     }
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 }

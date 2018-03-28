@@ -60,8 +60,9 @@ public class PaymentsActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     List<Payment> payments;
     int[] themes = {
+            R.style.DriverTheme,
             R.style.AftaRobotTheme, R.style.CommuterTheme,
-            R.style.DriverTheme, R.style.MarshalTheme, R.style.AdminTheme,
+            R.style.MarshalTheme, R.style.AdminTheme,
             R.style.OwnerTheme, R.style.RouteBuilderTheme,
             R.style.AssocBuilderTheme, R.style.BeaconTheme
     };
@@ -202,7 +203,7 @@ public class PaymentsActivity extends AppCompatActivity {
         p.setSourceAccount(wallet.getAccountID());
         p.setAmount(editMoney.getText().toString());
         p.setSeed(SharedPrefUtil.getSecret(this));
-        p.setMemo("Joy, absolutely!");
+        p.setMemo("Biggie is here!");
         api.addPayment(p, new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
