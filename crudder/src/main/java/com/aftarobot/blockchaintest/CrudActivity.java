@@ -218,39 +218,8 @@ public class CrudActivity extends AppCompatActivity {
             @Override
             public void onResponse(Data data) {
                 Log.e(TAG, "onResponse: +++++++++++++++++++ auth removal trigger added, sleeping for 10 seconds");
-                SystemClock.sleep(10000);
+                //SystemClock.sleep(10000);
                 startGrinding();
-//                api.removeBeneficiaries(new FBApi.FBListener() {
-//                    @Override
-//                    public void onResponse(Data data) {
-//                        Log.e(TAG, "doCrud onResponse: beneficiaries deleted from Firebase");
-//                        api.removeClients(new FBApi.FBListener() {
-//                            @Override
-//                            public void onResponse(Data data) {
-//                                Log.e(TAG, "doCrud onResponse: clients deleted from Firebase");
-//                                try {
-//                                    showSnackbar("Waiting for 5 seconds ...", "ok", "white");
-//                                    SystemClock.sleep()(5000);
-//                                    startGrinding();
-//
-//                                } catch (InterruptedException e) {
-//                                    startGrinding();
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onError(String message) {
-//                                showError(message);
-//                            }
-//                        });
-//                    }
-//
-//                    @Override
-//                    public void onError(String message) {
-//                        showError(message);
-//                    }
-//                });
-
             }
 
             @Override

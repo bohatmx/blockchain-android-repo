@@ -607,7 +607,7 @@ public class BeneficiaryNavActivity extends AppCompatActivity
         claim.setAmount(policy.getAmount());
         claim.setApproved(false);
         claim.setPolicy("resource:com.oneconnect.insurenet.Policy#".concat(policy.getPolicyNumber()));
-        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompanyy#".concat(strings[1]));
+        claim.setInsuranceCompany("resource:com.oneconnect.insurenet.InsuranceCompany#".concat(strings[1]));
         claim.setPolicyNumber(policy.getPolicyNumber());
         ChainDataAPI chainDataAPI = new ChainDataAPI(this);
         final FBApi fbApi = new FBApi();
