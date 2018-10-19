@@ -19,7 +19,7 @@ import java.util.List;
 public class ClientBeneficiariesUtil {
 
     public interface ClientBennieListener {
-        void onClientAndBeneficiariesAdded();
+        void onClientAndBeneficiariesAdded(Client mClient);
 
         void onError(String message);
 
@@ -53,13 +53,14 @@ public class ClientBeneficiariesUtil {
             @Override
             public void onResponse(Data data) {
                 final Client client = (Client) data;
+                mClient = client;
                 Log.i(TAG, "onResponse: client added to blockchain: ".concat(GSON.toJson(client)));
                 mListener.onProgress("Client added: ".concat(client.getFullName()));
 
                 final BankAccount account = new BankAccount();
                 account.setAccountNumber(ListUtil.getRandomAccountNumber());
                 account.setBalance(0.00);
-                account.setClient("resource:com.oneconnect.insurenet.Client#".concat(mClient.getIdNumber()));
+                account.setClient("resource:com.oneconnect.insurenet.Client#".concat(client.getIdNumber()));
                 account.setBank("resource:com.oneconnect.insurenet.Bank#".concat(mBank.getBankId()));
                 Log.d(TAG, "account to register: ".concat(GSON.toJson(account)));
 
@@ -68,7 +69,7 @@ public class ClientBeneficiariesUtil {
                     public void onResponse(Data data) {
                         String msg = "Client BankAccount registered: ".concat(account.getAccountNumber());
                         mListener.onProgress(msg);
-                        Log.e(TAG, "onResponse: ".concat(msg));
+                        Log.i(TAG, "onResponse: ".concat(msg));
                         firebaseAPI.addClient(client, new FBApi.FBListener() {
                             @Override
                             public void onResponse(Data data) {
@@ -103,11 +104,12 @@ public class ClientBeneficiariesUtil {
         if (index < mBeneficiaries.size()) {
             addBeneficiary(mBeneficiaries.get(index));
         } else {
-            mListener.onClientAndBeneficiariesAdded();
+            mListener.onClientAndBeneficiariesAdded(mClient);
         }
     }
 
     private static void addBeneficiary(final Beneficiary beneficiary) {
+        Log.d(TAG, "addBeneficiary: adding .....".concat(GSON.toJson(beneficiary)));
         chainDataAPI.addBeneficiary(beneficiary, new ChainDataAPI.Listener() {
             @Override
             public void onResponse(Data data) {
@@ -118,7 +120,7 @@ public class ClientBeneficiariesUtil {
                 final BankAccount account = new BankAccount();
                 account.setAccountNumber(ListUtil.getRandomAccountNumber());
                 account.setBalance(0.00);
-                account.setBeneficiary("resource:com.oneconnect.insurenet.Beneficiary#".concat(beneficiary.getIdNumber()));
+                account.setBeneficiary("resource:com.oneconnect.insurenet.Beneficiary#".concat(b.getIdNumber()));
                 account.setBank("resource:com.oneconnect.insurenet.Bank#".concat(mBank.getBankId()));
                 chainDataAPI.registerBeneficiaryBankAccount(account, new ChainDataAPI.Listener() {
                     @Override

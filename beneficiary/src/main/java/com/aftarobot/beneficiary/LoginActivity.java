@@ -84,13 +84,17 @@ public class LoginActivity extends AppCompatActivity {
 
     private Beneficiary beneficiary;
     private void setList() {
+        Log.i(TAG, "setList: .......................................");
         Collections.sort(beneficiaries);
         List<String> list = new ArrayList<>();
-        list.add("Select Beneficiary");
+        if (!beneficiaries.isEmpty()) {
+            list.add("Select Beneficiary");
+        }
         for (Beneficiary b: beneficiaries) {
             list.add(b.getFullName());
         }
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,list);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+                this,R.layout.support_simple_spinner_dropdown_item,list);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -132,6 +136,7 @@ public class LoginActivity extends AppCompatActivity {
                 .show();
     }
     private void startAuth(final Beneficiary beneficiary) {
+        Log.i(TAG, "startAuth: ########################################################");
         mAuth.signInWithEmailAndPassword(beneficiary.getEmail(),beneficiary.getPassword())
                 .addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
                     @Override
@@ -230,10 +235,13 @@ public class LoginActivity extends AppCompatActivity {
         fbListApi.getBeneficiaries(new FBListApi.BeneficiaryListener() {
             @Override
             public void onResponse(List<Beneficiary> list) {
+                Log.i(TAG, "onResponse: beneficiaries: " + list.size());
              beneficiaries = new ArrayList<>();
              for (Beneficiary b: list) {
-                 if (b.getFcmToken() == null && b.getPassword() != null) {
+                 if (b.getFcmToken() == null) {
                      beneficiaries.add(b);
+                 }else {
+                     Log.d(TAG, "onResponse: bebenficiary ignored");
                  }
              }
              snackbar.dismiss();

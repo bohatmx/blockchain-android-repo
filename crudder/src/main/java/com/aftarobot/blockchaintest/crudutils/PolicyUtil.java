@@ -83,8 +83,8 @@ public class PolicyUtil {
         ClientBeneficiariesUtil.addClientAndBeneficiaries(mContext,
                 client, mBank, beneficiaries, new ClientBeneficiariesUtil.ClientBennieListener() {
                     @Override
-                    public void onClientAndBeneficiariesAdded() {
-                        createPolicies(client, beneficiaries);
+                    public void onClientAndBeneficiariesAdded(Client c) {
+                        createPolicies(c, beneficiaries);
                         pIndex = 0;
                         index++;
                         controlPolicies();
@@ -149,7 +149,7 @@ public class PolicyUtil {
             public void onResponse(Data data) {
                 Policy x = (Policy) data;
                 policies.add(x);
-                Log.e(TAG, "registerOnePolicy onResponse: policy added to chain, policies: "
+                Log.d(TAG, "registerOnePolicy onResponse: policy added to chain, policies: "
                         .concat(String.valueOf(policies.size())).concat(" ")
                         .concat(GSON.toJson(x)));
                 mListener.onProgressMessage("Policy added to BlockChain: ".concat(x.getPolicyNumber()));

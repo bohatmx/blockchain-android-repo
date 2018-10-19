@@ -10,8 +10,10 @@ import java.util.List;
  */
 
 public class Beneficiary extends Person implements Data, Serializable, Comparable<Beneficiary> {
+
     private String fcmToken, password, beneficiaryId;
     private List<String> policies, bankAccounts;
+
 
     public List<String> getBankAccounts() {
         return bankAccounts;

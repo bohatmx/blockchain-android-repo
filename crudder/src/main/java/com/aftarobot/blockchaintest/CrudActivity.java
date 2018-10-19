@@ -217,8 +217,8 @@ public class CrudActivity extends AppCompatActivity {
         api.addAuthRemoval(new FBApi.FBListener() {
             @Override
             public void onResponse(Data data) {
-                Log.e(TAG, "onResponse: +++++++++++++++++++ auth removal trigger added, sleeping for 10 seconds");
-                //SystemClock.sleep(10000);
+                Log.e(TAG, "\n\ndoCrud: onResponse: +++++++++++++++++++ auth removal trigger added, sleeping for 10 seconds");
+                SystemClock.sleep(10000);
                 startGrinding();
             }
 

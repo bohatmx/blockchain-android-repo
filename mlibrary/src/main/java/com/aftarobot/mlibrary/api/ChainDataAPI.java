@@ -64,7 +64,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "HomeAffairs added: ".concat(homeAffairs.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    Log.e(TAG, "addHomeAffairs - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.doc_add_failed));
                 }
             }
@@ -87,7 +87,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Bank added: ".concat(bank.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    Log.e(TAG, "addBank - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError("Failed to add Bank");
                 }
             }
@@ -109,7 +109,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Doctor added: ".concat(doctor.getIdNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    Log.e(TAG, "addDoctor - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.doc_add_failed));
                 }
             }
@@ -134,7 +134,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError(context.getString(R.string.dc_add_failed));
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                        Log.e(TAG, "registerDeathCertificate - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -164,7 +164,7 @@ public class ChainDataAPI {
                         listener.onError(context.getString(R.string.dc_add_failed));
                         Log.e(TAG, "addDeathCertificateRequestByTranx onResponse: ".concat(response.errorBody().string()));
                     } catch (Exception e) {
-                        Log.e(TAG, "onResponse: ERROR ", e);
+                        Log.e(TAG, "addDeathCertificateRequestByTranx - onResponse: ERROR ", e);
                     }
 
                 }
@@ -190,7 +190,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError(context.getString(R.string.dc_add_failed));
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                        Log.e(TAG, "postDeathCertificateRequest - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     } catch (Exception e) {
                         Log.e(TAG, "onResponse: ERROR ", e);
                     }
@@ -218,7 +218,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError("Failed to register burial");
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                        Log.e(TAG, "processClaimApproval - onResponse: ".concat(GSON.toJson(response)));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -245,7 +245,7 @@ public class ChainDataAPI {
                 } else {
                     try {
                         listener.onError("Failed to register burial");
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                        Log.e(TAG, "registerBurial - onResponse: ".concat(GSON.toJson(response)));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -274,7 +274,7 @@ public class ChainDataAPI {
             public void onResponse(@NonNull Call<Client> call, @NonNull Response<Client> response) {
                 if (response.isSuccessful()) {
                     Client m = response.body();
-                    Log.i(TAG, "onResponse: client policies updated"
+                    Log.i(TAG, "updateClientPolicies - onResponse: client policies updated"
                             .concat(GSON.toJson(m)));
                     listener.onResponse(m);
 
@@ -306,7 +306,7 @@ public class ChainDataAPI {
                     listener.onResponse(m);
 
                 } else {
-                    Log.e(TAG, "onResponse: ERROR: ".concat(response.message()));
+                    Log.e(TAG, "updateBeneficiary - onResponse: ERROR: ".concat(response.message()));
                     listener.onError(response.message());
                 }
             }
@@ -334,7 +334,7 @@ public class ChainDataAPI {
                     listener.onResponse(m);
 
                 } else {
-                    Log.e(TAG, "onResponse: ERROR: ".concat(response.message()));
+                    Log.e(TAG, "updateDeathCertificateRequest onResponse: ERROR: ".concat(response.message()));
                     listener.onError(response.message());
                 }
             }
@@ -356,7 +356,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "DeathCertificate added: ".concat(certificate.getIdNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody())));
+                    Log.e(TAG, "addDeathCertificate - onResponse: ".concat(GSON.toJson(response.errorBody())));
                     listener.onError(context.getString(R.string.dc_add_failed));
                 }
             }
@@ -566,7 +566,7 @@ public class ChainDataAPI {
                     listener.onResponse(response.body());
                 } else {
                     try {
-                        Log.e(TAG, "onResponse: ".concat(response.errorBody().string()));
+                        Log.e(TAG, "registerPolicyViaTransaction: onResponse: ".concat(response.errorBody().string()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -591,7 +591,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Insurance regulator added: ".concat(regulator.getFullName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    Log.e(TAG, "addRegulator onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.regulator_add_failed));
                 }
             }
@@ -615,7 +615,7 @@ public class ChainDataAPI {
                     listener.onResponse(response.body());
                 } else {
                     try {
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response.errorBody().string())));
+                        Log.e(TAG, "addClient - onResponse: ".concat(GSON.toJson(response.errorBody().string())));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -641,7 +641,14 @@ public class ChainDataAPI {
                     Log.i(TAG, "beneficiary added: ".concat(beneficiary.getFullName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    Log.e(TAG, "addBeneficiary - ERROR - onResponse: ".concat(response.message()));
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e(TAG, "addBeneficiary - ERROR - onResponse: ".concat(response.errorBody().string()));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     listener.onError(context.getString(R.string.benefic_add_failed));
                 }
             }
@@ -666,7 +673,7 @@ public class ChainDataAPI {
                         Log.i(TAG, "Insurance company added: ".concat(company.getName()));
                         listener.onResponse(response.body());
                     } else {
-                        Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                        Log.e(TAG, "addInsuranceCompany - onResponse: ".concat(GSON.toJson(response)));
                         listener.onError(context.getString(R.string.company_add_failled));
                     }
                 }
@@ -692,7 +699,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "bankAccount added: ".concat(bankAccount.getAccountNumber()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    Log.e(TAG, "addBankAccount - onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.company_add_failled));
                 }
             }
@@ -716,7 +723,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "Hospital  added: ".concat(hospital.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    Log.e(TAG, "addHospital - onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.hosp_add_failed));
                 }
             }
@@ -739,7 +746,7 @@ public class ChainDataAPI {
                     Log.i(TAG, "FuneralParlour  added: ".concat(funeralParlour.getName()));
                     listener.onResponse(response.body());
                 } else {
-                    Log.e(TAG, "onResponse: ".concat(GSON.toJson(response)));
+                    Log.e(TAG, "addFuneralParlour - onResponse: ".concat(GSON.toJson(response)));
                     listener.onError(context.getString(R.string.fp_add_failed));
                 }
             }
